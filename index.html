@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>House Visit Form</title>
-
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
+    
     <!-- Alpine.js (Logic) -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
+    
     <!-- Fuse.js (Fuzzy Search) -->
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
 
@@ -30,7 +30,7 @@
     <style>
         [x-cloak] { display: none !important; }
         /* Fix iOS input zoom */
-        input, textarea, select { font-size: 16px; }
+        input, textarea, select { font-size: 16px; } 
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-200 min-h-screen"
@@ -38,11 +38,12 @@
 
     <!-- CONFIGURATION -->
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbw21ZGdd-SfmRJrB-zMcfzVKTzIG-hU-BwKaA33J1bukq-4_ZJGQfH6_KBr4LdgjZvXmw/exec;
+        // UPDATED URL: Using the specific one you provided
+        const API_URL = 'https://script.google.com/macros/s/AKfycbw21ZGdd-SfmRJrB-zMcfzVKTzIG-hU-BwKaA33J1bukq-4_ZJGQfH6_KBr4LdgjZvXmw/exec'; 
     </script>
 
     <!-- TOAST NOTIFICATION -->
-    <div x-show="toast.visible" x-transition
+    <div x-show="toast.visible" x-transition 
          class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded shadow-lg text-white font-medium"
          :class="toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'" x-cloak>
         <span x-text="toast.message"></span>
@@ -77,31 +78,32 @@
             <h2 class="text-2xl font-bold mb-6 text-center">Volunteer Login</h2>
             <!-- Error Alert -->
             <div x-show="loginError" class="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm text-center border border-red-200" x-text="loginError"></div>
-
-            <input type="password" x-model="loginPass" @keyup.enter="performLogin" placeholder="Enter Password"
+            
+            <input type="password" x-model="loginPass" @keyup.enter="performLogin" placeholder="Enter Password" 
                    class="w-full p-3 border rounded mb-4 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none transition">
-            <button @click="performLogin"
+            <button @click="performLogin" 
                     class="w-full bg-primary text-white p-3 rounded font-bold hover:bg-indigo-700 transition shadow-md">
                 Login
             </button>
+            <p class="mt-4 text-xs text-center text-gray-500">Note: Do not run this file directly from your computer (file://). Host it on GitHub Pages.</p>
         </div>
     </div>
 
     <!-- MAIN APP CONTENT -->
     <div x-show="isLoggedIn" x-cloak class="p-4 max-w-4xl mx-auto pb-24">
-
+        
         <!-- DASHBOARD VIEW -->
         <div x-show="view === 'dashboard'">
             <div class="mb-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
                 <h2 class="text-lg font-semibold mb-4">Find Trainee</h2>
                 <div class="relative">
-                    <input type="text" x-model="searchQuery" placeholder="Start typing trainee name..."
+                    <input type="text" x-model="searchQuery" placeholder="Start typing trainee name..." 
                            class="w-full p-3 pl-4 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
-
+                    
                     <!-- Search Results -->
                     <div x-show="searchQuery.length > 0" class="mt-2 max-h-60 overflow-y-auto border rounded-lg dark:border-gray-700">
                         <template x-for="trainee in filteredTrainees" :key="trainee">
-                            <div @click="loadTraineeForm(trainee)"
+                            <div @click="loadTraineeForm(trainee)" 
                                  class="p-3 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b dark:border-gray-700 last:border-0 flex justify-between items-center transition">
                                 <span x-text="trainee" class="font-medium"></span>
                                 <span class="text-xs text-primary bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded">Auto-fill</span>
@@ -113,7 +115,7 @@
             </div>
 
             <div class="text-center">
-                <button @click="loadNewForm"
+                <button @click="loadNewForm" 
                         class="w-full sm:w-auto px-8 bg-secondary text-white p-4 rounded-lg shadow-md hover:bg-green-600 transition font-bold text-lg flex items-center justify-center gap-2 mx-auto">
                     <span>+</span> Start New Blank Visit
                 </button>
@@ -135,31 +137,31 @@
                 <template x-for="(section, secIndex) in groupedHeaders" :key="secIndex">
                     <div class="mb-6 rounded-lg overflow-hidden shadow-sm border dark:border-gray-700 bg-white dark:bg-gray-800">
                         <!-- Section Title -->
-                        <div class="p-4 font-bold uppercase text-sm tracking-wide border-b dark:border-gray-600"
-                             :class="section.bgClass + ' ' + section.textClass"
+                        <div class="p-4 font-bold uppercase text-sm tracking-wide border-b dark:border-gray-600" 
+                             :class="section.bgClass + ' ' + section.textClass" 
                              x-text="section.title"></div>
-
+                        
                         <!-- Fields -->
                         <div class="p-4 space-y-5">
                             <template x-for="field in section.fields" :key="field.index">
                                 <div>
                                     <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300" x-text="field.name"></label>
-
+                                    
                                     <!-- Long Text (Textarea) -->
                                     <template x-if="isLongText(field.name)">
-                                        <textarea x-model="formData[field.index]" rows="3"
+                                        <textarea x-model="formData[field.index]" rows="3" 
                                                   class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none"></textarea>
                                     </template>
-
+                                    
                                     <!-- Date Input -->
                                     <template x-if="isDate(field.name)">
-                                        <input type="date" x-model="formData[field.index]"
+                                        <input type="date" x-model="formData[field.index]" 
                                                class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
                                     </template>
-
+                                    
                                     <!-- Regular Input -->
                                     <template x-if="isRegularInput(field.name)">
-                                        <input type="text" x-model="formData[field.index]"
+                                        <input type="text" x-model="formData[field.index]" 
                                                class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
                                     </template>
                                 </div>
@@ -194,7 +196,7 @@
                 <!-- Settings Lock -->
                 <div x-show="!settingsUnlocked">
                     <div x-show="settingsError" class="text-red-500 text-sm mb-2 text-center" x-text="settingsError"></div>
-                    <input type="password" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Settings Password"
+                    <input type="password" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Settings Password" 
                            class="w-full p-3 border rounded mb-3 dark:bg-gray-700 dark:border-gray-600">
                     <button @click="unlockSettings" class="w-full bg-gray-800 text-white p-3 rounded hover:bg-black transition">Unlock</button>
                 </div>
@@ -205,7 +207,7 @@
                     <div class="mb-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <h3 class="font-bold mb-3 text-sm uppercase text-gray-500 dark:text-gray-300">Add New Question</h3>
                         <div class="flex gap-2">
-                            <input type="text" x-model="newColumnName" placeholder="Question Title"
+                            <input type="text" x-model="newColumnName" placeholder="Question Title" 
                                    class="flex-1 p-2 border rounded dark:bg-gray-600 dark:border-gray-500">
                             <button @click="addColumn" class="bg-secondary text-white px-4 rounded font-bold hover:bg-green-600">+</button>
                         </div>
@@ -218,7 +220,7 @@
                             <template x-for="(header, idx) in headers" :key="idx">
                                 <div class="flex gap-2 items-center">
                                     <div class="text-xs text-gray-400 w-6 text-right" x-text="idx+1"></div>
-                                    <input type="text" x-model="headers[idx]" @change="renameColumn(idx, headers[idx])"
+                                    <input type="text" x-model="headers[idx]" @change="renameColumn(idx, headers[idx])" 
                                            class="flex-1 p-2 text-sm border rounded dark:bg-gray-700 dark:border-gray-600 focus:border-primary">
                                 </div>
                             </template>
@@ -235,11 +237,11 @@
             return {
                 view: 'dashboard',
                 darkMode: localStorage.getItem('theme') === 'dark',
-                isLoggedIn: false,
+                isLoggedIn: false, 
                 loginPass: '',
                 loginError: '',
                 toast: { visible: false, message: '', type: 'success' },
-
+                
                 // Data
                 headers: [],
                 trainees: [],
@@ -257,7 +259,7 @@
                 async initApp() {
                     this.toggleTheme(false); // Apply initial theme
                     window.addEventListener('online', () => this.syncOfflineData()); // Auto-sync listener
-
+                    
                     if (localStorage.getItem('isLoggedIn') === 'true') {
                         this.isLoggedIn = true;
                         this.fetchConfig();
@@ -271,11 +273,36 @@
                     else document.documentElement.classList.remove('dark');
                 },
 
+                // --- ROBUST API HANDLER (FIXES CONNECTION ERRORS) ---
+                async apiCall(params, method = 'GET', body = null) {
+                    let url = `${API_URL}?${new URLSearchParams(params)}`;
+                    
+                    const options = {
+                        method: method,
+                        redirect: "follow",
+                    };
+
+                    // CRITICAL FIX: Google Apps Script POST must use text/plain
+                    // to prevent CORS Preflight failure
+                    if (method === 'POST') {
+                        options.body = JSON.stringify(body);
+                        options.headers = { "Content-Type": "text/plain;charset=utf-8" };
+                        // Remove params from URL for POST, put logic in body
+                        url = API_URL; 
+                        body.action = params.action; // Ensure action is in body
+                        options.body = JSON.stringify(body);
+                    }
+
+                    const res = await fetch(url, options);
+                    return await res.json();
+                },
+
                 async performLogin() {
                     this.loginError = '';
                     try {
-                        const res = await fetch(`${API_URL}?action=login&password=${this.loginPass}`);
-                        const data = await res.json();
+                        // Use the robust apiCall
+                        const data = await this.apiCall({ action: 'login', password: this.loginPass });
+                        
                         if (data.success) {
                             this.isLoggedIn = true;
                             localStorage.setItem('isLoggedIn', 'true');
@@ -284,14 +311,14 @@
                             this.loginError = 'Incorrect Password';
                         }
                     } catch (e) {
-                        this.loginError = 'Connection Error. Please check internet.';
+                        console.error(e);
+                        this.loginError = 'Connection Error. Note: This app must be hosted (GitHub Pages/Localhost), not opened as a file.';
                     }
                 },
 
                 async fetchConfig() {
                     try {
-                        const res = await fetch(`${API_URL}?action=getConfig`);
-                        const data = await res.json();
+                        const data = await this.apiCall({ action: 'getConfig' });
                         this.headers = data.headers;
                         this.trainees = data.trainees;
                         // Sync any offline data on load
@@ -303,13 +330,11 @@
 
                 get filteredTrainees() {
                     if (!this.searchQuery) return [];
-                    // Fuzzy Search configuration
                     const fuse = new Fuse(this.trainees, { threshold: 0.3 });
                     return fuse.search(this.searchQuery).map(r => r.item);
                 },
 
                 getNameIndex() {
-                    // Helper to find the index of the name column for display
                     let idx = this.headers.findIndex(h => h.toLowerCase().includes('trainee') && h.toLowerCase().includes('name'));
                     return idx === -1 ? 5 : idx;
                 },
@@ -321,7 +346,7 @@
                         if(h.toLowerCase().includes('date of visit')) {
                             this.formData[i] = new Date().toISOString().split('T')[0];
                         } else {
-                            this.formData[i] = '';
+                            this.formData[i] = ''; 
                         }
                     });
                     this.view = 'form';
@@ -330,15 +355,14 @@
                 async loadTraineeForm(traineeName) {
                     this.showToast('Fetching previous data...', 'info');
                     try {
-                        const res = await fetch(`${API_URL}?action=getHistory&trainee=${encodeURIComponent(traineeName)}`);
-                        const history = await res.json();
-
+                        const history = await this.apiCall({ action: 'getHistory', trainee: traineeName });
+                        
                         this.formData = {};
                         this.headers.forEach((h, i) => {
                             const lowerH = h.toLowerCase();
                             // LOGIC: Do NOT auto-populate specific fields
-                            const isExcluded = lowerH.includes('date of visit') ||
-                                             lowerH.includes('volunteer') ||
+                            const isExcluded = lowerH.includes('date of visit') || 
+                                             lowerH.includes('volunteer') || 
                                              lowerH.includes('timestamp');
 
                             if (isExcluded) {
@@ -348,7 +372,7 @@
                                 this.formData[i] = history[i] || '';
                             }
                         });
-
+                        
                         // Force set the name to match selection exactly
                         const nameIdx = this.getNameIndex();
                         this.formData[nameIdx] = traineeName;
@@ -376,12 +400,9 @@
                     this.headers.forEach((h, i) => {
                         let placed = false;
                         const lower = h.toLowerCase();
-
-                        // Handle duplicate columns in display (e.g. Volunteer 1, Volunteer 2)
                         let label = h;
                         const duplicateCount = this.headers.filter((v, idx) => v === h && idx < i).length;
                         if (duplicateCount > 0) label = `${h} (${duplicateCount + 1})`;
-
                         const fieldObj = { name: label, index: i };
 
                         for (const sec of grouped) {
@@ -399,28 +420,24 @@
 
                 // Input Helpers
                 isDate(name) { return name.toLowerCase().includes('date'); },
-                isLongText(name) {
+                isLongText(name) { 
                     const n = name.toLowerCase();
-                    return n.includes('elaborate') || n.includes('address') || n.includes('feedback') || n.includes('remark') || n.includes('details');
+                    return n.includes('elaborate') || n.includes('address') || n.includes('feedback') || n.includes('remark') || n.includes('details'); 
                 },
                 isRegularInput(name) { return !this.isDate(name) && !this.isLongText(name); },
 
                 async submitForm() {
                     this.isSubmitting = true;
-
-                    // Build row array strictly following header order
+                    
                     const row = [];
                     for(let i=0; i < this.headers.length; i++) {
                         let val = this.formData[i] || '';
-                        // Auto timestamp if empty and it's the first column
                         if (i === 0 && !val && this.headers[0].toLowerCase().includes('timestamp')) {
-                            val = new Date().toLocaleString();
+                            val = new Date().toLocaleString(); 
                         }
-                        // Prepend apostrophe to force text format in Sheets (prevents number/date truncating)
-                        row.push("'" + val);
+                        row.push("'" + val); 
                     }
 
-                    // Fallback to offline save if no internet
                     if (!navigator.onLine) {
                         this.saveOffline(row);
                         this.isSubmitting = false;
@@ -428,15 +445,13 @@
                     }
 
                     try {
-                        await fetch(API_URL, {
-                            method: 'POST',
-                            body: JSON.stringify({ action: 'submit', row: row })
-                        });
+                        // Use updated apiCall with POST
+                        await this.apiCall({ action: 'submit' }, 'POST', { row: row });
+                        
                         this.showToast('Submitted Successfully!', 'success');
                         this.view = 'dashboard';
                         this.searchQuery = '';
                     } catch (e) {
-                        // If API fails (even if browser says online), save offline
                         this.saveOffline(row);
                     } finally {
                         this.isSubmitting = false;
@@ -445,14 +460,11 @@
 
                 saveOffline(row) {
                     const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
-
-                    // Handle button click (no row passed) vs automatic fallback (row passed)
                     let rowToSave = row;
-                    if (!row || row.type === 'click') {
+                    if (!row || row.type === 'click') { 
                          rowToSave = [];
                          for(let i=0; i<this.headers.length; i++) rowToSave.push("'" + (this.formData[i]||''));
                     }
-
                     queue.push(rowToSave);
                     localStorage.setItem('offlineQueue', JSON.stringify(queue));
                     this.showToast('Saved Offline. Will sync when online.', 'info');
@@ -464,20 +476,15 @@
                     if (queue.length === 0) return;
 
                     this.showToast(`Syncing ${queue.length} offline records...`, 'info');
-
-                    // Process queue sequentially
                     const failed = [];
                     for (const row of queue) {
                         try {
-                            await fetch(API_URL, {
-                                method: 'POST',
-                                body: JSON.stringify({ action: 'submit', row: row })
-                            });
+                             await this.apiCall({ action: 'submit' }, 'POST', { row: row });
                         } catch (e) {
                             failed.push(row);
                         }
                     }
-
+                    
                     if (failed.length === 0) {
                         localStorage.removeItem('offlineQueue');
                         this.showToast('Sync Complete!', 'success');
@@ -488,36 +495,32 @@
                 },
 
                 // SETTINGS LOGIC
-                openSettings() {
-                    this.showSettings = true;
+                openSettings() { 
+                    this.showSettings = true; 
                     this.settingsError = '';
                     this.settingsPass = '';
                 },
-
+                
                 async unlockSettings() {
                     this.settingsError = '';
-                    const res = await fetch(`${API_URL}?action=validateSettings&password=${this.settingsPass}`);
-                    const data = await res.json();
-                    if (data.success) this.settingsUnlocked = true;
-                    else this.settingsError = 'Wrong Password';
+                    try {
+                        const data = await this.apiCall({ action: 'validateSettings', password: this.settingsPass });
+                        if (data.success) this.settingsUnlocked = true;
+                        else this.settingsError = 'Wrong Password';
+                    } catch(e) {
+                        this.settingsError = 'Connection Error';
+                    }
                 },
-
+                
                 async addColumn() {
                     if(!this.newColumnName) return;
-                    await fetch(API_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'addColumn', headerName: this.newColumnName })
-                    });
+                    await this.apiCall({ action: 'addColumn' }, 'POST', { headerName: this.newColumnName });
                     this.showToast('Column Added. Reloading...', 'success');
-                    // Reload to fetch new schema
                     setTimeout(() => window.location.reload(), 1500);
                 },
 
                 async renameColumn(idx, newName) {
-                    await fetch(API_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'renameColumn', colIndex: idx, newName: newName })
-                    });
+                    await this.apiCall({ action: 'renameColumn' }, 'POST', { colIndex: idx, newName: newName });
                     this.showToast('Column Renamed', 'success');
                 },
 
