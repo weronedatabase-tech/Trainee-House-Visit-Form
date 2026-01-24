@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>House Visit Form</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js (Logic) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Fuse.js (Fuzzy Search) -->
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5', // Indigo
+                        secondary: '#10B981', // Emerald
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+        /* Fix iOS input zoom */
+        input, textarea, select { font-size: 16px; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-200 min-h-screen"
+      x-data="appData()" x-init="initApp()">
+
+    <!-- CONFIGURATION -->
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbw21ZGdd-SfmRJrB-zMcfzVKTzIG-hU-BwKaA33J1bukq-4_ZJGQfH6_KBr4LdgjZvXmw/exec;
+    </script>
+
+    <!-- TOAST NOTIFICATION -->
+    <div x-show="toast.visible" x-transition
+         class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded shadow-lg text-white font-medium"
+         :class="toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'" x-cloak>
+        <span x-text="toast.message"></span>
+    </div>
+
+    <!-- UPDATE / REFRESH BUTTON -->
+    <div class="fixed bottom-4 right-4 z-40">
+        <button @click="window.location.reload(true)" class="bg-gray-800 dark:bg-gray-700 text-white p-3 rounded-full shadow-lg hover:bg-gray-700 transition" title="Refresh App">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        </button>
+    </div>
+
+    <!-- HEADER -->
+    <header class="bg-white dark:bg-gray-800 shadow p-4 sticky top-0 z-30 flex justify-between items-center">
+        <h1 class="text-xl font-bold text-primary">House Visit Form</h1>
+        <div class="flex items-center gap-3">
+            <!-- Settings Button -->
+            <button x-show="isLoggedIn" @click="openSettings" class="text-gray-500 hover:text-primary transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </button>
+            <!-- Dark Mode Toggle -->
+            <button @click="toggleTheme" class="text-2xl focus:outline-none">
+                <span x-show="!darkMode">🌗</span>
+                <span x-show="darkMode">🌕</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- LOGIN SCREEN -->
+    <div x-show="!isLoggedIn" class="flex flex-col items-center justify-center min-h-[80vh] p-6">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-sm">
+            <h2 class="text-2xl font-bold mb-6 text-center">Volunteer Login</h2>
+            <!-- Error Alert -->
+            <div x-show="loginError" class="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm text-center border border-red-200" x-text="loginError"></div>
+
+            <input type="password" x-model="loginPass" @keyup.enter="performLogin" placeholder="Enter Password"
+                   class="w-full p-3 border rounded mb-4 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none transition">
+            <button @click="performLogin"
+                    class="w-full bg-primary text-white p-3 rounded font-bold hover:bg-indigo-700 transition shadow-md">
+                Login
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTENT -->
+    <div x-show="isLoggedIn" x-cloak class="p-4 max-w-4xl mx-auto pb-24">
+
+        <!-- DASHBOARD VIEW -->
+        <div x-show="view === 'dashboard'">
+            <div class="mb-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
+                <h2 class="text-lg font-semibold mb-4">Find Trainee</h2>
+                <div class="relative">
+                    <input type="text" x-model="searchQuery" placeholder="Start typing trainee name..."
+                           class="w-full p-3 pl-4 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
+
+                    <!-- Search Results -->
+                    <div x-show="searchQuery.length > 0" class="mt-2 max-h-60 overflow-y-auto border rounded-lg dark:border-gray-700">
+                        <template x-for="trainee in filteredTrainees" :key="trainee">
+                            <div @click="loadTraineeForm(trainee)"
+                                 class="p-3 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b dark:border-gray-700 last:border-0 flex justify-between items-center transition">
+                                <span x-text="trainee" class="font-medium"></span>
+                                <span class="text-xs text-primary bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded">Auto-fill</span>
+                            </div>
+                        </template>
+                        <div x-show="filteredTrainees.length === 0" class="p-3 text-gray-500 bg-white dark:bg-gray-800">No matches found</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button @click="loadNewForm"
+                        class="w-full sm:w-auto px-8 bg-secondary text-white p-4 rounded-lg shadow-md hover:bg-green-600 transition font-bold text-lg flex items-center justify-center gap-2 mx-auto">
+                    <span>+</span> Start New Blank Visit
+                </button>
+            </div>
+        </div>
+
+        <!-- FORM VIEW -->
+        <div x-show="view === 'form'">
+            <div class="flex justify-between items-center mb-6">
+                <button @click="view = 'dashboard'" class="text-gray-500 hover:text-gray-800 dark:hover:text-white flex items-center gap-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back
+                </button>
+                <h2 class="font-bold text-lg truncate ml-4" x-text="formData[getNameIndex()] || 'New Visit'"></h2>
+            </div>
+
+            <form @submit.prevent="submitForm">
+                <!-- Grouped Sections -->
+                <template x-for="(section, secIndex) in groupedHeaders" :key="secIndex">
+                    <div class="mb-6 rounded-lg overflow-hidden shadow-sm border dark:border-gray-700 bg-white dark:bg-gray-800">
+                        <!-- Section Title -->
+                        <div class="p-4 font-bold uppercase text-sm tracking-wide border-b dark:border-gray-600"
+                             :class="section.bgClass + ' ' + section.textClass"
+                             x-text="section.title"></div>
+
+                        <!-- Fields -->
+                        <div class="p-4 space-y-5">
+                            <template x-for="field in section.fields" :key="field.index">
+                                <div>
+                                    <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300" x-text="field.name"></label>
+
+                                    <!-- Long Text (Textarea) -->
+                                    <template x-if="isLongText(field.name)">
+                                        <textarea x-model="formData[field.index]" rows="3"
+                                                  class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none"></textarea>
+                                    </template>
+
+                                    <!-- Date Input -->
+                                    <template x-if="isDate(field.name)">
+                                        <input type="date" x-model="formData[field.index]"
+                                               class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
+                                    </template>
+
+                                    <!-- Regular Input -->
+                                    <template x-if="isRegularInput(field.name)">
+                                        <input type="text" x-model="formData[field.index]"
+                                               class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="h-20"></div> <!-- Spacer -->
+
+                <!-- Footer Actions -->
+                <div class="fixed bottom-0 left-0 w-full p-4 bg-white dark:bg-gray-900 border-t dark:border-gray-700 flex gap-3 z-20 shadow-lg">
+                    <button type="button" @click="saveOffline" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white p-3 rounded-lg font-bold transition">
+                        Save for Later
+                    </button>
+                    <button type="submit" class="flex-1 bg-primary hover:bg-indigo-700 text-white p-3 rounded-lg font-bold transition flex justify-center items-center gap-2" :disabled="isSubmitting">
+                        <span x-show="isSubmitting" class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+                        <span x-text="isSubmitting ? 'Sending...' : 'Submit'"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- SETTINGS MODAL -->
+        <div x-show="showSettings" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm" x-cloak>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Form Settings</h2>
+                    <button @click="showSettings = false" class="text-gray-500 hover:text-red-500 text-xl">✕</button>
+                </div>
+
+                <!-- Settings Lock -->
+                <div x-show="!settingsUnlocked">
+                    <div x-show="settingsError" class="text-red-500 text-sm mb-2 text-center" x-text="settingsError"></div>
+                    <input type="password" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Settings Password"
+                           class="w-full p-3 border rounded mb-3 dark:bg-gray-700 dark:border-gray-600">
+                    <button @click="unlockSettings" class="w-full bg-gray-800 text-white p-3 rounded hover:bg-black transition">Unlock</button>
+                </div>
+
+                <!-- Settings Content -->
+                <div x-show="settingsUnlocked">
+                    <!-- Add Column -->
+                    <div class="mb-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <h3 class="font-bold mb-3 text-sm uppercase text-gray-500 dark:text-gray-300">Add New Question</h3>
+                        <div class="flex gap-2">
+                            <input type="text" x-model="newColumnName" placeholder="Question Title"
+                                   class="flex-1 p-2 border rounded dark:bg-gray-600 dark:border-gray-500">
+                            <button @click="addColumn" class="bg-secondary text-white px-4 rounded font-bold hover:bg-green-600">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Rename Columns -->
+                    <div>
+                        <h3 class="font-bold mb-3 text-sm uppercase text-gray-500 dark:text-gray-300">Edit Existing Questions</h3>
+                        <div class="space-y-3">
+                            <template x-for="(header, idx) in headers" :key="idx">
+                                <div class="flex gap-2 items-center">
+                                    <div class="text-xs text-gray-400 w-6 text-right" x-text="idx+1"></div>
+                                    <input type="text" x-model="headers[idx]" @change="renameColumn(idx, headers[idx])"
+                                           class="flex-1 p-2 text-sm border rounded dark:bg-gray-700 dark:border-gray-600 focus:border-primary">
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function appData() {
+            return {
+                view: 'dashboard',
+                darkMode: localStorage.getItem('theme') === 'dark',
+                isLoggedIn: false,
+                loginPass: '',
+                loginError: '',
+                toast: { visible: false, message: '', type: 'success' },
+
+                // Data
+                headers: [],
+                trainees: [],
+                searchQuery: '',
+                formData: {}, // Keyed by column index (0-based)
+                isSubmitting: false,
+
+                // Settings
+                showSettings: false,
+                settingsPass: '',
+                settingsUnlocked: false,
+                settingsError: '',
+                newColumnName: '',
+
+                async initApp() {
+                    this.toggleTheme(false); // Apply initial theme
+                    window.addEventListener('online', () => this.syncOfflineData()); // Auto-sync listener
+
+                    if (localStorage.getItem('isLoggedIn') === 'true') {
+                        this.isLoggedIn = true;
+                        this.fetchConfig();
+                    }
+                },
+
+                toggleTheme(doToggle = true) {
+                    if (doToggle) this.darkMode = !this.darkMode;
+                    localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
+                    if (this.darkMode) document.documentElement.classList.add('dark');
+                    else document.documentElement.classList.remove('dark');
+                },
+
+                async performLogin() {
+                    this.loginError = '';
+                    try {
+                        const res = await fetch(`${API_URL}?action=login&password=${this.loginPass}`);
+                        const data = await res.json();
+                        if (data.success) {
+                            this.isLoggedIn = true;
+                            localStorage.setItem('isLoggedIn', 'true');
+                            this.fetchConfig();
+                        } else {
+                            this.loginError = 'Incorrect Password';
+                        }
+                    } catch (e) {
+                        this.loginError = 'Connection Error. Please check internet.';
+                    }
+                },
+
+                async fetchConfig() {
+                    try {
+                        const res = await fetch(`${API_URL}?action=getConfig`);
+                        const data = await res.json();
+                        this.headers = data.headers;
+                        this.trainees = data.trainees;
+                        // Sync any offline data on load
+                        if(navigator.onLine) this.syncOfflineData();
+                    } catch (e) {
+                        this.showToast('Failed to load form config', 'error');
+                    }
+                },
+
+                get filteredTrainees() {
+                    if (!this.searchQuery) return [];
+                    // Fuzzy Search configuration
+                    const fuse = new Fuse(this.trainees, { threshold: 0.3 });
+                    return fuse.search(this.searchQuery).map(r => r.item);
+                },
+
+                getNameIndex() {
+                    // Helper to find the index of the name column for display
+                    let idx = this.headers.findIndex(h => h.toLowerCase().includes('trainee') && h.toLowerCase().includes('name'));
+                    return idx === -1 ? 5 : idx;
+                },
+
+                loadNewForm() {
+                    this.formData = {};
+                    this.headers.forEach((h, i) => {
+                        // Pre-fill Date of Visit with Today
+                        if(h.toLowerCase().includes('date of visit')) {
+                            this.formData[i] = new Date().toISOString().split('T')[0];
+                        } else {
+                            this.formData[i] = '';
+                        }
+                    });
+                    this.view = 'form';
+                },
+
+                async loadTraineeForm(traineeName) {
+                    this.showToast('Fetching previous data...', 'info');
+                    try {
+                        const res = await fetch(`${API_URL}?action=getHistory&trainee=${encodeURIComponent(traineeName)}`);
+                        const history = await res.json();
+
+                        this.formData = {};
+                        this.headers.forEach((h, i) => {
+                            const lowerH = h.toLowerCase();
+                            // LOGIC: Do NOT auto-populate specific fields
+                            const isExcluded = lowerH.includes('date of visit') ||
+                                             lowerH.includes('volunteer') ||
+                                             lowerH.includes('timestamp');
+
+                            if (isExcluded) {
+                                if(lowerH.includes('date of visit')) this.formData[i] = new Date().toISOString().split('T')[0];
+                                else this.formData[i] = '';
+                            } else {
+                                this.formData[i] = history[i] || '';
+                            }
+                        });
+
+                        // Force set the name to match selection exactly
+                        const nameIdx = this.getNameIndex();
+                        this.formData[nameIdx] = traineeName;
+
+                        this.view = 'form';
+                    } catch (e) {
+                        this.showToast('Offline? Could not load history.', 'error');
+                    }
+                },
+
+                // --- UI GROUPING LOGIC ---
+                get groupedHeaders() {
+                    const sections = [
+                        { id: 'visit', title: 'Visit Details', keywords: ['timestamp', 'date', 'volunteer', 'project'], bgClass: 'bg-blue-50 dark:bg-blue-900', textClass: 'text-blue-700 dark:text-blue-200' },
+                        { id: 'trainee', title: 'Trainee Details', keywords: ['trainee', 'nric', 'address', 'gender', 'birth', 'blood', 'race', 'religion', 'language', 'shirt'], bgClass: 'bg-green-50 dark:bg-green-900', textClass: 'text-green-700 dark:text-green-200' },
+                        { id: 'caregiver', title: 'Caregiver & Family', keywords: ['caregiver', 'guardian', 'family', 'financial', 'difficulties'], bgClass: 'bg-yellow-50 dark:bg-yellow-900', textClass: 'text-yellow-700 dark:text-yellow-200' },
+                        { id: 'medical', title: 'Medical & Health', keywords: ['medical', 'medication', 'health', 'allergy', 'disability', 'dietary', 'condition'], bgClass: 'bg-red-50 dark:bg-red-900', textClass: 'text-red-700 dark:text-red-200' },
+                        { id: 'behavior', title: 'Behaviour & Skills', keywords: ['personality', 'behavior', 'skills', 'interaction', 'activity', 'work', 'school'], bgClass: 'bg-purple-50 dark:bg-purple-900', textClass: 'text-purple-700 dark:text-purple-200' },
+                        { id: 'observation', title: 'Volunteer Observation', keywords: ['observation', 'attention', 'responsiveness', 'confidence', 'feedback', 'fees'], bgClass: 'bg-gray-100 dark:bg-gray-700', textClass: 'text-gray-700 dark:text-gray-200' }
+                    ];
+
+                    const grouped = sections.map(s => ({ ...s, fields: [] }));
+                    const misc = { title: 'Miscellaneous', fields: [], bgClass: 'bg-gray-50 dark:bg-gray-800', textClass: 'text-gray-600' };
+
+                    this.headers.forEach((h, i) => {
+                        let placed = false;
+                        const lower = h.toLowerCase();
+
+                        // Handle duplicate columns in display (e.g. Volunteer 1, Volunteer 2)
+                        let label = h;
+                        const duplicateCount = this.headers.filter((v, idx) => v === h && idx < i).length;
+                        if (duplicateCount > 0) label = `${h} (${duplicateCount + 1})`;
+
+                        const fieldObj = { name: label, index: i };
+
+                        for (const sec of grouped) {
+                            if (sec.keywords.some(k => lower.includes(k))) {
+                                sec.fields.push(fieldObj);
+                                placed = true;
+                                break;
+                            }
+                        }
+                        if (!placed) misc.fields.push(fieldObj);
+                    });
+
+                    return [...grouped, misc].filter(s => s.fields.length > 0);
+                },
+
+                // Input Helpers
+                isDate(name) { return name.toLowerCase().includes('date'); },
+                isLongText(name) {
+                    const n = name.toLowerCase();
+                    return n.includes('elaborate') || n.includes('address') || n.includes('feedback') || n.includes('remark') || n.includes('details');
+                },
+                isRegularInput(name) { return !this.isDate(name) && !this.isLongText(name); },
+
+                async submitForm() {
+                    this.isSubmitting = true;
+
+                    // Build row array strictly following header order
+                    const row = [];
+                    for(let i=0; i < this.headers.length; i++) {
+                        let val = this.formData[i] || '';
+                        // Auto timestamp if empty and it's the first column
+                        if (i === 0 && !val && this.headers[0].toLowerCase().includes('timestamp')) {
+                            val = new Date().toLocaleString();
+                        }
+                        // Prepend apostrophe to force text format in Sheets (prevents number/date truncating)
+                        row.push("'" + val);
+                    }
+
+                    // Fallback to offline save if no internet
+                    if (!navigator.onLine) {
+                        this.saveOffline(row);
+                        this.isSubmitting = false;
+                        return;
+                    }
+
+                    try {
+                        await fetch(API_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({ action: 'submit', row: row })
+                        });
+                        this.showToast('Submitted Successfully!', 'success');
+                        this.view = 'dashboard';
+                        this.searchQuery = '';
+                    } catch (e) {
+                        // If API fails (even if browser says online), save offline
+                        this.saveOffline(row);
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                },
+
+                saveOffline(row) {
+                    const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
+
+                    // Handle button click (no row passed) vs automatic fallback (row passed)
+                    let rowToSave = row;
+                    if (!row || row.type === 'click') {
+                         rowToSave = [];
+                         for(let i=0; i<this.headers.length; i++) rowToSave.push("'" + (this.formData[i]||''));
+                    }
+
+                    queue.push(rowToSave);
+                    localStorage.setItem('offlineQueue', JSON.stringify(queue));
+                    this.showToast('Saved Offline. Will sync when online.', 'info');
+                    this.view = 'dashboard';
+                },
+
+                async syncOfflineData() {
+                    const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
+                    if (queue.length === 0) return;
+
+                    this.showToast(`Syncing ${queue.length} offline records...`, 'info');
+
+                    // Process queue sequentially
+                    const failed = [];
+                    for (const row of queue) {
+                        try {
+                            await fetch(API_URL, {
+                                method: 'POST',
+                                body: JSON.stringify({ action: 'submit', row: row })
+                            });
+                        } catch (e) {
+                            failed.push(row);
+                        }
+                    }
+
+                    if (failed.length === 0) {
+                        localStorage.removeItem('offlineQueue');
+                        this.showToast('Sync Complete!', 'success');
+                    } else {
+                        localStorage.setItem('offlineQueue', JSON.stringify(failed));
+                        this.showToast(`Synced some, but ${failed.length} failed.`, 'error');
+                    }
+                },
+
+                // SETTINGS LOGIC
+                openSettings() {
+                    this.showSettings = true;
+                    this.settingsError = '';
+                    this.settingsPass = '';
+                },
+
+                async unlockSettings() {
+                    this.settingsError = '';
+                    const res = await fetch(`${API_URL}?action=validateSettings&password=${this.settingsPass}`);
+                    const data = await res.json();
+                    if (data.success) this.settingsUnlocked = true;
+                    else this.settingsError = 'Wrong Password';
+                },
+
+                async addColumn() {
+                    if(!this.newColumnName) return;
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'addColumn', headerName: this.newColumnName })
+                    });
+                    this.showToast('Column Added. Reloading...', 'success');
+                    // Reload to fetch new schema
+                    setTimeout(() => window.location.reload(), 1500);
+                },
+
+                async renameColumn(idx, newName) {
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'renameColumn', colIndex: idx, newName: newName })
+                    });
+                    this.showToast('Column Renamed', 'success');
+                },
+
+                showToast(msg, type) {
+                    this.toast.message = msg;
+                    this.toast.type = type;
+                    this.toast.visible = true;
+                    setTimeout(() => this.toast.visible = false, 3000);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
