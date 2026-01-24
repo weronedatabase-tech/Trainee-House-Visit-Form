@@ -20,11 +20,25 @@
 
     <!-- CONFIGURATION -->
     <script>
-        // REPLACE WITH NEW DEPLOYMENT URL
         const API_URL = 'https://script.google.com/macros/s/AKfycbw21ZGdd-SfmRJrB-zMcfzVKTzIG-hU-BwKaA33J1bukq-4_ZJGQfH6_KBr4LdgjZvXmw/exec'; 
     </script>
 
-    <!-- UI COMPONENTS -->
+    <!-- GLOBAL LOADING OVERLAY (NEW) -->
+    <div x-show="isLoading" x-transition.opacity.duration.300ms
+         class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm" x-cloak>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm w-[90%] mx-auto">
+            <!-- Spinner -->
+            <svg class="animate-spin h-12 w-12 text-primary mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <!-- Text -->
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white" x-text="loadingText">Please Wait...</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 text-center">Do not close the app.</p>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
     <div x-show="toast.visible" x-transition class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded shadow-lg text-white font-medium" :class="toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'" x-cloak>
         <span x-text="toast.message"></span>
     </div>
@@ -61,7 +75,7 @@
             <div class="mb-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
                 <h2 class="text-lg font-semibold mb-4 flex justify-between">
                     <span>Find Trainee</span>
-                    <span x-show="loadingTrainees" class="text-xs text-primary animate-pulse">Syncing...</span>
+                    <span x-show="loadingTrainees" class="text-xs text-primary animate-pulse">Syncing List...</span>
                 </h2>
                 <div class="relative">
                     <input type="text" x-model="searchQuery" @focus="refreshTrainees" placeholder="Search name..." class="w-full p-3 pl-4 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
@@ -89,6 +103,12 @@
                 <h2 class="font-bold text-lg truncate ml-4" x-text="formData[getNameIndex()] || 'New Visit'"></h2>
             </div>
             <form @submit.prevent="submitForm">
+                
+                <div x-show="groupedHeaders.length === 0" class="text-center p-8 text-gray-500">
+                    <p>Loading questions...</p>
+                    <p class="text-xs mt-2">If this persists, please click "Back" and refresh.</p>
+                </div>
+
                 <template x-for="(section, secIndex) in groupedHeaders" :key="secIndex">
                     <div class="mb-6 rounded-lg overflow-hidden shadow-sm border dark:border-gray-700 bg-white dark:bg-gray-800">
                         <div class="p-4 font-bold uppercase text-sm tracking-wide border-b dark:border-gray-600" :class="section.bgClass + ' ' + section.textClass" x-text="section.title"></div>
@@ -107,9 +127,8 @@
                 <div class="h-20"></div>
                 <div class="fixed bottom-0 left-0 w-full p-4 bg-white dark:bg-gray-900 border-t dark:border-gray-700 flex gap-3 z-20 shadow-lg">
                     <button type="button" @click="saveOffline" class="flex-1 bg-gray-500 text-white p-3 rounded-lg font-bold">Save Later</button>
-                    <button type="submit" class="flex-1 bg-primary text-white p-3 rounded-lg font-bold flex justify-center items-center gap-2" :disabled="isSubmitting">
-                        <span x-show="isSubmitting" class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
-                        <span x-text="isSubmitting ? 'Sending...' : 'Submit'"></span>
+                    <button type="submit" class="flex-1 bg-primary text-white p-3 rounded-lg font-bold flex justify-center items-center gap-2">
+                        Submit
                     </button>
                 </div>
             </form>
@@ -123,17 +142,13 @@
                     <button @click="showSettings = false" class="text-gray-500 text-xl hover:text-red-500">✕</button>
                 </div>
                 
-                <!-- LOCK SCREEN -->
                 <div x-show="!settingsUnlocked">
                     <div x-show="settingsError" class="text-red-500 text-sm mb-2" x-text="settingsError"></div>
                     <input type="password" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Settings Password" class="w-full p-3 border rounded mb-3 dark:bg-gray-700 dark:border-gray-600">
                     <button @click="unlockSettings" class="w-full bg-gray-800 text-white p-3 rounded">Unlock</button>
                 </div>
 
-                <!-- SETTINGS MENU -->
                 <div x-show="settingsUnlocked" class="space-y-6">
-                    
-                    <!-- 1. ADD QUESTION -->
                     <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300 uppercase">Add New Question</h3>
                         <div class="flex gap-2">
@@ -142,7 +157,6 @@
                         </div>
                     </div>
 
-                    <!-- 2. EDIT QUESTIONS (Fixed Scrolling) -->
                     <div>
                         <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300 uppercase">Edit Existing Questions</h3>
                         <div class="space-y-2 max-h-48 overflow-y-auto border p-2 rounded dark:border-gray-600">
@@ -155,11 +169,8 @@
                         </div>
                     </div>
 
-                    <!-- 3. CHANGE PASSWORDS (New) -->
                     <div class="border-t pt-4 dark:border-gray-600">
                          <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300 uppercase">Security</h3>
-                         
-                         <!-- App Password -->
                          <div class="mb-3">
                              <label class="text-xs text-gray-500">New App Login Password</label>
                              <div class="flex gap-2">
@@ -167,8 +178,6 @@
                                  <button @click="changePassword('APP')" class="bg-gray-600 text-white px-3 rounded text-sm">Update</button>
                              </div>
                          </div>
-
-                         <!-- Settings Password -->
                          <div>
                              <label class="text-xs text-gray-500">New Settings Password</label>
                              <div class="flex gap-2">
@@ -177,7 +186,6 @@
                              </div>
                          </div>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -193,18 +201,40 @@
                 headers: [], trainees: [], searchQuery: '', loadingTrainees: false,
                 formData: {}, isSubmitting: false,
                 
-                // Settings Vars
+                // Loading State
+                isLoading: false, loadingText: 'Please wait...',
+
                 showSettings: false, settingsPass: '', settingsUnlocked: false, settingsError: '', 
                 newColumnName: '', newAppPass: '', newSettingsPass: '',
 
                 async initApp() {
                     this.toggleTheme(false);
                     window.addEventListener('online', () => this.syncOfflineData());
+                    
                     if (localStorage.getItem('isLoggedIn') === 'true') {
                         this.isLoggedIn = true;
-                        this.performAction('getConfig');
+                        this.loadConfigFromStorage(); 
+                        this.fetchConfig();
                     }
                 },
+
+                // Loading Wrapper
+                setLoading(state, text = 'Loading...') {
+                    this.isLoading = state;
+                    this.loadingText = text;
+                },
+
+                loadConfigFromStorage() {
+                    const cachedConfig = localStorage.getItem('appConfig');
+                    if (cachedConfig) {
+                        const data = JSON.parse(cachedConfig);
+                        if(data.headers && data.headers.length > 0) {
+                            this.headers = data.headers;
+                            this.trainees = data.trainees;
+                        }
+                    }
+                },
+
                 toggleTheme(doToggle = true) {
                     if (doToggle) this.darkMode = !this.darkMode;
                     localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
@@ -229,21 +259,34 @@
 
                 async performLogin() {
                     this.loginError = '';
+                    this.setLoading(true, 'Logging in...');
                     try {
                         const data = await this.performAction('login', { password: this.loginPass });
                         if (data.success) {
                             this.isLoggedIn = true;
                             localStorage.setItem('isLoggedIn', 'true');
-                            this.performAction('getConfig').then(d => {
-                                this.headers = d.headers;
-                                this.trainees = d.trainees;
-                                if(navigator.onLine) this.syncOfflineData();
-                            });
+                            this.fetchConfig(); // Fetch and Save
                         } else {
                             this.loginError = 'Incorrect Password';
                         }
                     } catch (e) {
-                        this.loginError = 'Connection Error. Ensure Backend is deployed as "Anyone".';
+                        this.loginError = 'Connection Error.';
+                    } finally {
+                        this.setLoading(false);
+                    }
+                },
+
+                async fetchConfig() {
+                    try {
+                        const data = await this.performAction('getConfig');
+                        this.headers = data.headers;
+                        this.trainees = data.trainees;
+                        localStorage.setItem('appConfig', JSON.stringify({
+                            headers: this.headers,
+                            trainees: this.trainees
+                        }));
+                        if(navigator.onLine) this.syncOfflineData();
+                    } catch (e) {
                     }
                 },
 
@@ -251,8 +294,7 @@
                     if(!navigator.onLine) return;
                     this.loadingTrainees = true;
                     try {
-                        const data = await this.performAction('getConfig');
-                        this.trainees = data.trainees;
+                        await this.fetchConfig();
                     } catch(e) {} finally { this.loadingTrainees = false; }
                 },
 
@@ -276,14 +318,14 @@
                     this.view = 'form';
                 },
 
-                // FIXED BLANK PAGE BUG: Wrapped in robust Try/Catch with Fallback
                 async loadTraineeForm(traineeName) {
-                    this.showToast('Fetching history...', 'info');
+                    this.setLoading(true, 'Loading History...');
+                    if (this.headers.length === 0) this.loadConfigFromStorage();
+
                     try {
                         const history = await this.performAction('getHistory', { trainee: traineeName });
                         this.formData = {};
                         
-                        // Robust Data Mapping
                         this.headers.forEach((h, i) => {
                             const lowerH = String(h).toLowerCase();
                             const isExcluded = lowerH.includes('date of visit') || lowerH.includes('volunteer') || lowerH.includes('timestamp');
@@ -296,20 +338,21 @@
                             }
                         });
                         
-                        // Ensure Name is set
                         this.formData[this.getNameIndex()] = traineeName;
                         this.view = 'form';
                     } catch (e) {
                         this.showToast('Could not load history. Loading Blank Form.', 'error');
-                        // Fallback: Load blank form with name populated
                         this.loadNewForm();
                         this.formData[this.getNameIndex()] = traineeName;
                         this.view = 'form';
+                    } finally {
+                        this.setLoading(false);
                     }
                 },
 
                 async submitForm() {
                     this.isSubmitting = true;
+                    this.setLoading(true, 'Submitting...');
                     const row = [];
                     for(let i=0; i < this.headers.length; i++) {
                         let val = this.formData[i] || '';
@@ -320,6 +363,7 @@
                     if (!navigator.onLine) {
                         this.saveOffline(row);
                         this.isSubmitting = false;
+                        this.setLoading(false);
                         return;
                     }
 
@@ -332,10 +376,12 @@
                         this.saveOffline(row);
                     } finally {
                         this.isSubmitting = false;
+                        this.setLoading(false);
                     }
                 },
 
                 saveOffline(row) {
+                    this.setLoading(true, 'Saving locally...');
                     const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
                     let rowToSave = row;
                     if (!row || row.type === 'click') { 
@@ -344,9 +390,13 @@
                     }
                     queue.push(rowToSave);
                     localStorage.setItem('offlineQueue', JSON.stringify(queue));
-                    this.showToast('Saved Offline. Sync later.', 'info');
-                    this.view = 'dashboard';
+                    setTimeout(() => {
+                        this.showToast('Saved Offline. Sync later.', 'info');
+                        this.view = 'dashboard';
+                        this.setLoading(false);
+                    }, 500); // Small delay so user sees it saved
                 },
+
                 async syncOfflineData() {
                     const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
                     if (queue.length === 0) return;
@@ -359,35 +409,39 @@
                     else { localStorage.setItem('offlineQueue', JSON.stringify(failed)); this.showToast('Sync partial failure', 'error'); }
                 },
 
-                // SETTINGS FUNCTIONS
                 openSettings() { this.showSettings = true; this.settingsError = ''; this.settingsPass = ''; },
                 async unlockSettings() {
                     this.settingsError = '';
+                    this.setLoading(true, 'Unlocking...');
                     try {
                         const data = await this.performAction('validateSettings', { password: this.settingsPass });
                         if (data.success) this.settingsUnlocked = true;
                         else this.settingsError = 'Wrong Password';
                     } catch(e) { this.settingsError = 'Connection Error'; }
+                    finally { this.setLoading(false); }
                 },
                 async addColumn() {
                     if(!this.newColumnName) return;
+                    this.setLoading(true, 'Adding Column...');
                     await this.performAction('addColumn', { headerName: this.newColumnName });
                     this.showToast('Added. Reloading...', 'success');
                     setTimeout(() => window.location.reload(), 1500);
                 },
                 async renameColumn(idx, newName) {
+                    // Don't full block for rename, just toast
                     await this.performAction('renameColumn', { colIndex: idx, newName: newName });
                     this.showToast('Renamed', 'success');
                 },
                 async changePassword(type) {
                     const newPass = type === 'APP' ? this.newAppPass : this.newSettingsPass;
                     if(!newPass) return;
+                    this.setLoading(true, 'Updating Password...');
                     await this.performAction('changePassword', { type: type, newPassword: newPass });
                     this.showToast('Password Updated', 'success');
                     if(type === 'APP') { this.newAppPass = ''; } else { this.newSettingsPass = ''; }
+                    this.setLoading(false);
                 },
 
-                // UI HELPERS
                 showToast(msg, type) { this.toast.message = msg; this.toast.type = type; this.toast.visible = true; setTimeout(() => this.toast.visible = false, 3000); },
                 get groupedHeaders() {
                     const sections = [
