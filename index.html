@@ -4,32 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>House Visit Form</title>
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Alpine.js (Logic) -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
-    <!-- Fuse.js (Fuzzy Search) -->
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
-
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#4F46E5', // Indigo
-                        secondary: '#10B981', // Emerald
-                    }
-                }
-            }
-        }
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#4F46E5', secondary: '#10B981' } } } }
     </script>
     <style>
         [x-cloak] { display: none !important; }
-        /* Fix iOS input zoom */
         input, textarea, select { font-size: 16px; } 
     </style>
 </head>
@@ -38,20 +20,17 @@
 
     <!-- CONFIGURATION -->
     <script>
-        // REPLACE THIS WITH YOUR DEPLOYED GOOGLE SCRIPT URL
-        const API_URL = 'YOUR_GOOGLE_SCRIPT_URL_HERE'; 
+        // Ensure this URL is the one from the NEW Deployment
+        const API_URL = 'https://script.google.com/macros/s/AKfycbw21ZGdd-SfmRJrB-zMcfzVKTzIG-hU-BwKaA33J1bukq-4_ZJGQfH6_KBr4LdgjZvXmw/exec'; 
     </script>
 
-    <!-- TOAST NOTIFICATION -->
-    <div x-show="toast.visible" x-transition 
-         class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded shadow-lg text-white font-medium"
-         :class="toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'" x-cloak>
+    <!-- UI COMPONENTS -->
+    <div x-show="toast.visible" x-transition class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded shadow-lg text-white font-medium" :class="toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'" x-cloak>
         <span x-text="toast.message"></span>
     </div>
 
-    <!-- UPDATE / REFRESH BUTTON -->
     <div class="fixed bottom-4 right-4 z-40">
-        <button @click="window.location.reload(true)" class="bg-gray-800 dark:bg-gray-700 text-white p-3 rounded-full shadow-lg hover:bg-gray-700 transition" title="Refresh App">
+        <button @click="window.location.reload(true)" class="bg-gray-800 dark:bg-gray-700 text-white p-3 rounded-full shadow-lg" title="Refresh">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
         </button>
     </div>
@@ -60,132 +39,77 @@
     <header class="bg-white dark:bg-gray-800 shadow p-4 sticky top-0 z-30 flex justify-between items-center">
         <h1 class="text-xl font-bold text-primary">House Visit Form</h1>
         <div class="flex items-center gap-3">
-            <!-- Settings Button -->
-            <button x-show="isLoggedIn" @click="openSettings" class="text-gray-500 hover:text-primary transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-            </button>
-            <!-- Dark Mode Toggle -->
-            <button @click="toggleTheme" class="text-2xl focus:outline-none">
-                <span x-show="!darkMode">🌗</span>
-                <span x-show="darkMode">🌕</span>
-            </button>
+            <button x-show="isLoggedIn" @click="openSettings" class="text-gray-500 hover:text-primary"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button>
+            <button @click="toggleTheme" class="text-2xl"><span x-show="!darkMode">🌗</span><span x-show="darkMode">🌕</span></button>
         </div>
     </header>
 
-    <!-- LOGIN SCREEN -->
+    <!-- LOGIN -->
     <div x-show="!isLoggedIn" class="flex flex-col items-center justify-center min-h-[80vh] p-6">
         <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-sm">
             <h2 class="text-2xl font-bold mb-6 text-center">Volunteer Login</h2>
-            <!-- Error Alert -->
-            <div x-show="loginError" class="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm text-center border border-red-200" x-text="loginError"></div>
-            
-            <input type="password" x-model="loginPass" @keyup.enter="performLogin" placeholder="Enter Password" 
-                   class="w-full p-3 border rounded mb-4 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none transition">
-            <button @click="performLogin" 
-                    class="w-full bg-primary text-white p-3 rounded font-bold hover:bg-indigo-700 transition shadow-md">
-                Login
-            </button>
-            <p class="mt-4 text-xs text-center text-gray-500">Note: Do not run this file directly from your computer (file://). Host it on GitHub Pages.</p>
+            <div x-show="loginError" class="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm text-center" x-text="loginError"></div>
+            <input type="password" x-model="loginPass" @keyup.enter="performLogin" placeholder="Enter Password" class="w-full p-3 border rounded mb-4 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
+            <button @click="performLogin" class="w-full bg-primary text-white p-3 rounded font-bold hover:bg-indigo-700 transition">Login</button>
         </div>
     </div>
 
-    <!-- MAIN APP CONTENT -->
+    <!-- APP -->
     <div x-show="isLoggedIn" x-cloak class="p-4 max-w-4xl mx-auto pb-24">
         
-        <!-- DASHBOARD VIEW -->
+        <!-- DASHBOARD -->
         <div x-show="view === 'dashboard'">
             <div class="mb-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-                <h2 class="text-lg font-semibold mb-4 flex justify-between items-center">
+                <h2 class="text-lg font-semibold mb-4 flex justify-between">
                     <span>Find Trainee</span>
-                    <span x-show="loadingTrainees" class="text-xs font-normal text-primary animate-pulse">Refreshing List...</span>
+                    <span x-show="loadingTrainees" class="text-xs text-primary animate-pulse">Syncing...</span>
                 </h2>
                 <div class="relative">
-                    <!-- SEARCH INPUT -->
-                    <input type="text" x-model="searchQuery" @focus="refreshTrainees" placeholder="Start typing trainee name..." 
-                           class="w-full p-3 pl-4 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
+                    <input type="text" x-model="searchQuery" @focus="refreshTrainees" placeholder="Search name..." class="w-full p-3 pl-4 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
                     
-                    <!-- Search Results -->
                     <div x-show="searchQuery.length > 0" class="mt-2 max-h-60 overflow-y-auto border rounded-lg dark:border-gray-700">
                         <template x-for="trainee in filteredTrainees" :key="trainee">
-                            <div @click="loadTraineeForm(trainee)" 
-                                 class="p-3 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b dark:border-gray-700 last:border-0 flex justify-between items-center transition">
+                            <div @click="loadTraineeForm(trainee)" class="p-3 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b dark:border-gray-700 flex justify-between items-center">
                                 <span x-text="trainee" class="font-medium"></span>
-                                <span class="text-xs text-primary bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded">Auto-fill</span>
+                                <span class="text-xs text-primary bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded">Fill Form</span>
                             </div>
                         </template>
-                        <div x-show="filteredTrainees.length === 0" class="p-3 text-gray-500 bg-white dark:bg-gray-800">
-                            <span x-show="!loadingTrainees">No matches found</span>
-                            <span x-show="loadingTrainees">Searching...</span>
-                        </div>
+                        <div x-show="filteredTrainees.length === 0" class="p-3 text-gray-500 bg-white dark:bg-gray-800">No matches found</div>
                     </div>
                 </div>
-                <div class="mt-2 text-xs text-gray-400">List pulls from 'lookup' tab. Updates on tap.</div>
+                <div class="mt-2 text-xs text-gray-400">Pulls list from 'lookup' tab</div>
             </div>
-
             <div class="text-center">
-                <button @click="loadNewForm" 
-                        class="w-full sm:w-auto px-8 bg-secondary text-white p-4 rounded-lg shadow-md hover:bg-green-600 transition font-bold text-lg flex items-center justify-center gap-2 mx-auto">
-                    <span>+</span> Start New Blank Visit
-                </button>
+                <button @click="loadNewForm" class="w-full sm:w-auto px-8 bg-secondary text-white p-4 rounded-lg shadow-md font-bold text-lg">+ Start New Blank Visit</button>
             </div>
         </div>
 
-        <!-- FORM VIEW -->
+        <!-- FORM -->
         <div x-show="view === 'form'">
             <div class="flex justify-between items-center mb-6">
-                <button @click="view = 'dashboard'" class="text-gray-500 hover:text-gray-800 dark:hover:text-white flex items-center gap-1">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    Back
-                </button>
+                <button @click="view = 'dashboard'" class="text-gray-500 flex items-center gap-1">← Back</button>
                 <h2 class="font-bold text-lg truncate ml-4" x-text="formData[getNameIndex()] || 'New Visit'"></h2>
             </div>
-
             <form @submit.prevent="submitForm">
-                <!-- Grouped Sections -->
                 <template x-for="(section, secIndex) in groupedHeaders" :key="secIndex">
                     <div class="mb-6 rounded-lg overflow-hidden shadow-sm border dark:border-gray-700 bg-white dark:bg-gray-800">
-                        <!-- Section Title -->
-                        <div class="p-4 font-bold uppercase text-sm tracking-wide border-b dark:border-gray-600" 
-                             :class="section.bgClass + ' ' + section.textClass" 
-                             x-text="section.title"></div>
-                        
-                        <!-- Fields -->
+                        <div class="p-4 font-bold uppercase text-sm tracking-wide border-b dark:border-gray-600" :class="section.bgClass + ' ' + section.textClass" x-text="section.title"></div>
                         <div class="p-4 space-y-5">
                             <template x-for="field in section.fields" :key="field.index">
                                 <div>
                                     <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300" x-text="field.name"></label>
-                                    
-                                    <!-- Long Text (Textarea) -->
-                                    <template x-if="isLongText(field.name)">
-                                        <textarea x-model="formData[field.index]" rows="3" 
-                                                  class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none"></textarea>
-                                    </template>
-                                    
-                                    <!-- Date Input -->
-                                    <template x-if="isDate(field.name)">
-                                        <input type="date" x-model="formData[field.index]" 
-                                               class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
-                                    </template>
-                                    
-                                    <!-- Regular Input -->
-                                    <template x-if="isRegularInput(field.name)">
-                                        <input type="text" x-model="formData[field.index]" 
-                                               class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
-                                    </template>
+                                    <template x-if="isLongText(field.name)"><textarea x-model="formData[field.index]" rows="3" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none"></textarea></template>
+                                    <template x-if="isDate(field.name)"><input type="date" x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none"></template>
+                                    <template x-if="isRegularInput(field.name)"><input type="text" x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none"></template>
                                 </div>
                             </template>
                         </div>
                     </div>
                 </template>
-
-                <div class="h-20"></div> <!-- Spacer -->
-
-                <!-- Footer Actions -->
+                <div class="h-20"></div>
                 <div class="fixed bottom-0 left-0 w-full p-4 bg-white dark:bg-gray-900 border-t dark:border-gray-700 flex gap-3 z-20 shadow-lg">
-                    <button type="button" @click="saveOffline" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white p-3 rounded-lg font-bold transition">
-                        Save for Later
-                    </button>
-                    <button type="submit" class="flex-1 bg-primary hover:bg-indigo-700 text-white p-3 rounded-lg font-bold transition flex justify-center items-center gap-2" :disabled="isSubmitting">
+                    <button type="button" @click="saveOffline" class="flex-1 bg-gray-500 text-white p-3 rounded-lg font-bold">Save Later</button>
+                    <button type="submit" class="flex-1 bg-primary text-white p-3 rounded-lg font-bold flex justify-center items-center gap-2" :disabled="isSubmitting">
                         <span x-show="isSubmitting" class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
                         <span x-text="isSubmitting ? 'Sending...' : 'Submit'"></span>
                     </button>
@@ -193,43 +117,33 @@
             </form>
         </div>
 
-        <!-- SETTINGS MODAL -->
+        <!-- SETTINGS -->
         <div x-show="showSettings" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm" x-cloak>
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold">Form Settings</h2>
-                    <button @click="showSettings = false" class="text-gray-500 hover:text-red-500 text-xl">✕</button>
+                    <h2 class="text-xl font-bold">Settings</h2>
+                    <button @click="showSettings = false" class="text-gray-500 text-xl">✕</button>
                 </div>
-
-                <!-- Settings Lock -->
                 <div x-show="!settingsUnlocked">
-                    <div x-show="settingsError" class="text-red-500 text-sm mb-2 text-center" x-text="settingsError"></div>
-                    <input type="password" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Settings Password" 
-                           class="w-full p-3 border rounded mb-3 dark:bg-gray-700 dark:border-gray-600">
-                    <button @click="unlockSettings" class="w-full bg-gray-800 text-white p-3 rounded hover:bg-black transition">Unlock</button>
+                    <div x-show="settingsError" class="text-red-500 text-sm mb-2" x-text="settingsError"></div>
+                    <input type="password" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Password" class="w-full p-3 border rounded mb-3 dark:bg-gray-700 dark:border-gray-600">
+                    <button @click="unlockSettings" class="w-full bg-gray-800 text-white p-3 rounded">Unlock</button>
                 </div>
-
-                <!-- Settings Content -->
                 <div x-show="settingsUnlocked">
-                    <!-- Add Column -->
                     <div class="mb-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <h3 class="font-bold mb-3 text-sm uppercase text-gray-500 dark:text-gray-300">Add New Question</h3>
+                        <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300">Add Question</h3>
                         <div class="flex gap-2">
-                            <input type="text" x-model="newColumnName" placeholder="Question Title" 
-                                   class="flex-1 p-2 border rounded dark:bg-gray-600 dark:border-gray-500">
-                            <button @click="addColumn" class="bg-secondary text-white px-4 rounded font-bold hover:bg-green-600">+</button>
+                            <input type="text" x-model="newColumnName" placeholder="Title" class="flex-1 p-2 border rounded dark:bg-gray-600">
+                            <button @click="addColumn" class="bg-secondary text-white px-4 rounded">+</button>
                         </div>
                     </div>
-
-                    <!-- Rename Columns -->
                     <div>
-                        <h3 class="font-bold mb-3 text-sm uppercase text-gray-500 dark:text-gray-300">Edit Existing Questions</h3>
+                        <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300">Edit Questions</h3>
                         <div class="space-y-3">
                             <template x-for="(header, idx) in headers" :key="idx">
                                 <div class="flex gap-2 items-center">
                                     <div class="text-xs text-gray-400 w-6 text-right" x-text="idx+1"></div>
-                                    <input type="text" x-model="headers[idx]" @change="renameColumn(idx, headers[idx])" 
-                                           class="flex-1 p-2 text-sm border rounded dark:bg-gray-700 dark:border-gray-600 focus:border-primary">
+                                    <input type="text" x-model="headers[idx]" @change="renameColumn(idx, headers[idx])" class="flex-1 p-2 text-sm border rounded dark:bg-gray-700">
                                 </div>
                             </template>
                         </div>
@@ -237,7 +151,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 
     <script>
@@ -245,112 +158,74 @@
             return {
                 view: 'dashboard',
                 darkMode: localStorage.getItem('theme') === 'dark',
-                isLoggedIn: false, 
-                loginPass: '',
-                loginError: '',
+                isLoggedIn: false, loginPass: '', loginError: '',
                 toast: { visible: false, message: '', type: 'success' },
-                
-                // Data
-                headers: [],
-                trainees: [],
-                searchQuery: '',
-                loadingTrainees: false,
-                formData: {}, // Keyed by column index (0-based)
-                isSubmitting: false,
-
-                // Settings
-                showSettings: false,
-                settingsPass: '',
-                settingsUnlocked: false,
-                settingsError: '',
-                newColumnName: '',
+                headers: [], trainees: [], searchQuery: '', loadingTrainees: false,
+                formData: {}, isSubmitting: false,
+                showSettings: false, settingsPass: '', settingsUnlocked: false, settingsError: '', newColumnName: '',
 
                 async initApp() {
-                    this.toggleTheme(false); // Apply initial theme
-                    window.addEventListener('online', () => this.syncOfflineData()); // Auto-sync listener
-                    
+                    this.toggleTheme(false);
+                    window.addEventListener('online', () => this.syncOfflineData());
                     if (localStorage.getItem('isLoggedIn') === 'true') {
                         this.isLoggedIn = true;
-                        this.fetchConfig();
+                        this.performAction('getConfig');
                     }
                 },
-
                 toggleTheme(doToggle = true) {
                     if (doToggle) this.darkMode = !this.darkMode;
                     localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
                     if (this.darkMode) document.documentElement.classList.add('dark');
                     else document.documentElement.classList.remove('dark');
                 },
-
-                // --- ROBUST API HANDLER (FIXES CONNECTION ERRORS) ---
-                async apiCall(params, method = 'GET', body = null) {
-                    let url = `${API_URL}?${new URLSearchParams(params)}`;
+                
+                // --- CORE API HANDLER (Always POST to bypass GET Caching/CORS) ---
+                async performAction(action, payload = {}) {
+                    payload.action = action; // embed action in body
                     
-                    const options = {
-                        method: method,
-                        redirect: "follow",
-                    };
-
-                    // CRITICAL FIX: Google Apps Script POST must use text/plain
-                    // to prevent CORS Preflight failure
-                    if (method === 'POST') {
-                        options.body = JSON.stringify(body);
-                        options.headers = { "Content-Type": "text/plain;charset=utf-8" };
-                        // Remove params from URL for POST, put logic in body
-                        url = API_URL; 
-                        body.action = params.action; // Ensure action is in body
-                        options.body = JSON.stringify(body);
+                    try {
+                        const res = await fetch(API_URL, {
+                            method: "POST",
+                            // text/plain prevents CORS preflight OPTIONS request failure
+                            headers: { "Content-Type": "text/plain;charset=utf-8" },
+                            body: JSON.stringify(payload)
+                        });
+                        const data = await res.json();
+                        return data;
+                    } catch (e) {
+                        console.error("API Error", e);
+                        throw e;
                     }
-
-                    const res = await fetch(url, options);
-                    return await res.json();
                 },
 
                 async performLogin() {
                     this.loginError = '';
                     try {
-                        const data = await this.apiCall({ action: 'login', password: this.loginPass });
-                        
+                        const data = await this.performAction('login', { password: this.loginPass });
                         if (data.success) {
                             this.isLoggedIn = true;
                             localStorage.setItem('isLoggedIn', 'true');
-                            this.fetchConfig();
+                            this.performAction('getConfig').then(d => {
+                                this.headers = d.headers;
+                                this.trainees = d.trainees;
+                                if(navigator.onLine) this.syncOfflineData();
+                            });
                         } else {
                             this.loginError = 'Incorrect Password';
                         }
                     } catch (e) {
-                        console.error(e);
-                        this.loginError = 'Connection Error. Note: This app must be hosted (GitHub Pages/Localhost), not opened as a file.';
+                        this.loginError = 'Connection Error. Ensure Backend is deployed as "Anyone".';
                     }
                 },
 
-                async fetchConfig() {
-                    try {
-                        // Initial fetch on app load
-                        const data = await this.apiCall({ action: 'getConfig' });
-                        this.headers = data.headers;
-                        this.trainees = data.trainees;
-                        if(navigator.onLine) this.syncOfflineData();
-                    } catch (e) {
-                        this.showToast('Failed to load form config', 'error');
-                    }
-                },
-
-                // NEW: Triggered on Search Focus
                 async refreshTrainees() {
-                    if(!navigator.onLine) return; // Don't try if offline
+                    if(!navigator.onLine) return;
                     this.loadingTrainees = true;
                     try {
-                        // Calls specific lightweight action to get just names from Lookup
-                        const data = await this.apiCall({ action: 'getTrainees' });
-                        if(data.trainees && data.trainees.length > 0) {
-                            this.trainees = data.trainees;
-                        }
-                    } catch(e) {
-                        console.log('Background fetch failed');
-                    } finally {
-                        this.loadingTrainees = false;
-                    }
+                        // Re-fetch config to get latest lookup list
+                        const data = await this.performAction('getConfig');
+                        this.trainees = data.trainees;
+                    } catch(e) {} finally { this.loadingTrainees = false; }
                 },
 
                 get filteredTrainees() {
@@ -367,30 +242,20 @@
                 loadNewForm() {
                     this.formData = {};
                     this.headers.forEach((h, i) => {
-                        // Pre-fill Date of Visit with Today
-                        if(h.toLowerCase().includes('date of visit')) {
-                            this.formData[i] = new Date().toISOString().split('T')[0];
-                        } else {
-                            this.formData[i] = ''; 
-                        }
+                        if(h.toLowerCase().includes('date of visit')) this.formData[i] = new Date().toISOString().split('T')[0];
+                        else this.formData[i] = ''; 
                     });
                     this.view = 'form';
                 },
 
                 async loadTraineeForm(traineeName) {
-                    this.showToast('Fetching previous data...', 'info');
+                    this.showToast('Fetching history...', 'info');
                     try {
-                        // Queries "Form Responses 1" for history using the name selected from "Lookup"
-                        const history = await this.apiCall({ action: 'getHistory', trainee: traineeName });
-                        
+                        const history = await this.performAction('getHistory', { trainee: traineeName });
                         this.formData = {};
                         this.headers.forEach((h, i) => {
                             const lowerH = h.toLowerCase();
-                            // LOGIC: Do NOT auto-populate specific fields
-                            const isExcluded = lowerH.includes('date of visit') || 
-                                             lowerH.includes('volunteer') || 
-                                             lowerH.includes('timestamp');
-
+                            const isExcluded = lowerH.includes('date of visit') || lowerH.includes('volunteer') || lowerH.includes('timestamp');
                             if (isExcluded) {
                                 if(lowerH.includes('date of visit')) this.formData[i] = new Date().toISOString().split('T')[0];
                                 else this.formData[i] = '';
@@ -398,69 +263,19 @@
                                 this.formData[i] = history[i] || '';
                             }
                         });
-                        
-                        // Force set the name to match selection exactly
-                        const nameIdx = this.getNameIndex();
-                        this.formData[nameIdx] = traineeName;
-
+                        this.formData[this.getNameIndex()] = traineeName;
                         this.view = 'form';
                     } catch (e) {
-                        this.showToast('Offline? Could not load history.', 'error');
+                        this.showToast('Could not load history.', 'error');
                     }
                 },
 
-                // --- UI GROUPING LOGIC ---
-                get groupedHeaders() {
-                    const sections = [
-                        { id: 'visit', title: 'Visit Details', keywords: ['timestamp', 'date', 'volunteer', 'project'], bgClass: 'bg-blue-50 dark:bg-blue-900', textClass: 'text-blue-700 dark:text-blue-200' },
-                        { id: 'trainee', title: 'Trainee Details', keywords: ['trainee', 'nric', 'address', 'gender', 'birth', 'blood', 'race', 'religion', 'language', 'shirt'], bgClass: 'bg-green-50 dark:bg-green-900', textClass: 'text-green-700 dark:text-green-200' },
-                        { id: 'caregiver', title: 'Caregiver & Family', keywords: ['caregiver', 'guardian', 'family', 'financial', 'difficulties'], bgClass: 'bg-yellow-50 dark:bg-yellow-900', textClass: 'text-yellow-700 dark:text-yellow-200' },
-                        { id: 'medical', title: 'Medical & Health', keywords: ['medical', 'medication', 'health', 'allergy', 'disability', 'dietary', 'condition'], bgClass: 'bg-red-50 dark:bg-red-900', textClass: 'text-red-700 dark:text-red-200' },
-                        { id: 'behavior', title: 'Behaviour & Skills', keywords: ['personality', 'behavior', 'skills', 'interaction', 'activity', 'work', 'school'], bgClass: 'bg-purple-50 dark:bg-purple-900', textClass: 'text-purple-700 dark:text-purple-200' },
-                        { id: 'observation', title: 'Volunteer Observation', keywords: ['observation', 'attention', 'responsiveness', 'confidence', 'feedback', 'fees'], bgClass: 'bg-gray-100 dark:bg-gray-700', textClass: 'text-gray-700 dark:text-gray-200' }
-                    ];
-
-                    const grouped = sections.map(s => ({ ...s, fields: [] }));
-                    const misc = { title: 'Miscellaneous', fields: [], bgClass: 'bg-gray-50 dark:bg-gray-800', textClass: 'text-gray-600' };
-
-                    this.headers.forEach((h, i) => {
-                        let placed = false;
-                        const lower = h.toLowerCase();
-                        let label = h;
-                        const duplicateCount = this.headers.filter((v, idx) => v === h && idx < i).length;
-                        if (duplicateCount > 0) label = `${h} (${duplicateCount + 1})`;
-                        const fieldObj = { name: label, index: i };
-
-                        for (const sec of grouped) {
-                            if (sec.keywords.some(k => lower.includes(k))) {
-                                sec.fields.push(fieldObj);
-                                placed = true;
-                                break;
-                            }
-                        }
-                        if (!placed) misc.fields.push(fieldObj);
-                    });
-
-                    return [...grouped, misc].filter(s => s.fields.length > 0);
-                },
-
-                // Input Helpers
-                isDate(name) { return name.toLowerCase().includes('date'); },
-                isLongText(name) { 
-                    const n = name.toLowerCase();
-                    return n.includes('elaborate') || n.includes('address') || n.includes('feedback') || n.includes('remark') || n.includes('details'); 
-                },
-                isRegularInput(name) { return !this.isDate(name) && !this.isLongText(name); },
-
                 async submitForm() {
                     this.isSubmitting = true;
-                    
                     const row = [];
                     for(let i=0; i < this.headers.length; i++) {
                         let val = this.formData[i] || '';
-                        if (i === 0 && !val && this.headers[0].toLowerCase().includes('timestamp')) {
-                            val = new Date().toLocaleString(); 
-                        }
+                        if (i === 0 && !val && this.headers[0].toLowerCase().includes('timestamp')) val = new Date().toLocaleString(); 
                         row.push("'" + val); 
                     }
 
@@ -471,7 +286,7 @@
                     }
 
                     try {
-                        await this.apiCall({ action: 'submit' }, 'POST', { row: row });
+                        await this.performAction('submit', { row: row });
                         this.showToast('Submitted Successfully!', 'success');
                         this.view = 'dashboard';
                         this.searchQuery = '';
@@ -482,6 +297,7 @@
                     }
                 },
 
+                // Offline & Settings Helpers
                 saveOffline(row) {
                     const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
                     let rowToSave = row;
@@ -491,69 +307,67 @@
                     }
                     queue.push(rowToSave);
                     localStorage.setItem('offlineQueue', JSON.stringify(queue));
-                    this.showToast('Saved Offline. Will sync when online.', 'info');
+                    this.showToast('Saved Offline. Sync later.', 'info');
                     this.view = 'dashboard';
                 },
-
                 async syncOfflineData() {
                     const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
                     if (queue.length === 0) return;
-
-                    this.showToast(`Syncing ${queue.length} offline records...`, 'info');
+                    this.showToast(`Syncing ${queue.length} records...`, 'info');
                     const failed = [];
                     for (const row of queue) {
-                        try {
-                             await this.apiCall({ action: 'submit' }, 'POST', { row: row });
-                        } catch (e) {
-                            failed.push(row);
-                        }
+                        try { await this.performAction('submit', { row: row }); } catch (e) { failed.push(row); }
                     }
-                    
-                    if (failed.length === 0) {
-                        localStorage.removeItem('offlineQueue');
-                        this.showToast('Sync Complete!', 'success');
-                    } else {
-                        localStorage.setItem('offlineQueue', JSON.stringify(failed));
-                        this.showToast(`Synced some, but ${failed.length} failed.`, 'error');
-                    }
+                    if (failed.length === 0) { localStorage.removeItem('offlineQueue'); this.showToast('Sync Complete!', 'success'); }
+                    else { localStorage.setItem('offlineQueue', JSON.stringify(failed)); this.showToast('Sync partial failure', 'error'); }
                 },
-
-                // SETTINGS LOGIC
-                openSettings() { 
-                    this.showSettings = true; 
-                    this.settingsError = '';
-                    this.settingsPass = '';
-                },
-                
+                openSettings() { this.showSettings = true; this.settingsError = ''; this.settingsPass = ''; },
                 async unlockSettings() {
                     this.settingsError = '';
                     try {
-                        const data = await this.apiCall({ action: 'validateSettings', password: this.settingsPass });
+                        const data = await this.performAction('validateSettings', { password: this.settingsPass });
                         if (data.success) this.settingsUnlocked = true;
                         else this.settingsError = 'Wrong Password';
-                    } catch(e) {
-                        this.settingsError = 'Connection Error';
-                    }
+                    } catch(e) { this.settingsError = 'Connection Error'; }
                 },
-                
                 async addColumn() {
                     if(!this.newColumnName) return;
-                    await this.apiCall({ action: 'addColumn' }, 'POST', { headerName: this.newColumnName });
-                    this.showToast('Column Added. Reloading...', 'success');
+                    await this.performAction('addColumn', { headerName: this.newColumnName });
+                    this.showToast('Added. Reloading...', 'success');
                     setTimeout(() => window.location.reload(), 1500);
                 },
-
                 async renameColumn(idx, newName) {
-                    await this.apiCall({ action: 'renameColumn' }, 'POST', { colIndex: idx, newName: newName });
-                    this.showToast('Column Renamed', 'success');
+                    await this.performAction('renameColumn', { colIndex: idx, newName: newName });
+                    this.showToast('Renamed', 'success');
                 },
-
-                showToast(msg, type) {
-                    this.toast.message = msg;
-                    this.toast.type = type;
-                    this.toast.visible = true;
-                    setTimeout(() => this.toast.visible = false, 3000);
-                }
+                
+                // UI Helpers
+                showToast(msg, type) { this.toast.message = msg; this.toast.type = type; this.toast.visible = true; setTimeout(() => this.toast.visible = false, 3000); },
+                get groupedHeaders() {
+                    const sections = [
+                        { id: 'visit', title: 'Visit Details', keywords: ['timestamp', 'date', 'volunteer', 'project'], bgClass: 'bg-blue-50 dark:bg-blue-900', textClass: 'text-blue-700 dark:text-blue-200' },
+                        { id: 'trainee', title: 'Trainee Details', keywords: ['trainee', 'nric', 'address', 'gender', 'birth', 'blood', 'race', 'religion', 'language', 'shirt'], bgClass: 'bg-green-50 dark:bg-green-900', textClass: 'text-green-700 dark:text-green-200' },
+                        { id: 'caregiver', title: 'Caregiver & Family', keywords: ['caregiver', 'guardian', 'family', 'financial', 'difficulties'], bgClass: 'bg-yellow-50 dark:bg-yellow-900', textClass: 'text-yellow-700 dark:text-yellow-200' },
+                        { id: 'medical', title: 'Medical & Health', keywords: ['medical', 'medication', 'health', 'allergy', 'disability', 'dietary', 'condition'], bgClass: 'bg-red-50 dark:bg-red-900', textClass: 'text-red-700 dark:text-red-200' },
+                        { id: 'behavior', title: 'Behaviour & Skills', keywords: ['personality', 'behavior', 'skills', 'interaction', 'activity', 'work', 'school'], bgClass: 'bg-purple-50 dark:bg-purple-900', textClass: 'text-purple-700 dark:text-purple-200' },
+                        { id: 'observation', title: 'Volunteer Observation', keywords: ['observation', 'attention', 'responsiveness', 'confidence', 'feedback', 'fees'], bgClass: 'bg-gray-100 dark:bg-gray-700', textClass: 'text-gray-700 dark:text-gray-200' }
+                    ];
+                    const grouped = sections.map(s => ({ ...s, fields: [] }));
+                    const misc = { title: 'Miscellaneous', fields: [], bgClass: 'bg-gray-50 dark:bg-gray-800', textClass: 'text-gray-600' };
+                    this.headers.forEach((h, i) => {
+                        let placed = false;
+                        const lower = h.toLowerCase();
+                        let label = h;
+                        if (this.headers.filter((v, idx) => v === h && idx < i).length > 0) label = `${h} (${this.headers.filter((v, idx) => v === h && idx < i).length + 1})`;
+                        const fieldObj = { name: label, index: i };
+                        for (const sec of grouped) { if (sec.keywords.some(k => lower.includes(k))) { sec.fields.push(fieldObj); placed = true; break; } }
+                        if (!placed) misc.fields.push(fieldObj);
+                    });
+                    return [...grouped, misc].filter(s => s.fields.length > 0);
+                },
+                isDate(name) { return name.toLowerCase().includes('date'); },
+                isLongText(name) { return /elaborate|address|feedback|remark|details/.test(name.toLowerCase()); },
+                isRegularInput(name) { return !this.isDate(name) && !this.isLongText(name); }
             }
         }
     </script>
