@@ -38,8 +38,8 @@
 
     <!-- CONFIGURATION -->
     <script>
-        // UPDATED URL: Using the specific one you provided
-        const API_URL = 'https://script.google.com/macros/s/AKfycbw21ZGdd-SfmRJrB-zMcfzVKTzIG-hU-BwKaA33J1bukq-4_ZJGQfH6_KBr4LdgjZvXmw/exec'; 
+        // REPLACE THIS WITH YOUR DEPLOYED GOOGLE SCRIPT URL
+        const API_URL = 'YOUR_GOOGLE_SCRIPT_URL_HERE'; 
     </script>
 
     <!-- TOAST NOTIFICATION -->
@@ -95,9 +95,13 @@
         <!-- DASHBOARD VIEW -->
         <div x-show="view === 'dashboard'">
             <div class="mb-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-                <h2 class="text-lg font-semibold mb-4">Find Trainee</h2>
+                <h2 class="text-lg font-semibold mb-4 flex justify-between items-center">
+                    <span>Find Trainee</span>
+                    <span x-show="loadingTrainees" class="text-xs font-normal text-primary animate-pulse">Refreshing List...</span>
+                </h2>
                 <div class="relative">
-                    <input type="text" x-model="searchQuery" placeholder="Start typing trainee name..." 
+                    <!-- SEARCH INPUT -->
+                    <input type="text" x-model="searchQuery" @focus="refreshTrainees" placeholder="Start typing trainee name..." 
                            class="w-full p-3 pl-4 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
                     
                     <!-- Search Results -->
@@ -109,9 +113,13 @@
                                 <span class="text-xs text-primary bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded">Auto-fill</span>
                             </div>
                         </template>
-                        <div x-show="filteredTrainees.length === 0" class="p-3 text-gray-500 bg-white dark:bg-gray-800">No matches found</div>
+                        <div x-show="filteredTrainees.length === 0" class="p-3 text-gray-500 bg-white dark:bg-gray-800">
+                            <span x-show="!loadingTrainees">No matches found</span>
+                            <span x-show="loadingTrainees">Searching...</span>
+                        </div>
                     </div>
                 </div>
+                <div class="mt-2 text-xs text-gray-400">List pulls from 'lookup' tab. Updates on tap.</div>
             </div>
 
             <div class="text-center">
@@ -246,6 +254,7 @@
                 headers: [],
                 trainees: [],
                 searchQuery: '',
+                loadingTrainees: false,
                 formData: {}, // Keyed by column index (0-based)
                 isSubmitting: false,
 
@@ -300,7 +309,6 @@
                 async performLogin() {
                     this.loginError = '';
                     try {
-                        // Use the robust apiCall
                         const data = await this.apiCall({ action: 'login', password: this.loginPass });
                         
                         if (data.success) {
@@ -318,13 +326,30 @@
 
                 async fetchConfig() {
                     try {
+                        // Initial fetch on app load
                         const data = await this.apiCall({ action: 'getConfig' });
                         this.headers = data.headers;
                         this.trainees = data.trainees;
-                        // Sync any offline data on load
                         if(navigator.onLine) this.syncOfflineData();
                     } catch (e) {
                         this.showToast('Failed to load form config', 'error');
+                    }
+                },
+
+                // NEW: Triggered on Search Focus
+                async refreshTrainees() {
+                    if(!navigator.onLine) return; // Don't try if offline
+                    this.loadingTrainees = true;
+                    try {
+                        // Calls specific lightweight action to get just names from Lookup
+                        const data = await this.apiCall({ action: 'getTrainees' });
+                        if(data.trainees && data.trainees.length > 0) {
+                            this.trainees = data.trainees;
+                        }
+                    } catch(e) {
+                        console.log('Background fetch failed');
+                    } finally {
+                        this.loadingTrainees = false;
                     }
                 },
 
@@ -355,6 +380,7 @@
                 async loadTraineeForm(traineeName) {
                     this.showToast('Fetching previous data...', 'info');
                     try {
+                        // Queries "Form Responses 1" for history using the name selected from "Lookup"
                         const history = await this.apiCall({ action: 'getHistory', trainee: traineeName });
                         
                         this.formData = {};
@@ -445,9 +471,7 @@
                     }
 
                     try {
-                        // Use updated apiCall with POST
                         await this.apiCall({ action: 'submit' }, 'POST', { row: row });
-                        
                         this.showToast('Submitted Successfully!', 'success');
                         this.view = 'dashboard';
                         this.searchQuery = '';
