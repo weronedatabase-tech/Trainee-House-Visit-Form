@@ -20,7 +20,7 @@
 
     <!-- CONFIGURATION -->
     <script>
-        // Backend URL (v2 POST Architecture)
+        // REPLACE WITH NEW DEPLOYMENT URL
         const API_URL = 'https://script.google.com/macros/s/AKfycbw21ZGdd-SfmRJrB-zMcfzVKTzIG-hU-BwKaA33J1bukq-4_ZJGQfH6_KBr4LdgjZvXmw/exec'; 
     </script>
 
@@ -33,18 +33,12 @@
     <header class="bg-white dark:bg-gray-800 shadow p-4 sticky top-0 z-30 flex justify-between items-center">
         <h1 class="text-xl font-bold text-primary">House Visit Form</h1>
         <div class="flex items-center gap-3">
-            
-            <!-- Settings Button -->
             <button x-show="isLoggedIn" @click="openSettings" class="text-gray-500 hover:text-primary transition" title="Settings">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             </button>
-
-            <!-- Update App Button (Moved Here) -->
             <button @click="window.location.reload(true)" class="text-gray-500 hover:text-primary transition" title="Update App">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
             </button>
-
-            <!-- Theme Toggle -->
             <button @click="toggleTheme" class="text-2xl focus:outline-none" title="Toggle Dark Mode">🌗</button>
         </div>
     </header>
@@ -71,7 +65,6 @@
                 </h2>
                 <div class="relative">
                     <input type="text" x-model="searchQuery" @focus="refreshTrainees" placeholder="Search name..." class="w-full p-3 pl-4 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
-                    
                     <div x-show="searchQuery.length > 0" class="mt-2 max-h-60 overflow-y-auto border rounded-lg dark:border-gray-700">
                         <template x-for="trainee in filteredTrainees" :key="trainee">
                             <div @click="loadTraineeForm(trainee)" class="p-3 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b dark:border-gray-700 flex justify-between items-center">
@@ -124,35 +117,67 @@
 
         <!-- SETTINGS -->
         <div x-show="showSettings" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm" x-cloak>
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-bold">Settings</h2>
-                    <button @click="showSettings = false" class="text-gray-500 text-xl">✕</button>
+                    <button @click="showSettings = false" class="text-gray-500 text-xl hover:text-red-500">✕</button>
                 </div>
+                
+                <!-- LOCK SCREEN -->
                 <div x-show="!settingsUnlocked">
                     <div x-show="settingsError" class="text-red-500 text-sm mb-2" x-text="settingsError"></div>
-                    <input type="password" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Password" class="w-full p-3 border rounded mb-3 dark:bg-gray-700 dark:border-gray-600">
+                    <input type="password" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Settings Password" class="w-full p-3 border rounded mb-3 dark:bg-gray-700 dark:border-gray-600">
                     <button @click="unlockSettings" class="w-full bg-gray-800 text-white p-3 rounded">Unlock</button>
                 </div>
-                <div x-show="settingsUnlocked">
-                    <div class="mb-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300">Add Question</h3>
+
+                <!-- SETTINGS MENU -->
+                <div x-show="settingsUnlocked" class="space-y-6">
+                    
+                    <!-- 1. ADD QUESTION -->
+                    <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300 uppercase">Add New Question</h3>
                         <div class="flex gap-2">
-                            <input type="text" x-model="newColumnName" placeholder="Title" class="flex-1 p-2 border rounded dark:bg-gray-600">
-                            <button @click="addColumn" class="bg-secondary text-white px-4 rounded">+</button>
+                            <input type="text" x-model="newColumnName" placeholder="Question Title" class="flex-1 p-2 border rounded dark:bg-gray-600 dark:border-gray-500">
+                            <button @click="addColumn" class="bg-secondary text-white px-4 rounded font-bold">+</button>
                         </div>
                     </div>
+
+                    <!-- 2. EDIT QUESTIONS (Fixed Scrolling) -->
                     <div>
-                        <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300">Edit Questions</h3>
-                        <div class="space-y-3">
+                        <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300 uppercase">Edit Existing Questions</h3>
+                        <div class="space-y-2 max-h-48 overflow-y-auto border p-2 rounded dark:border-gray-600">
                             <template x-for="(header, idx) in headers" :key="idx">
                                 <div class="flex gap-2 items-center">
                                     <div class="text-xs text-gray-400 w-6 text-right" x-text="idx+1"></div>
-                                    <input type="text" x-model="headers[idx]" @change="renameColumn(idx, headers[idx])" class="flex-1 p-2 text-sm border rounded dark:bg-gray-700">
+                                    <input type="text" x-model="headers[idx]" @change="renameColumn(idx, headers[idx])" class="flex-1 p-2 text-sm border rounded dark:bg-gray-700 dark:border-gray-600">
                                 </div>
                             </template>
                         </div>
                     </div>
+
+                    <!-- 3. CHANGE PASSWORDS (New) -->
+                    <div class="border-t pt-4 dark:border-gray-600">
+                         <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300 uppercase">Security</h3>
+                         
+                         <!-- App Password -->
+                         <div class="mb-3">
+                             <label class="text-xs text-gray-500">New App Login Password</label>
+                             <div class="flex gap-2">
+                                 <input type="text" x-model="newAppPass" placeholder="New Password" class="flex-1 p-2 border rounded dark:bg-gray-700 text-sm">
+                                 <button @click="changePassword('APP')" class="bg-gray-600 text-white px-3 rounded text-sm">Update</button>
+                             </div>
+                         </div>
+
+                         <!-- Settings Password -->
+                         <div>
+                             <label class="text-xs text-gray-500">New Settings Password</label>
+                             <div class="flex gap-2">
+                                 <input type="text" x-model="newSettingsPass" placeholder="New Password" class="flex-1 p-2 border rounded dark:bg-gray-700 text-sm">
+                                 <button @click="changePassword('SETTINGS')" class="bg-gray-600 text-white px-3 rounded text-sm">Update</button>
+                             </div>
+                         </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -167,7 +192,10 @@
                 toast: { visible: false, message: '', type: 'success' },
                 headers: [], trainees: [], searchQuery: '', loadingTrainees: false,
                 formData: {}, isSubmitting: false,
-                showSettings: false, settingsPass: '', settingsUnlocked: false, settingsError: '', newColumnName: '',
+                
+                // Settings Vars
+                showSettings: false, settingsPass: '', settingsUnlocked: false, settingsError: '', 
+                newColumnName: '', newAppPass: '', newSettingsPass: '',
 
                 async initApp() {
                     this.toggleTheme(false);
@@ -184,19 +212,15 @@
                     else document.documentElement.classList.remove('dark');
                 },
                 
-                // --- CORE API HANDLER (Always POST to bypass GET Caching/CORS) ---
                 async performAction(action, payload = {}) {
-                    payload.action = action; // embed action in body
-                    
+                    payload.action = action;
                     try {
                         const res = await fetch(API_URL, {
                             method: "POST",
-                            // text/plain prevents CORS preflight OPTIONS request failure
                             headers: { "Content-Type": "text/plain;charset=utf-8" },
                             body: JSON.stringify(payload)
                         });
-                        const data = await res.json();
-                        return data;
+                        return await res.json();
                     } catch (e) {
                         console.error("API Error", e);
                         throw e;
@@ -227,7 +251,6 @@
                     if(!navigator.onLine) return;
                     this.loadingTrainees = true;
                     try {
-                        // Re-fetch config to get latest lookup list
                         const data = await this.performAction('getConfig');
                         this.trainees = data.trainees;
                     } catch(e) {} finally { this.loadingTrainees = false; }
@@ -240,27 +263,31 @@
                 },
 
                 getNameIndex() {
-                    let idx = this.headers.findIndex(h => h.toLowerCase().includes('trainee') && h.toLowerCase().includes('name'));
+                    let idx = this.headers.findIndex(h => String(h).toLowerCase().includes('trainee') && String(h).toLowerCase().includes('name'));
                     return idx === -1 ? 5 : idx;
                 },
 
                 loadNewForm() {
                     this.formData = {};
                     this.headers.forEach((h, i) => {
-                        if(h.toLowerCase().includes('date of visit')) this.formData[i] = new Date().toISOString().split('T')[0];
+                        if(String(h).toLowerCase().includes('date of visit')) this.formData[i] = new Date().toISOString().split('T')[0];
                         else this.formData[i] = ''; 
                     });
                     this.view = 'form';
                 },
 
+                // FIXED BLANK PAGE BUG: Wrapped in robust Try/Catch with Fallback
                 async loadTraineeForm(traineeName) {
                     this.showToast('Fetching history...', 'info');
                     try {
                         const history = await this.performAction('getHistory', { trainee: traineeName });
                         this.formData = {};
+                        
+                        // Robust Data Mapping
                         this.headers.forEach((h, i) => {
-                            const lowerH = h.toLowerCase();
+                            const lowerH = String(h).toLowerCase();
                             const isExcluded = lowerH.includes('date of visit') || lowerH.includes('volunteer') || lowerH.includes('timestamp');
+                            
                             if (isExcluded) {
                                 if(lowerH.includes('date of visit')) this.formData[i] = new Date().toISOString().split('T')[0];
                                 else this.formData[i] = '';
@@ -268,10 +295,16 @@
                                 this.formData[i] = history[i] || '';
                             }
                         });
+                        
+                        // Ensure Name is set
                         this.formData[this.getNameIndex()] = traineeName;
                         this.view = 'form';
                     } catch (e) {
-                        this.showToast('Could not load history.', 'error');
+                        this.showToast('Could not load history. Loading Blank Form.', 'error');
+                        // Fallback: Load blank form with name populated
+                        this.loadNewForm();
+                        this.formData[this.getNameIndex()] = traineeName;
+                        this.view = 'form';
                     }
                 },
 
@@ -280,7 +313,7 @@
                     const row = [];
                     for(let i=0; i < this.headers.length; i++) {
                         let val = this.formData[i] || '';
-                        if (i === 0 && !val && this.headers[0].toLowerCase().includes('timestamp')) val = new Date().toLocaleString(); 
+                        if (i === 0 && !val && String(this.headers[0]).toLowerCase().includes('timestamp')) val = new Date().toLocaleString(); 
                         row.push("'" + val); 
                     }
 
@@ -302,7 +335,6 @@
                     }
                 },
 
-                // Offline & Settings Helpers
                 saveOffline(row) {
                     const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
                     let rowToSave = row;
@@ -326,6 +358,8 @@
                     if (failed.length === 0) { localStorage.removeItem('offlineQueue'); this.showToast('Sync Complete!', 'success'); }
                     else { localStorage.setItem('offlineQueue', JSON.stringify(failed)); this.showToast('Sync partial failure', 'error'); }
                 },
+
+                // SETTINGS FUNCTIONS
                 openSettings() { this.showSettings = true; this.settingsError = ''; this.settingsPass = ''; },
                 async unlockSettings() {
                     this.settingsError = '';
@@ -345,8 +379,15 @@
                     await this.performAction('renameColumn', { colIndex: idx, newName: newName });
                     this.showToast('Renamed', 'success');
                 },
-                
-                // UI Helpers
+                async changePassword(type) {
+                    const newPass = type === 'APP' ? this.newAppPass : this.newSettingsPass;
+                    if(!newPass) return;
+                    await this.performAction('changePassword', { type: type, newPassword: newPass });
+                    this.showToast('Password Updated', 'success');
+                    if(type === 'APP') { this.newAppPass = ''; } else { this.newSettingsPass = ''; }
+                },
+
+                // UI HELPERS
                 showToast(msg, type) { this.toast.message = msg; this.toast.type = type; this.toast.visible = true; setTimeout(() => this.toast.visible = false, 3000); },
                 get groupedHeaders() {
                     const sections = [
@@ -361,7 +402,7 @@
                     const misc = { title: 'Miscellaneous', fields: [], bgClass: 'bg-gray-50 dark:bg-gray-800', textClass: 'text-gray-600' };
                     this.headers.forEach((h, i) => {
                         let placed = false;
-                        const lower = h.toLowerCase();
+                        const lower = String(h).toLowerCase();
                         let label = h;
                         if (this.headers.filter((v, idx) => v === h && idx < i).length > 0) label = `${h} (${this.headers.filter((v, idx) => v === h && idx < i).length + 1})`;
                         const fieldObj = { name: label, index: i };
@@ -370,8 +411,8 @@
                     });
                     return [...grouped, misc].filter(s => s.fields.length > 0);
                 },
-                isDate(name) { return name.toLowerCase().includes('date'); },
-                isLongText(name) { return /elaborate|address|feedback|remark|details/.test(name.toLowerCase()); },
+                isDate(name) { return String(name).toLowerCase().includes('date'); },
+                isLongText(name) { return /elaborate|address|feedback|remark|details/.test(String(name).toLowerCase()); },
                 isRegularInput(name) { return !this.isDate(name) && !this.isLongText(name); }
             }
         }
