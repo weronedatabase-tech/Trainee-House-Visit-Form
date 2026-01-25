@@ -8,11 +8,30 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     <script>
-        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#4F46E5', secondary: '#10B981' } } } }
+        tailwind.config = { 
+            darkMode: 'class', 
+            theme: { 
+                extend: { 
+                    colors: { primary: '#4F46E5', secondary: '#10B981' } 
+                } 
+            } 
+        }
     </script>
     <style>
         [x-cloak] { display: none !important; }
         input, textarea, select { font-size: 16px; } 
+        
+        /* Obvious Resize Handle for Textareas */
+        textarea {
+            resize: vertical;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 2 L2 8' stroke='%239CA3AF' stroke-width='1.5'/%3E%3Cpath d='M8 6 L6 8' stroke='%239CA3AF' stroke-width='1.5'/%3E%3C/svg%3E");
+            background-position: bottom 2px right 2px;
+            background-repeat: no-repeat;
+            background-size: 12px 12px;
+        }
+        .dark textarea {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 2 L2 8' stroke='%236B7280' stroke-width='1.5'/%3E%3Cpath d='M8 6 L6 8' stroke='%236B7280' stroke-width='1.5'/%3E%3C/svg%3E");
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-200 min-h-screen"
@@ -27,7 +46,6 @@
     <div x-show="isLoading" x-transition.opacity.duration.300ms
          class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm" x-cloak>
         <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm w-[90%] mx-auto">
-            <!-- Spinner -->
             <svg class="animate-spin h-12 w-12 text-primary mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -46,9 +64,11 @@
     <header class="bg-white dark:bg-gray-800 shadow p-4 sticky top-0 z-30 flex justify-between items-center">
         <h1 class="text-xl font-bold text-primary">House Visit Form</h1>
         <div class="flex items-center gap-3">
-            <button x-show="isLoggedIn" @click="openSettings" class="text-gray-500 hover:text-primary transition" title="Settings">
+            <!-- Settings Button (Always Visible) -->
+            <button @click="openSettings" class="text-gray-500 hover:text-primary transition" title="Settings">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             </button>
+            <!-- Update App Button -->
             <button @click="window.location.reload(true)" class="text-gray-500 hover:text-primary transition" title="Update App">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
             </button>
@@ -115,9 +135,22 @@
                             <template x-for="field in section.fields" :key="field.index">
                                 <div>
                                     <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300" x-text="field.name"></label>
-                                    <template x-if="isLongText(field.name)"><textarea x-model="formData[field.index]" rows="3" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none"></textarea></template>
-                                    <template x-if="isDate(field.name)"><input type="date" x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none"></template>
-                                    <template x-if="isRegularInput(field.name)"><input type="text" x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none"></template>
+                                    
+                                    <!-- Long Text / Free Text (Resizable) -->
+                                    <template x-if="isLongText(field.name)">
+                                        <textarea x-model="formData[field.index]" rows="3" 
+                                                  class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary min-h-[100px]"></textarea>
+                                    </template>
+                                    
+                                    <!-- Date Input -->
+                                    <template x-if="isDate(field.name)">
+                                        <input type="date" x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
+                                    </template>
+                                    
+                                    <!-- Regular Input -->
+                                    <template x-if="isRegularInput(field.name)">
+                                        <input type="text" x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
+                                    </template>
                                 </div>
                             </template>
                         </div>
@@ -199,10 +232,7 @@
                 toast: { visible: false, message: '', type: 'success' },
                 headers: [], trainees: [], searchQuery: '', loadingTrainees: false,
                 formData: {}, isSubmitting: false,
-                
-                // Loading State
                 isLoading: false, loadingText: 'Please wait...',
-
                 showSettings: false, settingsPass: '', settingsUnlocked: false, settingsError: '', 
                 newColumnName: '', newAppPass: '', newSettingsPass: '',
 
@@ -210,10 +240,14 @@
                     this.toggleTheme(false);
                     window.addEventListener('online', () => this.syncOfflineData());
                     
+                    // 1. Load Local Config First (Immediate)
+                    this.loadConfigFromStorage();
+
+                    // 2. Always fetch fresh config from backend on startup (Background Update)
+                    if (navigator.onLine) this.fetchConfig();
+
                     if (localStorage.getItem('isLoggedIn') === 'true') {
                         this.isLoggedIn = true;
-                        this.loadConfigFromStorage(); 
-                        this.fetchConfig();
                     }
                 },
 
@@ -263,7 +297,8 @@
                         if (data.success) {
                             this.isLoggedIn = true;
                             localStorage.setItem('isLoggedIn', 'true');
-                            this.fetchConfig(); // Fetch and Save
+                            // Config is already fetching in initApp, but force refresh here too
+                            await this.fetchConfig();
                         } else {
                             this.loginError = 'Incorrect Password';
                         }
@@ -279,11 +314,12 @@
                         const data = await this.performAction('getConfig');
                         this.headers = data.headers;
                         this.trainees = data.trainees;
+                        // Cache the fresh config
                         localStorage.setItem('appConfig', JSON.stringify({
                             headers: this.headers,
                             trainees: this.trainees
                         }));
-                        if(navigator.onLine) this.syncOfflineData();
+                        this.syncOfflineData();
                     } catch (e) {
                     }
                 },
@@ -354,7 +390,6 @@
                     const row = [];
                     for(let i=0; i < this.headers.length; i++) {
                         let val = this.formData[i] || '';
-                        // Auto-populate Timestamp on submission if the header matches 'timestamp'
                         if (!val && String(this.headers[i]).toLowerCase().includes('timestamp')) {
                             val = new Date().toLocaleString(); 
                         }
@@ -443,30 +478,64 @@
                 },
 
                 showToast(msg, type) { this.toast.message = msg; this.toast.type = type; this.toast.visible = true; setTimeout(() => this.toast.visible = false, 3000); },
+                
                 get groupedHeaders() {
                     const sections = [
                         { id: 'visit', title: 'Visit Details', keywords: ['date', 'volunteer', 'project'], bgClass: 'bg-blue-50 dark:bg-blue-900', textClass: 'text-blue-700 dark:text-blue-200' },
                         { id: 'trainee', title: 'Trainee Details', keywords: ['trainee', 'nric', 'address', 'gender', 'birth', 'blood', 'race', 'religion', 'language', 'shirt'], bgClass: 'bg-green-50 dark:bg-green-900', textClass: 'text-green-700 dark:text-green-200' },
-                        { id: 'caregiver', title: 'Caregiver & Family', keywords: ['caregiver', 'guardian', 'family', 'financial', 'difficulties'], bgClass: 'bg-yellow-50 dark:bg-yellow-900', textClass: 'text-yellow-700 dark:text-yellow-200' },
+                        // UPDATED: Added 'contact' to Caregiver section
+                        { id: 'caregiver', title: 'Caregiver & Family', keywords: ['caregiver', 'guardian', 'family', 'financial', 'difficulties', 'contact'], bgClass: 'bg-yellow-50 dark:bg-yellow-900', textClass: 'text-yellow-700 dark:text-yellow-200' },
                         { id: 'medical', title: 'Medical & Health', keywords: ['medical', 'medication', 'health', 'allergy', 'disability', 'dietary', 'condition'], bgClass: 'bg-red-50 dark:bg-red-900', textClass: 'text-red-700 dark:text-red-200' },
                         { id: 'behavior', title: 'Behaviour & Skills', keywords: ['personality', 'behavior', 'skills', 'interaction', 'activity', 'work', 'school'], bgClass: 'bg-purple-50 dark:bg-purple-900', textClass: 'text-purple-700 dark:text-purple-200' },
                         { id: 'observation', title: 'Volunteer Observation', keywords: ['observation', 'attention', 'responsiveness', 'confidence', 'feedback', 'fees'], bgClass: 'bg-gray-100 dark:bg-gray-700', textClass: 'text-gray-700 dark:text-gray-200' }
                     ];
                     const grouped = sections.map(s => ({ ...s, fields: [] }));
                     const misc = { title: 'Miscellaneous', fields: [], bgClass: 'bg-gray-50 dark:bg-gray-800', textClass: 'text-gray-600' };
+                    
                     this.headers.forEach((h, i) => {
-                        let placed = false;
                         const lower = String(h).toLowerCase();
-                        
-                        // HIDE TIMESTAMP FROM UI
                         if (lower.includes('timestamp')) return; 
 
                         let label = h;
                         if (this.headers.filter((v, idx) => v === h && idx < i).length > 0) label = `${h} (${this.headers.filter((v, idx) => v === h && idx < i).length + 1})`;
                         const fieldObj = { name: label, index: i };
-                        for (const sec of grouped) { if (sec.keywords.some(k => lower.includes(k))) { sec.fields.push(fieldObj); placed = true; break; } }
+                        
+                        let placed = false;
+                        for (const sec of grouped) { 
+                            if (sec.keywords.some(k => lower.includes(k))) { 
+                                sec.fields.push(fieldObj); 
+                                placed = true; 
+                                break; 
+                            } 
+                        }
                         if (!placed) misc.fields.push(fieldObj);
                     });
+
+                    // CUSTOM SORTER FOR CAREGIVER SECTION
+                    const caregiverSection = grouped.find(s => s.id === 'caregiver');
+                    if (caregiverSection) {
+                        caregiverSection.fields.sort((a, b) => {
+                            const nameA = a.name.toLowerCase();
+                            const nameB = b.name.toLowerCase();
+                            
+                            // Extract index number if present, e.g. "(1)", "(2)"
+                            const numA = (nameA.match(/\((\d+)\)/) || [0, 0])[1];
+                            const numB = (nameB.match(/\((\d+)\)/) || [0, 0])[1];
+
+                            // Sort by Number Group (1) -> (2) -> (3)
+                            if (numA != numB) return numA - numB;
+
+                            // If Numbers equal (or missing), Sort by Logic: Name -> Relation -> Contact Details
+                            const getRank = (n) => {
+                                if (n.includes('name')) return 1;
+                                if (n.includes('relation')) return 2;
+                                if (n.includes('contact')) return 3;
+                                return 4;
+                            };
+                            return getRank(nameA) - getRank(nameB);
+                        });
+                    }
+
                     return [...grouped, misc].filter(s => s.fields.length > 0);
                 },
                 isDate(name) { return String(name).toLowerCase().includes('date'); },
