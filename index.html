@@ -144,28 +144,27 @@
                                     <label class="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200" x-text="field.label"></label>
                                     <p x-show="field.guide" class="text-xs text-gray-500 dark:text-gray-400 mb-2 italic" x-text="field.guide"></p>
                                     
-                                    <!-- 1. UPDATED LIKERT SCALE UI -->
+                                    <!-- 1. UPDATED LIKERT SCALE UI (Side-by-Side on Mobile) -->
                                     <template x-if="isLikertScale(field.label)">
-                                        <!-- The BOX -->
-                                        <div class="mt-2 mb-4 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border dark:border-gray-700 flex flex-col md:flex-row items-center justify-between gap-4">
+                                        <div class="mt-2 mb-4 bg-gray-50 dark:bg-gray-900 p-3 sm:p-4 rounded-lg border dark:border-gray-700 flex flex-row items-center justify-between gap-1 sm:gap-4">
                                             
                                             <!-- Left Elaboration -->
-                                            <span class="text-xs text-gray-500 dark:text-gray-400 text-center md:text-left w-full md:w-1/3 leading-tight" 
+                                            <span class="w-1/3 text-right text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight pr-1" 
                                                   x-text="getLikertLabel(field.label, 'left')"></span>
                                             
                                             <!-- Radio Buttons 1-5 -->
-                                            <div class="flex gap-4 shrink-0">
+                                            <div class="flex gap-2 sm:gap-4 shrink-0 justify-center">
                                                 <template x-for="val in [1, 2, 3, 4, 5]" :key="val">
                                                     <label class="flex flex-col items-center cursor-pointer">
-                                                        <span class="text-xs font-bold mb-1" x-text="val"></span>
+                                                        <span class="text-[10px] sm:text-xs font-bold mb-1" x-text="val"></span>
                                                         <input type="radio" :name="'likert-'+field.index" :value="val" x-model="formData[field.index]" 
-                                                               class="custom-radio w-6 h-6 border-2 border-gray-300 rounded-full focus:ring-0 cursor-pointer appearance-none bg-white dark:bg-gray-700 checked:bg-primary checked:border-primary transition-all">
+                                                               class="custom-radio w-5 h-5 sm:w-6 sm:h-6 border-2 border-gray-300 rounded-full focus:ring-0 cursor-pointer appearance-none bg-white dark:bg-gray-700 checked:bg-primary checked:border-primary transition-all">
                                                     </label>
                                                 </template>
                                             </div>
 
                                             <!-- Right Elaboration -->
-                                            <span class="text-xs text-gray-500 dark:text-gray-400 text-center md:text-right w-full md:w-1/3 leading-tight" 
+                                            <span class="w-1/3 text-left text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight pl-1" 
                                                   x-text="getLikertLabel(field.label, 'right')"></span>
                                         </div>
                                     </template>
