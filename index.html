@@ -4,31 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>House Visit Form</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- REMOVED FUSE.JS (Source of failure) -->
+    
     <script>
-        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#4F46E5', secondary: '#10B981' } } } }
+        tailwind.config = { 
+            darkMode: 'class', 
+            theme: { 
+                extend: { 
+                    colors: { primary: '#4F46E5', secondary: '#10B981' } 
+                } 
+            } 
+        }
     </script>
     <style>
         [x-cloak] { display: none !important; }
         input, textarea, select { font-size: 16px; } 
-        textarea { resize: vertical; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 2 L2 8' stroke='%239CA3AF' stroke-width='1.5'/%3E%3Cpath d='M8 6 L6 8' stroke='%239CA3AF' stroke-width='1.5'/%3E%3C/svg%3E"); background-position: bottom 2px right 2px; background-repeat: no-repeat; background-size: 12px 12px; }
-        .dark textarea { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 2 L2 8' stroke='%236B7280' stroke-width='1.5'/%3E%3Cpath d='M8 6 L6 8' stroke='%236B7280' stroke-width='1.5'/%3E%3C/svg%3E"); }
-        .custom-radio:checked { background-color: #4F46E5; border-color: #4F46E5; }
+        
+        textarea {
+            resize: vertical;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 2 L2 8' stroke='%239CA3AF' stroke-width='1.5'/%3E%3Cpath d='M8 6 L6 8' stroke='%239CA3AF' stroke-width='1.5'/%3E%3C/svg%3E");
+            background-position: bottom 2px right 2px;
+            background-repeat: no-repeat;
+            background-size: 12px 12px;
+        }
+        .dark textarea {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 2 L2 8' stroke='%236B7280' stroke-width='1.5'/%3E%3Cpath d='M8 6 L6 8' stroke='%236B7280' stroke-width='1.5'/%3E%3C/svg%3E");
+        }
+
+        .custom-radio:checked {
+            background-color: #4F46E5;
+            border-color: #4F46E5;
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-200 min-h-screen"
       x-data="appData()" x-init="initApp()">
 
+    <!-- CONFIGURATION -->
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbw21ZGdd-SfmRJrB-zMcfzVKTzIG-hU-BwKaA33J1bukq-4_ZJGQfH6_KBr4LdgjZvXmw/exec'; 
     </script>
 
-    <!-- LOADING -->
-    <div x-show="isLoading" x-transition.opacity class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm" x-cloak>
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl flex flex-col items-center">
-            <svg class="animate-spin h-10 w-10 text-primary mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            <span class="font-bold text-gray-800 dark:text-white" x-text="loadingText">Loading...</span>
+    <!-- LOADING OVERLAY -->
+    <div x-show="isLoading" x-transition.opacity.duration.300ms
+         class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm" x-cloak>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm w-[90%] mx-auto">
+            <svg class="animate-spin h-12 w-12 text-primary mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white" x-text="loadingText">Please Wait...</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 text-center">Do not close the app.</p>
         </div>
     </div>
 
@@ -41,29 +72,40 @@
     <header class="bg-white dark:bg-gray-800 shadow p-4 sticky top-0 z-30 flex justify-between items-center">
         <h1 class="text-xl font-bold text-green-600 dark:text-green-400">House Visit Form</h1>
         <div class="flex items-center gap-3">
-            <button @click="openSettings" class="text-gray-500 hover:text-primary"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button>
-            <button @click="window.location.reload(true)" class="text-gray-500 hover:text-primary"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
-            <button @click="toggleTheme" class="text-2xl">🌗</button>
+            <button @click="openSettings" class="text-gray-500 hover:text-primary transition" title="Settings">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </button>
+            <button @click="window.location.reload(true)" class="text-gray-500 hover:text-primary transition" title="Update App">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
+            <button @click="toggleTheme" class="text-2xl focus:outline-none" title="Toggle Dark Mode">🌗</button>
         </div>
     </header>
 
     <!-- LOGIN -->
     <div x-show="!isLoggedIn" class="flex flex-col items-center justify-center min-h-[80vh] p-6">
         <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-sm">
-            <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
+            <h2 class="text-2xl font-bold mb-6 text-center">Volunteer Login</h2>
             <div x-show="loginError" class="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm text-center" x-text="loginError"></div>
-            <input type="password" x-model="loginPass" @keyup.enter="performLogin" placeholder="Password" class="w-full p-3 border rounded mb-4 dark:bg-gray-700 dark:border-gray-600 outline-none">
-            <button @click="performLogin" class="w-full bg-primary text-white p-3 rounded font-bold">Login</button>
+            <input type="password" x-model="loginPass" @keyup.enter="performLogin" placeholder="Enter Password" class="w-full p-3 border rounded mb-4 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
+            <button @click="performLogin" class="w-full bg-primary text-white p-3 rounded font-bold hover:bg-indigo-700 transition">Login</button>
         </div>
     </div>
 
-    <!-- MAIN -->
+    <!-- APP -->
     <div x-show="isLoggedIn" x-cloak class="p-4 max-w-4xl mx-auto pb-24">
         
         <!-- DASHBOARD -->
         <div x-show="view === 'dashboard'">
             <div class="mb-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-                <h2 class="text-lg font-semibold mb-4">Find Trainee</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold">Find Trainee</h2>
+                    <!-- TRAINEE COUNT INDICATOR -->
+                    <span class="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                        <span x-text="trainees.length"></span> Loaded
+                    </span>
+                </div>
+                
                 <div class="relative">
                     <input type="text" x-model="searchQuery" @focus="refreshTrainees" placeholder="Search name..." class="w-full p-3 pl-4 border rounded-lg text-gray-900 dark:text-gray-100 dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
                     <div x-show="searchQuery.length > 0" class="mt-2 max-h-60 overflow-y-auto border rounded-lg dark:border-gray-700">
@@ -73,10 +115,16 @@
                                 <span class="text-xs font-semibold text-indigo-700 bg-indigo-100 dark:text-indigo-100 dark:bg-indigo-600 px-3 py-1 rounded-full">Fill Form</span>
                             </div>
                         </template>
-                        <div x-show="filteredTrainees.length === 0" class="p-3 text-gray-500 text-center">No matches found</div>
+                        <div x-show="filteredTrainees.length === 0" class="p-3 text-gray-500 bg-white dark:bg-gray-800 text-center">
+                            <span x-show="trainees.length > 0">No matches found</span>
+                            <span x-show="trainees.length === 0" class="text-red-500">No trainees loaded from sheet.</span>
+                        </div>
                     </div>
                 </div>
-                <div class="mt-2 text-xs text-gray-400">Pulls list from 'lookup' tab</div>
+                <div class="mt-2 text-xs text-gray-400 flex justify-between">
+                    <span>Pulls list from 'lookup' tab</span>
+                    <button @click="fetchConfig" class="text-primary hover:underline">Force Refresh List</button>
+                </div>
             </div>
             <div class="text-center">
                 <button @click="loadNewForm" class="w-full sm:w-auto px-8 bg-secondary text-white p-4 rounded-lg shadow-md font-bold text-lg">+ Start New Blank Visit</button>
@@ -91,31 +139,29 @@
             </div>
             <form @submit.prevent="submitForm">
                 
-                <!-- EMPTY STATE & DEBUG INFO -->
+                <!-- EMPTY STATE FEEDBACK -->
                 <div x-show="groupedHeaders.length === 0" class="text-center p-8 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg dark:border-gray-700">
                     <p class="text-lg font-semibold">No questions loaded.</p>
-                    <p class="text-xs mt-2 mb-4">Your local data might be out of sync.</p>
-                    <button @click="fetchConfig" type="button" class="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-indigo-700 transition">Download Questions</button>
-                    <!-- VISUAL DEBUGGER -->
-                    <div class="mt-6 text-[10px] text-left bg-gray-100 dark:bg-gray-800 p-2 rounded font-mono">
-                        <p>Debug Info:</p>
-                        <p>Headers Count: <span x-text="headers ? headers.length : 'null'"></span></p>
-                        <p>Trainees Count: <span x-text="trainees ? trainees.length : 'null'"></span></p>
-                    </div>
+                    <p class="text-xs mt-2 mb-4">Your local data might be missing or corrupt.</p>
+                    <button @click="resetAppData" type="button" class="bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700 transition">Reset App</button>
                 </div>
 
                 <template x-for="(section, secIndex) in groupedHeaders" :key="secIndex">
                     <div class="mb-6 rounded-lg overflow-hidden shadow-sm border dark:border-gray-700 bg-white dark:bg-gray-800">
-                        <div class="p-4 font-bold uppercase text-sm tracking-wide border-b dark:border-gray-600" :class="section.bgClass + ' ' + section.textClass">
+                        <div class="p-4 font-bold uppercase text-sm tracking-wide border-b dark:border-gray-600" 
+                             :class="section.bgClass + ' ' + section.textClass">
                              <div x-text="section.title"></div>
                              <div x-show="section.guide" class="text-xs font-normal opacity-75 mt-1 normal-case tracking-normal" x-text="section.guide"></div>
                         </div>
+                        
                         <div class="p-4 space-y-5">
                             <template x-for="field in section.fields" :key="field.index">
                                 <div>
+                                    <!-- LABEL & GUIDE -->
                                     <label class="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200" x-text="field.label"></label>
                                     <p x-show="field.guide" class="text-xs text-gray-500 dark:text-gray-400 mb-2 italic" x-text="field.guide"></p>
                                     
+                                    <!-- 1. LIKERT SCALE UI -->
                                     <template x-if="isLikertScale(field.label)">
                                         <div class="mt-2 mb-4 bg-gray-50 dark:bg-gray-900 p-3 sm:p-4 rounded-lg border dark:border-gray-700 flex flex-row items-center justify-between gap-1 sm:gap-4">
                                             <span class="w-1/3 text-right text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight pr-1" x-text="getLikertLabel(field.label, 'left')"></span>
@@ -123,7 +169,7 @@
                                                 <template x-for="val in [1, 2, 3, 4, 5]" :key="val">
                                                     <label class="flex flex-col items-center cursor-pointer">
                                                         <span class="text-[10px] sm:text-xs font-bold mb-1" x-text="val"></span>
-                                                        <input type="radio" :name="'likert-'+field.index" :value="val" x-model="formData[field.index]" class="custom-radio w-5 h-5 sm:w-6 sm:h-6 border-2 rounded-full focus:ring-0 cursor-pointer appearance-none bg-white dark:bg-gray-700 checked:bg-primary checked:border-primary transition-all">
+                                                        <input type="radio" :name="'likert-'+field.index" :value="val" x-model="formData[field.index]" class="custom-radio w-5 h-5 sm:w-6 sm:h-6 border-2 border-gray-300 rounded-full focus:ring-0 cursor-pointer appearance-none bg-white dark:bg-gray-700 checked:bg-primary checked:border-primary transition-all">
                                                     </label>
                                                 </template>
                                             </div>
@@ -131,79 +177,110 @@
                                         </div>
                                     </template>
 
+                                    <!-- 2. PROJECT DROPDOWN -->
                                     <template x-if="isProjectField(field.label)">
-                                        <select x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700">
+                                        <select x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary bg-white dark:bg-gray-700">
                                             <option value="">Select Project...</option>
-                                            <template x-for="opt in projects" :key="opt"><option :value="opt" x-text="opt"></option></template>
+                                            <template x-for="opt in projects" :key="opt">
+                                                <option :value="opt" x-text="opt"></option>
+                                            </template>
                                         </select>
                                     </template>
 
+                                    <!-- 3. CUSTOM DATE INPUT -->
                                     <template x-if="isDate(field.label)">
                                         <div class="relative">
-                                            <input type="text" readonly :value="formatDateDisplay(formData[field.index])" placeholder="DD MMM YYYY" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700">
-                                            <input type="date" x-model="formData[field.index]" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                            <input type="text" readonly 
+                                                   :value="formatDateDisplay(formData[field.index])"
+                                                   placeholder="DD MMM YYYY"
+                                                   class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary cursor-pointer bg-white dark:bg-gray-700">
+                                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                            </div>
+                                            <input type="date" x-model="formData[field.index]" 
+                                                   class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                                         </div>
                                     </template>
 
+                                    <!-- 4. RESIZABLE TEXT AREA -->
                                     <template x-if="isLongText(field.label) && !isLikertScale(field.label)">
-                                        <textarea x-model="formData[field.index]" rows="3" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none min-h-[100px]"></textarea>
+                                        <textarea x-model="formData[field.index]" rows="3" 
+                                                  class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary min-h-[100px]"></textarea>
                                     </template>
                                     
+                                    <!-- 5. SHORT INPUT -->
                                     <template x-if="isShortInput(field.label) && !isProjectField(field.label)">
-                                        <input type="text" x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none">
+                                        <input type="text" x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
                                     </template>
                                 </div>
                             </template>
                         </div>
                     </div>
                 </template>
-                <div class="h-24"></div>
+                <div class="h-20"></div>
                 <div class="fixed bottom-0 left-0 w-full p-4 bg-white dark:bg-gray-900 border-t dark:border-gray-700 flex gap-3 z-20 shadow-lg">
                     <button type="button" @click="saveOffline" class="flex-1 bg-gray-500 text-white p-3 rounded-lg font-bold">Save Later</button>
-                    <button type="submit" class="flex-1 bg-primary text-white p-3 rounded-lg font-bold">Submit</button>
+                    <button type="submit" class="flex-1 bg-primary text-white p-3 rounded-lg font-bold flex justify-center items-center gap-2">
+                        Submit
+                    </button>
                 </div>
             </form>
         </div>
 
         <!-- SETTINGS -->
         <div x-show="showSettings" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm" x-cloak>
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-bold">Settings</h2>
-                    <button @click="showSettings = false" class="text-xl">✕</button>
+                    <button @click="showSettings = false" class="text-gray-500 text-xl hover:text-red-500">✕</button>
                 </div>
                 <div x-show="!settingsUnlocked">
                     <div x-show="settingsError" class="text-red-500 text-sm mb-2" x-text="settingsError"></div>
-                    <input type="password" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Password" class="w-full p-3 border rounded mb-3 dark:bg-gray-700">
+                    <input type="password" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Settings Password" class="w-full p-3 border rounded mb-3 dark:bg-gray-700 dark:border-gray-600">
                     <button @click="unlockSettings" class="w-full bg-gray-800 text-white p-3 rounded">Unlock</button>
                 </div>
                 <div x-show="settingsUnlocked" class="space-y-6">
-                    <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200">
-                        <h3 class="font-bold mb-2 text-sm text-red-600">Troubleshooting</h3>
-                        <button @click="resetAppData" class="w-full bg-red-600 text-white px-4 py-2 rounded font-bold text-sm">Reset App Data</button>
+                    <!-- RESET DATA BUTTON -->
+                    <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-900">
+                        <h3 class="font-bold mb-2 text-sm text-red-600 dark:text-red-400 uppercase">Troubleshooting</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">If the form is loading blank or behaving strangely, click here to clear local data and reload.</p>
+                        <button @click="resetAppData" class="w-full bg-red-600 text-white px-4 py-2 rounded font-bold hover:bg-red-700 transition text-sm">Reset App Data</button>
                     </div>
+
                     <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300">Add Question</h3>
+                        <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300 uppercase">Add New Question</h3>
                         <div class="flex gap-2">
-                            <input type="text" x-model="newColumnName" placeholder="Title" class="flex-1 p-2 border rounded dark:bg-gray-600">
-                            <button @click="addColumn" class="bg-secondary text-white px-4 rounded">+</button>
+                            <input type="text" x-model="newColumnName" placeholder="Question Title" class="flex-1 p-2 border rounded dark:bg-gray-600 dark:border-gray-500">
+                            <button @click="addColumn" class="bg-secondary text-white px-4 rounded font-bold">+</button>
                         </div>
                     </div>
                     <div>
-                        <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300">Edit Questions</h3>
+                        <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300 uppercase">Edit Existing Questions</h3>
                         <div class="space-y-2 max-h-48 overflow-y-auto border p-2 rounded dark:border-gray-600">
                             <template x-for="(header, idx) in headers" :key="idx">
                                 <div class="flex gap-2 items-center">
-                                    <div class="text-xs text-gray-400 w-6" x-text="idx+1"></div>
-                                    <input type="text" x-model="headers[idx]" @change="renameColumn(idx, headers[idx])" class="flex-1 p-2 text-sm border rounded dark:bg-gray-700">
+                                    <div class="text-xs text-gray-400 w-6 text-right" x-text="idx+1"></div>
+                                    <input type="text" x-model="headers[idx]" @change="renameColumn(idx, headers[idx])" class="flex-1 p-2 text-sm border rounded dark:bg-gray-700 dark:border-gray-600">
                                 </div>
                             </template>
                         </div>
                     </div>
                     <div class="border-t pt-4 dark:border-gray-600">
-                         <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300">Security</h3>
-                         <div class="mb-3"><input type="text" x-model="newAppPass" placeholder="New App Password" class="w-full p-2 border rounded dark:bg-gray-700 text-sm mb-1"><button @click="changePassword('APP')" class="bg-gray-600 text-white px-3 py-1 rounded text-xs">Update App Pass</button></div>
-                         <div><input type="text" x-model="newSettingsPass" placeholder="New Settings Password" class="w-full p-2 border rounded dark:bg-gray-700 text-sm mb-1"><button @click="changePassword('SETTINGS')" class="bg-gray-600 text-white px-3 py-1 rounded text-xs">Update Settings Pass</button></div>
+                         <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300 uppercase">Security</h3>
+                         <div class="mb-3">
+                             <label class="text-xs text-gray-500">New App Login Password</label>
+                             <div class="flex gap-2">
+                                 <input type="text" x-model="newAppPass" placeholder="New Password" class="flex-1 p-2 border rounded dark:bg-gray-700 text-sm">
+                                 <button @click="changePassword('APP')" class="bg-gray-600 text-white px-3 rounded text-sm">Update</button>
+                             </div>
+                         </div>
+                         <div>
+                             <label class="text-xs text-gray-500">New Settings Password</label>
+                             <div class="flex gap-2">
+                                 <input type="text" x-model="newSettingsPass" placeholder="New Password" class="flex-1 p-2 border rounded dark:bg-gray-700 text-sm">
+                                 <button @click="changePassword('SETTINGS')" class="bg-gray-600 text-white px-3 rounded text-sm">Update</button>
+                             </div>
+                         </div>
                     </div>
                 </div>
             </div>
@@ -213,7 +290,8 @@
     <script>
         function appData() {
             return {
-                view: 'dashboard', darkMode: localStorage.getItem('theme') === 'dark',
+                view: 'dashboard',
+                darkMode: localStorage.getItem('theme') === 'dark',
                 isLoggedIn: false, loginPass: '', loginError: '',
                 toast: { visible: false, message: '', type: 'success' },
                 headers: [], trainees: [], projects: [], searchQuery: '', loadingTrainees: false,
@@ -225,10 +303,16 @@
                     this.toggleTheme(false);
                     window.addEventListener('online', () => this.syncOfflineData());
                     this.loadConfigFromStorage();
+                    
+                    // Always try to fetch config to ensure headers are available
                     if (navigator.onLine) this.fetchConfig();
-                    if (localStorage.getItem('isLoggedIn') === 'true') this.isLoggedIn = true;
+                    
+                    if (localStorage.getItem('isLoggedIn') === 'true') {
+                        this.isLoggedIn = true;
+                    }
                 },
 
+                // FORMATTER
                 formatDateDisplay(isoDate) {
                     if (!isoDate) return '';
                     const parts = String(isoDate).split('-'); 
@@ -237,76 +321,288 @@
                     return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
                 },
 
-                // STATIC DEFINITIONS
-                staticGuides: { 'life skills': 'Can trainee carry out daily activities like bathing, dressing, eating independently? Household chores? Use telephone? Public transport?', 'academic level': 'Number/money concept? Write name/address/phone number?', 'social skills': 'Eye-contact? Interpersonal skill? Friends at work/school? Mannerisms?', 'motor skills': 'Fine (fork/chopsticks) and Gross (balancing, running, jumping) motor skills?', "trainee's t-shirt size": 'XS: 32-34 / S: 36-38 / M: 38-40 / L: 40-42 / XL: 46-48 / XXL: 50-52 / XXXL: 54-56', 'temperament': 'Please elaborate.', 'personal feedback': 'Impression of family? Habits during session? Interactions so far?', 'attention span': 'Is your trainee attentive/distracted? Please elaborate.', 'responsiveness': 'Is your trainee quick to respond/slow to respond/has no response? Please elaborate.', 'receptiveness': 'Able to understand instructions with/without help OR unable even with help? What kind of help?' },
-                likertConfig: { 'mobility': { left: 'Need support to walk and can be clumsy', right: 'Agile and stable' }, 'comprehension': { left: 'Very Low (unable to follow instructions)', right: 'High (able to follow instructions effectively)' }, 'verbal': { left: 'Very Low (non-verbal)', right: 'High (able to engage in conversations)' } },
+                staticGuides: {
+                    'life skills': 'Can trainee carry out daily activities like bathing, dressing, eating independently? Household chores? Use telephone? Public transport?',
+                    'academic level': 'Number/money concept? Write name/address/phone number?',
+                    'social skills': 'Eye-contact? Interpersonal skill? Friends at work/school? Mannerisms?',
+                    'motor skills': 'Fine (fork/chopsticks) and Gross (balancing, running, jumping) motor skills?',
+                    "trainee's t-shirt size": 'XS: 32-34 / S: 36-38 / M: 38-40 / L: 40-42 / XL: 46-48 / XXL: 50-52 / XXXL: 54-56',
+                    'temperament': 'Please elaborate.',
+                    'personal feedback': 'Impression of family? Habits during session? Interactions so far?',
+                    'attention span': 'Is your trainee attentive/distracted? Please elaborate.',
+                    'responsiveness': 'Is your trainee quick to respond/slow to respond/has no response? Please elaborate.',
+                    'receptiveness': 'Able to understand instructions with/without help OR unable even with help? What kind of help?'
+                },
 
-                setLoading(s, t='Loading...') { this.isLoading = s; this.loadingText = t; },
-                toggleTheme(t=true) { if(t) this.darkMode = !this.darkMode; localStorage.setItem('theme', this.darkMode ? 'dark' : 'light'); if(this.darkMode) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); },
+                likertConfig: {
+                    'mobility': { left: 'Need support to walk and can be clumsy', right: 'Agile and stable' },
+                    'comprehension': { left: 'Very Low (unable to follow instructions)', right: 'High (able to follow instructions effectively)' },
+                    'verbal': { left: 'Very Low (non-verbal)', right: 'High (able to engage in conversations)' }
+                },
+
+                setLoading(state, text = 'Loading...') {
+                    this.isLoading = state;
+                    this.loadingText = text;
+                },
+
+                loadConfigFromStorage() {
+                    const cachedConfig = localStorage.getItem('appConfig');
+                    if (cachedConfig) {
+                        try {
+                            const data = JSON.parse(cachedConfig);
+                            if(data.headers && Array.isArray(data.headers) && data.headers.length > 0) {
+                                this.headers = data.headers;
+                                this.trainees = data.trainees;
+                                this.projects = data.projects || [];
+                            } else {
+                                // Invalid cache detected
+                                localStorage.removeItem('appConfig');
+                            }
+                        } catch(e) {
+                            localStorage.removeItem('appConfig');
+                        }
+                    }
+                },
+
+                resetAppData() {
+                    localStorage.clear();
+                    window.location.reload(true);
+                },
+
+                toggleTheme(doToggle = true) {
+                    if (doToggle) this.darkMode = !this.darkMode;
+                    localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
+                    if (this.darkMode) document.documentElement.classList.add('dark');
+                    else document.documentElement.classList.remove('dark');
+                },
                 
                 async performAction(action, payload = {}) {
                     payload.action = action;
-                    const res = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
-                    return await res.json();
+                    try {
+                        const res = await fetch(API_URL, {
+                            method: "POST",
+                            headers: { "Content-Type": "text/plain;charset=utf-8" },
+                            body: JSON.stringify(payload)
+                        });
+                        return await res.json();
+                    } catch (e) {
+                        console.error("API Error", e);
+                        throw e;
+                    }
                 },
 
                 async performLogin() {
-                    this.setLoading(true);
+                    this.loginError = '';
+                    this.setLoading(true, 'Logging in...');
                     try {
                         const data = await this.performAction('login', { password: this.loginPass });
-                        if (data.success) { this.isLoggedIn = true; localStorage.setItem('isLoggedIn', 'true'); await this.fetchConfig(); } 
-                        else this.loginError = 'Incorrect Password';
-                    } catch(e) { this.loginError = 'Connection Error.'; }
-                    finally { this.setLoading(false); }
+                        if (data.success) {
+                            this.isLoggedIn = true;
+                            localStorage.setItem('isLoggedIn', 'true');
+                            await this.fetchConfig();
+                        } else {
+                            this.loginError = 'Incorrect Password';
+                        }
+                    } catch (e) {
+                        this.loginError = 'Connection Error.';
+                    } finally {
+                        this.setLoading(false);
+                    }
                 },
 
                 async fetchConfig() {
                     try {
                         const data = await this.performAction('getConfig');
-                        this.headers = Array.isArray(data.headers) ? data.headers.map(String) : [];
-                        this.trainees = data.trainees || [];
-                        this.projects = data.projects || [];
-                        localStorage.setItem('appConfig', JSON.stringify({ headers: this.headers, trainees: this.trainees, projects: this.projects }));
-                        this.syncOfflineData();
-                    } catch(e) {}
+                        // Robust check: Ensure headers are array
+                        if (data.headers && Array.isArray(data.headers)) {
+                            this.headers = data.headers;
+                            this.trainees = data.trainees || [];
+                            this.projects = data.projects || [];
+                            localStorage.setItem('appConfig', JSON.stringify({
+                                headers: this.headers,
+                                trainees: this.trainees,
+                                projects: this.projects
+                            }));
+                            this.syncOfflineData();
+                        }
+                    } catch (e) { }
                 },
 
-                async loadTraineeForm(name) {
-                    this.setLoading(true);
+                async refreshTrainees() {
+                    if(!navigator.onLine) return;
+                    this.loadingTrainees = true;
+                    try { await this.fetchConfig(); } catch(e) {} finally { this.loadingTrainees = false; }
+                },
+
+                // REPLACED FUSE SEARCH WITH NATIVE FILTER
+                get filteredTrainees() {
+                    if (!this.searchQuery) return [];
+                    const q = this.searchQuery.toLowerCase();
+                    return this.trainees.filter(t => t && String(t).toLowerCase().includes(q));
+                },
+
+                getNameIndex() {
+                    if (!this.headers || this.headers.length === 0) return -1;
+                    let idx = this.headers.findIndex(h => String(h).toLowerCase().includes('trainee') && String(h).toLowerCase().includes('name'));
+                    return idx === -1 ? 5 : idx;
+                },
+
+                loadNewForm() {
+                    this.formData = {};
+                    if (this.headers) {
+                        this.headers.forEach((h, i) => {
+                            if(String(h).toLowerCase().includes('date of visit')) this.formData[i] = new Date().toISOString().split('T')[0];
+                            else this.formData[i] = ''; 
+                        });
+                    }
+                    this.view = 'form';
+                },
+
+                async loadTraineeForm(traineeName) {
+                    this.setLoading(true, 'Loading History...');
+                    
+                    // 1. Force load logic
                     if (!this.headers || this.headers.length === 0) {
                         this.loadConfigFromStorage();
-                        if (!this.headers || this.headers.length === 0) await this.fetchConfig();
-                    }
-                    try {
-                        const history = await this.performAction('getHistory', { trainee: name });
-                        this.formData = {};
-                        // Safely map history to formData even if history is empty or partial
-                        if(this.headers && this.headers.length > 0) {
-                            this.headers.forEach((h, i) => {
-                                const lower = String(h).toLowerCase();
-                                if(!lower.includes('date of visit') && !lower.includes('volunteer')) {
-                                    this.formData[i] = history[i] || ''; // Map by index
-                                } else if(lower.includes('date of visit')) {
-                                    this.formData[i] = new Date().toISOString().split('T')[0];
-                                }
-                            });
+                        if (!this.headers || this.headers.length === 0) {
+                            await this.fetchConfig();
                         }
+                    }
+
+                    if (!this.headers || this.headers.length === 0) {
+                        this.setLoading(false);
+                        this.view = 'form'; // Show "No questions found" UI
+                        return;
+                    }
+
+                    try {
+                        const history = await this.performAction('getHistory', { trainee: traineeName });
+                        this.formData = {};
+                        this.headers.forEach((h, i) => {
+                            const strH = String(h || ''); 
+                            const lowerH = strH.toLowerCase();
+                            const isExcluded = lowerH.includes('date of visit') || lowerH.includes('volunteer') || lowerH.includes('timestamp');
+                            if (isExcluded) {
+                                if(lowerH.includes('date of visit')) this.formData[i] = new Date().toISOString().split('T')[0];
+                                else this.formData[i] = '';
+                            } else {
+                                this.formData[i] = history[i] || '';
+                            }
+                        });
+                        
                         const nameIdx = this.getNameIndex();
-                        if(nameIdx !== -1) this.formData[nameIdx] = name;
+                        if (nameIdx !== -1) this.formData[nameIdx] = traineeName;
+                        
                         this.view = 'form';
-                    } catch(e) {
-                        this.showToast('Offline Mode', 'info');
+                    } catch (e) {
+                        this.showToast('Offline Mode: Loading Blank Form.', 'info');
                         this.loadNewForm();
                         const nameIdx = this.getNameIndex();
-                        if(nameIdx !== -1) this.formData[nameIdx] = name;
+                        if (nameIdx !== -1) this.formData[nameIdx] = traineeName;
                         this.view = 'form';
-                    } finally { this.setLoading(false); }
+                    } finally {
+                        this.setLoading(false);
+                    }
                 },
 
-                getNameIndex() { return this.headers ? this.headers.findIndex(h => String(h).toLowerCase().includes('trainee') && String(h).toLowerCase().includes('name')) : -1; },
+                async submitForm() {
+                    this.isSubmitting = true;
+                    this.setLoading(true, 'Submitting...');
+                    const row = [];
+                    for(let i=0; i < this.headers.length; i++) {
+                        let val = this.formData[i] || '';
+                        if (!val && String(this.headers[i]).toLowerCase().includes('timestamp')) {
+                            val = new Date().toLocaleString(); 
+                        }
+                        row.push("'" + val); 
+                    }
+
+                    if (!navigator.onLine) {
+                        this.saveOffline(row);
+                        this.isSubmitting = false;
+                        this.setLoading(false);
+                        return;
+                    }
+
+                    try {
+                        await this.performAction('submit', { row: row });
+                        this.showToast('Submitted Successfully!', 'success');
+                        this.view = 'dashboard';
+                        this.searchQuery = '';
+                    } catch (e) {
+                        this.saveOffline(row);
+                    } finally {
+                        this.isSubmitting = false;
+                        this.setLoading(false);
+                    }
+                },
+
+                saveOffline(row) {
+                    this.setLoading(true, 'Saving locally...');
+                    const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
+                    let rowToSave = row;
+                    if (!row || row.type === 'click') { 
+                         rowToSave = [];
+                         for(let i=0; i<this.headers.length; i++) rowToSave.push("'" + (this.formData[i]||''));
+                    }
+                    queue.push(rowToSave);
+                    localStorage.setItem('offlineQueue', JSON.stringify(queue));
+                    setTimeout(() => {
+                        this.showToast('Saved Offline. Sync later.', 'info');
+                        this.view = 'dashboard';
+                        this.setLoading(false);
+                    }, 500); 
+                },
+
+                async syncOfflineData() {
+                    const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
+                    if (queue.length === 0) return;
+                    this.showToast(`Syncing ${queue.length} records...`, 'info');
+                    const failed = [];
+                    for (const row of queue) {
+                        try { await this.performAction('submit', { row: row }); } catch (e) { failed.push(row); }
+                    }
+                    if (failed.length === 0) { localStorage.removeItem('offlineQueue'); this.showToast('Sync Complete!', 'success'); }
+                    else { localStorage.setItem('offlineQueue', JSON.stringify(failed)); this.showToast('Sync partial failure', 'error'); }
+                },
+
+                openSettings() { this.showSettings = true; this.settingsError = ''; this.settingsPass = ''; },
+                async unlockSettings() {
+                    this.settingsError = '';
+                    this.setLoading(true, 'Unlocking...');
+                    try {
+                        const data = await this.performAction('validateSettings', { password: this.settingsPass });
+                        if (data.success) this.settingsUnlocked = true;
+                        else this.settingsError = 'Wrong Password';
+                    } catch(e) { this.settingsError = 'Connection Error'; }
+                    finally { this.setLoading(false); }
+                },
+                async addColumn() {
+                    if(!this.newColumnName) return;
+                    this.setLoading(true, 'Adding Column...');
+                    await this.performAction('addColumn', { headerName: this.newColumnName });
+                    this.showToast('Added. Reloading...', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                },
+                async renameColumn(idx, newName) {
+                    await this.performAction('renameColumn', { colIndex: idx, newName: newName });
+                    this.showToast('Renamed', 'success');
+                },
+                async changePassword(type) {
+                    const newPass = type === 'APP' ? this.newAppPass : this.newSettingsPass;
+                    if(!newPass) return;
+                    this.setLoading(true, 'Updating Password...');
+                    await this.performAction('changePassword', { type: type, newPassword: newPass });
+                    this.showToast('Password Updated', 'success');
+                    if(type === 'APP') { this.newAppPass = ''; } else { this.newSettingsPass = ''; }
+                    this.setLoading(false);
+                },
+
+                showToast(msg, type) { this.toast.message = msg; this.toast.type = type; this.toast.visible = true; setTimeout(() => this.toast.visible = false, 3000); },
                 
                 get groupedHeaders() {
-                    if (!this.headers || this.headers.length === 0) return [];
+                    if (!this.headers || !Array.isArray(this.headers) || this.headers.length === 0) return [];
+
                     const sections = [
                         { id: 'visit', title: 'Visit Details', keywords: ['date', 'volunteer', 'project'], bgClass: 'bg-blue-50 dark:bg-blue-900', textClass: 'text-blue-700 dark:text-blue-200' },
                         { id: 'trainee', title: 'Trainee Details', keywords: ['trainee', 'nric', 'address', 'gender', 'birth', 'blood', 'race', 'religion', 'language', 'shirt'], bgClass: 'bg-green-50 dark:bg-green-900', textClass: 'text-green-700 dark:text-green-200' },
@@ -317,48 +613,70 @@
                         { id: 'working', title: "For Working Trainees Only", guide: "Elaborate further on what trainees are doing from Mondays to Fridays", keywords: ['location of workplace', 'job scope', 'working hours', 'workplace', 'employment history', 'work'], bgClass: 'bg-indigo-50 dark:bg-indigo-900', textClass: 'text-indigo-800 dark:text-indigo-200' },
                         { id: 'observation', title: 'Volunteer Observation', keywords: ['observation', 'attention', 'responsiveness', 'confidence', 'feedback', 'incident', 'receptiveness', 'recommendation', 'well-being', 'academic', 'abilities'], bgClass: 'bg-indigo-50 dark:bg-indigo-900', textClass: 'text-indigo-800 dark:text-indigo-200' }
                     ];
+                    
                     const misc = { title: 'Miscellaneous', fields: [], bgClass: 'bg-slate-100 dark:bg-gray-800', textClass: 'text-slate-600 dark:text-slate-400' };
-                    const seen = new Set();
-                    const grouped = sections.map(s => ({...s, fields:[]}));
+                    const seenFields = new Set(); 
 
                     this.headers.forEach((h, i) => {
-                        const rawH = String(h);
-                        const lower = rawH.toLowerCase();
-                        if (lower.includes('timestamp') || rawH.trim() === '') return;
-
-                        let label = rawH, guide = '';
-                        const match = rawH.match(/^(.+?)(\s*[\(\（].+)/);
+                        if (!h) return;
+                        const strH = String(h);
+                        const lower = strH.toLowerCase();
+                        if (lower.includes('timestamp') || strH.trim() === '') return; 
+                        
+                        let label = strH;
+                        let guide = '';
+                        const match = strH.match(/^(.+?)(\s*[\(\（].+)/);
                         if (match) {
-                            if (/^[\(\（][s\d]+[\)\）]$/i.test(match[2].trim())) { label = rawH; } // Keep (1), (s)
-                            else { label = match[1].trim(); guide = match[2].trim(); }
-                        }
-                        
-                        if (this.headers.filter((v, idx) => v === h && idx < i).length > 0) label = `${label} (${this.headers.filter((v, idx) => v === h && idx < i).length + 1})`;
-                        
-                        for(const k in this.staticGuides) if(label.toLowerCase().includes(k)) { guide = this.staticGuides[k]; break; }
-                        
-                        if(guide) guide = guide.replace(/[\(\（]dd\/mm\/yy.*?[\)\）]/gi, '').replace(/\(\d+\)/g, '').replace(/\(s\)/g, '').replace(/[\(\（\)\）]/g, '').trim();
-
-                        const field = { label, guide, index: i, raw: rawH };
-                        if(seen.has(label)) return; 
-                        seen.add(label);
-
-                        let placed = false;
-                        for(const s of grouped) {
-                            if(s.keywords.some(k => lower.includes(k))) {
-                                if (lower.includes('disciplinary')) {
-                                    if (s.id === 'schooling' && !lower.includes('school')) continue;
-                                    if (s.id === 'working' && !lower.includes('work')) continue;
-                                }
-                                if (s.id === 'behavior' && lower.includes('academic')) continue;
-                                if (s.id === 'visit' && (lower.includes('incident') || lower.includes('recommendation') || lower.includes('well-being'))) continue;
-                                if (s.id === 'behavior' && lower.includes('fees')) continue;
-                                s.fields.push(field); placed = true; break;
+                            let potentialLabel = match[1].trim();
+                            let potentialGuide = match[2].trim();
+                            if (/^[\(\（][s\d]+[\)\）]$/i.test(potentialGuide)) {
+                                label = strH; 
+                                guide = '';
+                            } else {
+                                label = potentialLabel;
+                                guide = potentialGuide;
                             }
                         }
-                        if(!placed) misc.fields.push(field);
+
+                        if (this.headers.filter((v, idx) => v === h && idx < i).length > 0) label = `${label} (${this.headers.filter((v, idx) => v === h && idx < i).length + 1})`;
+                        
+                        let foundStatic = false;
+                        for (const key in this.staticGuides) {
+                            if (label.toLowerCase().includes(key)) {
+                                guide = this.staticGuides[key];
+                                foundStatic = true;
+                                break;
+                            }
+                        }
+                        if (guide) {
+                            guide = guide.replace(/[\(\（]dd\/mm\/yy.*?[\)\）]/gi, '');
+                            guide = guide.replace(/\(\d+\)/g, '').replace(/\(s\)/g, '').replace(/[\(\（\)\）]/g, '').trim();
+                        }
+
+                        const fieldObj = { label: label, guide: guide, index: i, raw: strH };
+                        
+                        if (seenFields.has(label)) return;
+                        seenFields.add(label);
+
+                        let placed = false;
+                        for (const sec of grouped) { 
+                            if (sec.keywords.some(k => lower.includes(k))) { 
+                                if (lower.includes('disciplinary')) {
+                                    if (sec.id === 'schooling' && !lower.includes('school')) continue;
+                                    if (sec.id === 'working' && !lower.includes('work')) continue;
+                                }
+                                if (sec.id === 'behavior' && lower.includes('academic')) continue;
+                                if (sec.id === 'visit' && (lower.includes('incident') || lower.includes('recommendation') || lower.includes('well-being'))) continue;
+                                if (sec.id === 'behavior' && lower.includes('fees')) continue;
+
+                                sec.fields.push(fieldObj); 
+                                placed = true; 
+                                break; 
+                            } 
+                        }
+                        if (!placed) misc.fields.push(fieldObj);
                     });
-                    
+
                     // Sorters
                     const sortByGroup = (arr, fn) => arr.sort((a,b) => fn(a) - fn(b));
                     const cg = grouped.find(s=>s.id==='caregiver');
@@ -371,26 +689,14 @@
                     
                     return [...grouped, misc].filter(s => s.fields.length > 0);
                 },
-
-                isLikertScale(n) { const s=String(n).toLowerCase(); return s.includes('mobility')||s.includes('comprehension')||s.includes('verbal'); },
-                getLikertLabel(n, side) { const k = Object.keys(this.likertConfig).find(k=>String(n).toLowerCase().includes(k)); return k ? this.likertConfig[k][side] : ''; },
-                isDate(n) { return String(n).toLowerCase().includes('date'); },
-                isProjectField(n) { return String(n).toLowerCase().trim() === 'project'; },
-                isShortInput(n) { return ['name','nric','gender','sex','race','religion','blood','height','weight','shirt','relation','contact','mobile','phone','email'].some(k=>String(n).toLowerCase().includes(k)); },
-                isLongText(n) { return !this.isDate(n) && !this.isShortInput(n) && !this.isProjectField(n) && !this.isLikertScale(n); },
                 
-                loadNewForm() { this.loadTraineeForm(''); },
-                refreshTrainees() { if(navigator.onLine) this.fetchConfig(); },
-                loadConfigFromStorage() { const c = localStorage.getItem('appConfig'); if(c) { try { const d=JSON.parse(c); this.headers=d.headers||[]; this.trainees=d.trainees||[]; this.projects=d.projects||[]; } catch(e){} } },
-                resetAppData() { localStorage.clear(); window.location.reload(true); },
-                saveOffline(row) { /* ... */ },
-                syncOfflineData() { /* ... */ },
-                openSettings() { this.showSettings=true; },
-                unlockSettings() { if(this.settingsPass==='werone') this.settingsUnlocked=true; else this.settingsError='Wrong Password'; },
-                addColumn() { this.performAction('addColumn', {headerName:this.newColumnName}); },
-                renameColumn(idx, name) { this.performAction('renameColumn', {colIndex:idx, newName:name}); },
-                changePassword() { /* ... */ },
-                showToast(m,t) { this.toast.message=m;this.toast.type=t;this.toast.visible=true;setTimeout(()=>this.toast.visible=false,3000); }
+                isLikertScale(name) { return String(name).toLowerCase().includes('mobility') || String(name).toLowerCase().includes('comprehension') || String(name).toLowerCase().includes('verbal'); },
+                getLikertLabel(name, side) { return (this.likertConfig[Object.keys(this.likertConfig).find(k => String(name).toLowerCase().includes(k))] || {})[side] || ''; },
+                isDate(name) { return String(name).toLowerCase().includes('date'); },
+                isProjectField(name) { return String(name).toLowerCase().trim() === 'project'; },
+                isShortInput(name) { return ['name', 'nric', 'gender', 'sex', 'race', 'religion', 'blood', 'height', 'weight', 'shirt', 'relation', 'contact', 'mobile', 'phone', 'email'].some(k => String(name).toLowerCase().includes(k)); },
+                isLongText(name) { return !this.isDate(name) && !this.isShortInput(name) && !this.isProjectField(name) && !this.isLikertScale(name); },
+                isRegularInput(name) { return !this.isDate(name) && !this.isLongText(name); }
             }
         }
     </script>
