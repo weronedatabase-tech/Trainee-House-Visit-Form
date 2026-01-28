@@ -99,12 +99,12 @@
                     <span x-show="loadingTrainees" class="text-xs text-primary animate-pulse">Syncing...</span>
                 </h2>
                 <div class="relative">
-                    <input type="text" x-model="searchQuery" @focus="refreshTrainees" placeholder="Search name..." class="w-full p-3 pl-4 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
+                    <input type="text" x-model="searchQuery" @focus="refreshTrainees" placeholder="Search name..." class="w-full p-3 pl-4 border rounded-lg text-gray-900 dark:text-gray-100 dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
                     <div x-show="searchQuery.length > 0" class="mt-2 max-h-60 overflow-y-auto border rounded-lg dark:border-gray-700">
                         <template x-for="trainee in filteredTrainees" :key="trainee">
                             <div @click="loadTraineeForm(trainee)" class="p-3 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b dark:border-gray-700 flex justify-between items-center">
-                                <span x-text="trainee" class="font-medium"></span>
-                                <span class="text-xs text-primary bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded">Fill Form</span>
+                                <span x-text="trainee" class="font-medium text-gray-800 dark:text-gray-200"></span>
+                                <span class="text-xs font-semibold text-indigo-700 bg-indigo-100 dark:text-indigo-100 dark:bg-indigo-600 px-3 py-1 rounded-full">Fill Form</span>
                             </div>
                         </template>
                         <div x-show="filteredTrainees.length === 0" class="p-3 text-gray-500 bg-white dark:bg-gray-800">No matches found</div>
@@ -133,8 +133,10 @@
                 <template x-for="(section, secIndex) in groupedHeaders" :key="secIndex">
                     <div class="mb-6 rounded-lg overflow-hidden shadow-sm border dark:border-gray-700 bg-white dark:bg-gray-800">
                         <div class="p-4 font-bold uppercase text-sm tracking-wide border-b dark:border-gray-600" 
-                             :class="section.bgClass + ' ' + section.textClass" 
-                             x-text="section.title"></div>
+                             :class="section.bgClass + ' ' + section.textClass">
+                             <div x-text="section.title"></div>
+                             <div x-show="section.guide" class="text-xs font-normal opacity-75 mt-1 normal-case tracking-normal" x-text="section.guide"></div>
+                        </div>
                         
                         <div class="p-4 space-y-5">
                             <template x-for="field in section.fields" :key="field.index">
@@ -161,7 +163,7 @@
 
                                     <!-- 2. PROJECT DROPDOWN -->
                                     <template x-if="isProjectField(field.label)">
-                                        <select x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
+                                        <select x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary bg-white dark:bg-gray-700">
                                             <option value="">Select Project...</option>
                                             <template x-for="opt in projects" :key="opt">
                                                 <option :value="opt" x-text="opt"></option>
@@ -169,13 +171,13 @@
                                         </select>
                                     </template>
 
-                                    <!-- 3. CUSTOM DATE INPUT (Overlay) -->
+                                    <!-- 3. CUSTOM DATE INPUT -->
                                     <template x-if="isDate(field.label)">
                                         <div class="relative">
                                             <input type="text" readonly 
                                                    :value="formatDateDisplay(formData[field.index])"
                                                    placeholder="DD MMM YYYY"
-                                                   class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary cursor-pointer">
+                                                   class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary cursor-pointer bg-white dark:bg-gray-700">
                                             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                             </div>
@@ -541,12 +543,16 @@
                         { id: 'trainee', title: 'Trainee Details', keywords: ['trainee', 'nric', 'address', 'gender', 'birth', 'blood', 'race', 'religion', 'language', 'shirt'], bgClass: 'bg-green-50 dark:bg-green-900', textClass: 'text-green-700 dark:text-green-200' },
                         { id: 'caregiver', title: 'Caregiver & Family', keywords: ['caregiver', 'guardian', 'family', 'financial', 'difficulties', 'contact'], bgClass: 'bg-yellow-50 dark:bg-yellow-900', textClass: 'text-yellow-700 dark:text-yellow-200' },
                         { id: 'medical', title: 'Medical & Health', keywords: ['medical', 'medication', 'health', 'allergy', 'allergies', 'disability', 'dietary', 'condition', 'diagnosis', 'height', 'weight'], bgClass: 'bg-red-50 dark:bg-red-900', textClass: 'text-red-700 dark:text-red-200' },
-                        // ADDED 'disciplinary' keyword
-                        { id: 'behavior', title: 'Behaviour & Skills', keywords: ['personality', 'behavior', 'skills', 'interaction', 'activity', 'work', 'school', 'disciplinary'], bgClass: 'bg-purple-50 dark:bg-purple-900', textClass: 'text-purple-700 dark:text-purple-200' },
-                        // REMOVED 'fees' keyword
+                        
+                        { id: 'abilities', title: "Trainee's Abilities", keywords: ['life skills', 'social skills', 'motor skills', 'other abilities'], bgClass: 'bg-purple-50 dark:bg-purple-900', textClass: 'text-purple-700 dark:text-purple-200' },
+                        
+                        { id: 'schooling', title: "For Schooling Trainees Only", guide: "Elaborate further on what trainees are doing from Mondays to Fridays", keywords: ['location of school', 'activities in school', 'peers at school', 'disciplinary', 'school'], bgClass: 'bg-indigo-50 dark:bg-indigo-900', textClass: 'text-indigo-800 dark:text-indigo-200' },
+                        
+                        { id: 'working', title: "For Working Trainees Only", guide: "Elaborate further on what trainees are doing from Mondays to Fridays", keywords: ['location of workplace', 'job scope', 'working hours', 'workplace', 'employment history', 'work'], bgClass: 'bg-indigo-50 dark:bg-indigo-900', textClass: 'text-indigo-800 dark:text-indigo-200' },
+                        
                         { id: 'observation', title: 'Volunteer Observation', keywords: ['observation', 'attention', 'responsiveness', 'confidence', 'feedback', 'incident', 'receptiveness', 'recommendation', 'well-being', 'academic', 'abilities'], bgClass: 'bg-indigo-50 dark:bg-indigo-900', textClass: 'text-indigo-800 dark:text-indigo-200' }
                     ];
-                    const grouped = sections.map(s => ({ ...s, fields: [] }));
+                    
                     const misc = { title: 'Miscellaneous', fields: [], bgClass: 'bg-slate-100 dark:bg-gray-800', textClass: 'text-slate-600 dark:text-slate-400' };
                     const seenFields = new Set(); 
 
@@ -560,6 +566,7 @@
                         if (match) {
                             let potentialLabel = match[1].trim();
                             let potentialGuide = match[2].trim();
+                            // If guide is short suffix (s), keep it in Label
                             if (/^[\(\（][s\d]+[\)\）]$/i.test(potentialGuide)) {
                                 label = h; 
                                 guide = '';
@@ -580,7 +587,9 @@
                             }
                         }
                         if (guide) {
+                            // Remove Date format guides e.g. (dd/mm/yy)
                             guide = guide.replace(/[\(\（]dd\/mm\/yy.*?[\)\）]/gi, '');
+                            // Clean other specific unwanted chars
                             guide = guide.replace(/\(\d+\)/g, '').replace(/\(s\)/g, '').replace(/[\(\（\)\）]/g, '').trim();
                         }
 
@@ -592,11 +601,11 @@
                         let placed = false;
                         for (const sec of grouped) { 
                             if (sec.keywords.some(k => lower.includes(k))) { 
+                                // Prevent Trainee section from grabbing Incidents/Recommendations
+                                if (sec.id === 'trainee' && (lower.includes('incident') || lower.includes('recommendation') || lower.includes('well-being'))) continue;
+
                                 if (sec.id === 'behavior' && lower.includes('academic')) continue;
                                 if (sec.id === 'visit' && (lower.includes('incident') || lower.includes('recommendation') || lower.includes('well-being'))) continue;
-                                // EXCEPTION: Prevent School Fees from going to Behavior
-                                if (sec.id === 'behavior' && lower.includes('fees')) continue;
-
                                 sec.fields.push(fieldObj); 
                                 placed = true; 
                                 break; 
@@ -624,7 +633,7 @@
                         });
                     }
 
-                    // 2. Trainee Sorter
+                    // 2. Trainee Sorter (Short Name after Full Name)
                     const traineeSection = grouped.find(s => s.id === 'trainee');
                     if (traineeSection) {
                         traineeSection.fields.sort((a, b) => {
@@ -639,7 +648,7 @@
                         });
                     }
 
-                    // 3. Medical Sorter
+                    // 3. Medical Sorter (Special Needs after Past Medical)
                     const medSection = grouped.find(s => s.id === 'medical');
                     if (medSection) {
                         medSection.fields.sort((a, b) => {
