@@ -127,7 +127,11 @@
 
                 <template x-for="(section, secIndex) in groupedHeaders" :key="secIndex">
                     <div class="mb-6 rounded-lg overflow-hidden shadow-sm border dark:border-gray-700 bg-white dark:bg-gray-800">
-                        <div class="p-4 font-bold uppercase text-sm tracking-wide border-b dark:border-gray-600" :class="section.bgClass + ' ' + section.textClass" x-text="section.title"></div>
+                        <!-- SECTION HEADER -->
+                        <div class="p-4 font-bold uppercase text-sm tracking-wide border-b dark:border-gray-600" 
+                             :class="section.bgClass + ' ' + section.textClass" 
+                             x-text="section.title"></div>
+                        
                         <div class="p-4 space-y-5">
                             <template x-for="field in section.fields" :key="field.index">
                                 <div>
@@ -240,13 +244,19 @@
                     }
                 },
 
-                // STATIC GUIDES FROM PDF (Manual Map)
+                // STATIC GUIDES FROM PDF (Enhanced)
                 staticGuides: {
-                    'life skills': 'Can trainee carry out daily activities like bathing, dressing, eating independently? Can trainee do household chores like cooking, washing dishes? Can trainee take public transport independently? Can trainee use the telephone?',
-                    'academic level': 'How is trainee’s number/money concept? Can he/she write his/her own name, address or home telephone number etc?',
-                    'social skills': 'Can trainee communicate with people (eye-contact etc)? How is trainee’s interpersonal skill? Does he/she have good friends at work/school? What about the trainee’s mannerisms etc?',
-                    'motor skills': 'How is the trainee’s fine (small movements such as using fork or chopsticks) and gross (larger movements such as balancing, running, jumping) motor skills?',
-                    "trainee's t-shirt size": 'XS: 32-34 / S: 36-38 / M: 38-40 / L: 40-42 / XL: 46-48 / XXL: 50-52 / XXXL: 54-56'
+                    'life skills': 'Can trainee carry out daily activities like bathing, dressing, eating independently? Can trainee do household chores? Use telephone? Public transport?',
+                    'academic level': 'Number/money concept? Write name/address/phone number?',
+                    'social skills': 'Eye-contact? Interpersonal skill? Friends at work/school? Mannerisms?',
+                    'motor skills': 'Fine (fork/chopsticks) and Gross (balancing, running, jumping) motor skills?',
+                    "trainee's t-shirt size": 'XS: 32-34 / S: 36-38 / M: 38-40 / L: 40-42 / XL: 46-48 / XXL: 50-52 / XXXL: 54-56',
+                    'temperament': 'Please elaborate.',
+                    'personal feedback': 'Impression of family? Habits during session? Interactions so far?',
+                    // VOLUNTEER OBSERVATION GUIDES
+                    'attention span': 'Is your trainee attentive/distracted? Please elaborate.',
+                    'responsiveness': 'Is your trainee quick to respond/slow to respond/has no response? Please elaborate.',
+                    'receptiveness': 'Able to understand instructions with/without help OR unable even with help? What kind of help?'
                 },
 
                 setLoading(state, text = 'Loading...') {
@@ -473,51 +483,71 @@
                     const sections = [
                         { id: 'visit', title: 'Visit Details', keywords: ['date', 'volunteer', 'project'], bgClass: 'bg-blue-50 dark:bg-blue-900', textClass: 'text-blue-700 dark:text-blue-200' },
                         { id: 'trainee', title: 'Trainee Details', keywords: ['trainee', 'nric', 'address', 'gender', 'birth', 'blood', 'race', 'religion', 'language', 'shirt'], bgClass: 'bg-green-50 dark:bg-green-900', textClass: 'text-green-700 dark:text-green-200' },
+                        
+                        // CAREGIVER SECTION (with logic for 3 sets of contacts)
                         { id: 'caregiver', title: 'Caregiver & Family', keywords: ['caregiver', 'guardian', 'family', 'financial', 'difficulties', 'contact'], bgClass: 'bg-yellow-50 dark:bg-yellow-900', textClass: 'text-yellow-700 dark:text-yellow-200' },
-                        // ADDED 'height', 'weight' to Medical
-                        { id: 'medical', title: 'Medical & Health', keywords: ['medical', 'medication', 'health', 'allergy', 'disability', 'dietary', 'condition', 'diagnosis', 'height', 'weight'], bgClass: 'bg-red-50 dark:bg-red-900', textClass: 'text-red-700 dark:text-red-200' },
+                        
+                        // MEDICAL SECTION (Added Allergies, Height, Weight)
+                        { id: 'medical', title: 'Medical & Health', keywords: ['medical', 'medication', 'health', 'allergy', 'allergies', 'disability', 'dietary', 'condition', 'diagnosis', 'height', 'weight'], bgClass: 'bg-red-50 dark:bg-red-900', textClass: 'text-red-700 dark:text-red-200' },
+                        
                         { id: 'behavior', title: 'Behaviour & Skills', keywords: ['personality', 'behavior', 'skills', 'interaction', 'activity', 'work', 'school'], bgClass: 'bg-purple-50 dark:bg-purple-900', textClass: 'text-purple-700 dark:text-purple-200' },
-                        // ADDED 'incident', 'receptiveness', 'recommendation' to Observation
-                        { id: 'observation', title: 'Volunteer Observation', keywords: ['observation', 'attention', 'responsiveness', 'confidence', 'feedback', 'fees', 'incident', 'receptiveness', 'recommendation', 'well-being'], bgClass: 'bg-gray-100 dark:bg-gray-700', textClass: 'text-gray-700 dark:text-gray-200' }
+                        
+                        // VOLUNTEER OBSERVATION (New Color, Added Keywords: academic, incidents)
+                        { id: 'observation', title: 'Volunteer Observation', keywords: ['observation', 'attention', 'responsiveness', 'confidence', 'feedback', 'fees', 'incident', 'receptiveness', 'recommendation', 'well-being', 'academic', 'abilities'], bgClass: 'bg-indigo-50 dark:bg-indigo-900', textClass: 'text-indigo-800 dark:text-indigo-200' }
                     ];
-                    const grouped = sections.map(s => ({ ...s, fields: [] }));
-                    const misc = { title: 'Miscellaneous', fields: [], bgClass: 'bg-gray-50 dark:bg-gray-800', textClass: 'text-gray-600' };
                     
-                    const seenFields = new Set(); // For deduplication
+                    // MISC SECTION (New Color)
+                    const misc = { title: 'Miscellaneous', fields: [], bgClass: 'bg-slate-100 dark:bg-gray-800', textClass: 'text-slate-600 dark:text-slate-400' };
+                    
+                    const grouped = sections.map(s => ({ ...s, fields: [] }));
+                    const seenFields = new Set(); 
 
                     this.headers.forEach((h, i) => {
                         const lower = String(h).toLowerCase();
                         if (lower.includes('timestamp') || !h || h.trim() === '') return; 
                         
-                        // CLEAN LABEL LOGIC (Separate Guide from Label)
+                        // CLEAN LABEL LOGIC
                         let label = h;
                         let guide = '';
                         
-                        // Parse Headers like "Activity (e.g. running)"
+                        // Extract guide from parentheses if it looks like one
                         const match = h.match(/^(.+?)(\s*[\(\（].+)/);
                         if (match) {
                             label = match[1].trim();
-                            guide = match[2].trim();
+                            // Keep original guide from sheet, but clean it later
+                            guide = match[2].trim(); 
                         }
 
                         // Duplicate Handling
                         if (this.headers.filter((v, idx) => v === h && idx < i).length > 0) label = `${label} (${this.headers.filter((v, idx) => v === h && idx < i).length + 1})`;
                         
-                        // Add Static Guide from PDF if available
-                        if (this.staticGuides[label.toLowerCase()]) {
-                            guide = (guide ? guide + ' ' : '') + this.staticGuides[label.toLowerCase()];
+                        // 1. Try to find a Static Guide match (Priority)
+                        let foundStatic = false;
+                        for (const key in this.staticGuides) {
+                            if (label.toLowerCase().includes(key)) {
+                                guide = this.staticGuides[key];
+                                foundStatic = true;
+                                break;
+                            }
+                        }
+
+                        // 2. If no static guide, clean the sheet guide
+                        if (!foundStatic && guide) {
+                            // Remove (1), (2), (s) from guide text
+                            guide = guide.replace(/\(\d+\)/g, '').replace(/\(s\)/g, 's').replace(/[\(\（\)\）]/g, '').trim();
                         }
 
                         const fieldObj = { label: label, guide: guide, index: i, raw: h };
                         
-                        // PREVENT DUPLICATES in Observation (e.g. Teabreak Receptiveness appearing twice)
-                        // If we already have a field with this Exact Clean Label in the grouped sections, skip it
                         if (seenFields.has(label)) return;
                         seenFields.add(label);
 
                         let placed = false;
                         for (const sec of grouped) { 
                             if (sec.keywords.some(k => lower.includes(k))) { 
+                                // Prevent 'Academic' going to Behavior if intended for Observation
+                                if (sec.id === 'behavior' && lower.includes('academic')) continue;
+                                
                                 sec.fields.push(fieldObj); 
                                 placed = true; 
                                 break; 
@@ -526,15 +556,18 @@
                         if (!placed) misc.fields.push(fieldObj);
                     });
 
-                    // 1. Caregiver Sorter
+                    // 1. Caregiver Sorter (1 -> 2 -> 3)
                     const caregiverSection = grouped.find(s => s.id === 'caregiver');
                     if (caregiverSection) {
                         caregiverSection.fields.sort((a, b) => {
-                            const nameA = a.label.toLowerCase();
-                            const nameB = b.label.toLowerCase();
-                            const numA = (nameA.match(/\((\d+)\)/) || [0, 0])[1];
-                            const numB = (nameB.match(/\((\d+)\)/) || [0, 0])[1];
+                            const nameA = a.raw.toLowerCase();
+                            const nameB = b.raw.toLowerCase();
+                            const numA = (nameA.match(/\((\d+)\)/) || [0, 99])[1]; // Default 99 to sort last if no num
+                            const numB = (nameB.match(/\((\d+)\)/) || [0, 99])[1];
+                            
                             if (numA != numB) return numA - numB;
+                            
+                            // Inside same group, order Name -> Relation -> Contact
                             const getRank = (n) => {
                                 if (n.includes('name')) return 1;
                                 if (n.includes('relation')) return 2;
@@ -545,26 +578,20 @@
                         });
                     }
 
-                    // 2. Observation Sorter (Group Activity -> Attn -> Resp -> Recept)
+                    // 2. Observation Sorter
                     const obsSection = grouped.find(s => s.id === 'observation');
                     if (obsSection) {
                         obsSection.fields.sort((a, b) => {
                             const nA = a.label.toLowerCase();
                             const nB = b.label.toLowerCase();
-                            
-                            // Define Groups order
                             const groups = ['sing-along', 'cdt', 'prt', 'teabreak'];
                             const getGroupIdx = (n) => {
                                 const idx = groups.findIndex(g => n.includes(g));
-                                return idx === -1 ? 99 : idx; // 99 for general items
+                                return idx === -1 ? 99 : idx;
                             };
-
                             const groupA = getGroupIdx(nA);
                             const groupB = getGroupIdx(nB);
-
                             if (groupA !== groupB) return groupA - groupB;
-
-                            // Within group, Sort: Attention -> Responsiveness -> Receptiveness
                             const types = ['attention', 'responsiveness', 'receptiveness'];
                             const getTypeIdx = (n) => {
                                 const idx = types.findIndex(t => n.includes(t));
