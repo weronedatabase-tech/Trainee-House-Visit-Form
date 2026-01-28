@@ -649,4 +649,77 @@
                         seenFields.add(label);
 
                         let placed = false;
-                        for (const sec of
+                        for (const sec of grouped) { 
+                            if (sec.keywords.some(k => lower.includes(k))) { 
+                                if (lower.includes('disciplinary')) {
+                                    if (sec.id === 'schooling' && !lower.includes('school')) continue;
+                                    if (sec.id === 'working' && !lower.includes('work')) continue;
+                                }
+                                if (sec.id === 'behavior' && lower.includes('academic')) continue;
+                                if (sec.id === 'visit' && (lower.includes('incident') || lower.includes('recommendation') || lower.includes('well-being'))) continue;
+                                if (sec.id === 'behavior' && lower.includes('fees')) continue;
+
+                                sec.fields.push(fieldObj); 
+                                placed = true; 
+                                break; 
+                            } 
+                        }
+                        if (!placed) misc.fields.push(fieldObj);
+                    });
+
+                    // Sorters omitted for brevity (same as previous)
+                    const caregiverSection = grouped.find(s => s.id === 'caregiver');
+                    if (caregiverSection) {
+                        caregiverSection.fields.sort((a, b) => {
+                            const nameA = a.raw.toLowerCase();
+                            const nameB = b.raw.toLowerCase();
+                            const numA = (nameA.match(/\((\d+)\)/) || [0, 99])[1]; 
+                            const numB = (nameB.match(/\((\d+)\)/) || [0, 99])[1];
+                            if (numA != numB) return numA - numB;
+                            const getRank = (n) => {
+                                if (n.includes('name')) return 1;
+                                if (n.includes('relation')) return 2;
+                                if (n.includes('contact')) return 3;
+                                return 4;
+                            };
+                            return getRank(nameA) - getRank(nameB);
+                        });
+                    }
+
+                    const obsSection = grouped.find(s => s.id === 'observation');
+                    if (obsSection) {
+                        obsSection.fields.sort((a, b) => {
+                            const nA = a.label.toLowerCase();
+                            const nB = b.label.toLowerCase();
+                            const groups = ['sing-along', 'cdt', 'prt', 'teabreak'];
+                            const getGroupIdx = (n) => {
+                                const idx = groups.findIndex(g => n.includes(g));
+                                return idx === -1 ? 99 : idx;
+                            };
+                            const groupA = getGroupIdx(nA);
+                            const groupB = getGroupIdx(nB);
+                            if (groupA !== groupB) return groupA - groupB;
+                            const types = ['attention', 'responsiveness', 'receptiveness'];
+                            const getTypeIdx = (n) => {
+                                const idx = types.findIndex(t => n.includes(t));
+                                return idx === -1 ? 99 : idx;
+                            };
+                            return getTypeIdx(nA) - getTypeIdx(nB);
+                        });
+                    }
+                    
+                    return [...grouped, misc].filter(s => s.fields.length > 0);
+                },
+                
+                isLikertScale(name) { return String(name).toLowerCase().includes('mobility') || String(name).toLowerCase().includes('comprehension') || String(name).toLowerCase().includes('verbal'); },
+                getLikertLabel(name, side) { return (this.likertConfig[Object.keys(this.likertConfig).find(k => String(name).toLowerCase().includes(k))] || {})[side] || ''; },
+                isDate(name) { return String(name).toLowerCase().includes('date'); },
+                isProjectField(name) { return String(name).toLowerCase().trim() === 'project'; },
+                isShortInput(name) { return ['name', 'nric', 'gender', 'sex', 'race', 'religion', 'blood', 'height', 'weight', 'shirt', 'relation', 'contact', 'mobile', 'phone', 'email'].some(k => String(name).toLowerCase().includes(k)); },
+                isLongText(name) { return !this.isDate(name) && !this.isShortInput(name) && !this.isProjectField(name) && !this.isLikertScale(name); },
+                isRegularInput(name) { return !this.isDate(name) && !this.isLongText(name); }
+            }
+        }
+    </script>
+</body>
+</html>
