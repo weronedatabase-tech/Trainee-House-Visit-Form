@@ -128,8 +128,8 @@
                 <!-- EMPTY STATE FEEDBACK -->
                 <div x-show="groupedHeaders.length === 0" class="text-center p-8 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg dark:border-gray-700">
                     <p class="text-lg font-semibold">No questions loaded.</p>
-                    <p class="text-xs mt-2 mb-4">Your local data might be missing or corrupt.</p>
-                    <button @click="fetchConfig" type="button" class="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-indigo-700 transition">Download Questions</button>
+                    <p class="text-xs mt-2 mb-4">The header list is empty or invalid.</p>
+                    <button @click="resetAppData" type="button" class="bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700 transition">Reset App</button>
                 </div>
 
                 <template x-for="(section, secIndex) in groupedHeaders" :key="secIndex">
@@ -334,13 +334,16 @@
                 loadConfigFromStorage() {
                     const cachedConfig = localStorage.getItem('appConfig');
                     if (cachedConfig) {
-                        const data = JSON.parse(cachedConfig);
-                        if(data.headers && Array.isArray(data.headers) && data.headers.length > 0) {
-                            this.headers = data.headers;
-                            this.trainees = data.trainees;
-                            this.projects = data.projects || [];
-                        } else {
-                            // Invalid cache detected
+                        try {
+                            const data = JSON.parse(cachedConfig);
+                            if(data.headers && Array.isArray(data.headers) && data.headers.length > 0) {
+                                this.headers = data.headers;
+                                this.trainees = data.trainees;
+                                this.projects = data.projects || [];
+                            } else {
+                                localStorage.removeItem('appConfig');
+                            }
+                        } catch(e) {
                             localStorage.removeItem('appConfig');
                         }
                     }
@@ -395,15 +398,18 @@
                 async fetchConfig() {
                     try {
                         const data = await this.performAction('getConfig');
-                        this.headers = Array.isArray(data.headers) ? data.headers : [];
-                        this.trainees = data.trainees || [];
-                        this.projects = data.projects || [];
-                        localStorage.setItem('appConfig', JSON.stringify({
-                            headers: this.headers,
-                            trainees: this.trainees,
-                            projects: this.projects
-                        }));
-                        this.syncOfflineData();
+                        // Robust check: Ensure headers are array
+                        if (data.headers && Array.isArray(data.headers)) {
+                            this.headers = data.headers;
+                            this.trainees = data.trainees || [];
+                            this.projects = data.projects || [];
+                            localStorage.setItem('appConfig', JSON.stringify({
+                                headers: this.headers,
+                                trainees: this.trainees,
+                                projects: this.projects
+                            }));
+                            this.syncOfflineData();
+                        }
                     } catch (e) { }
                 },
 
@@ -427,10 +433,12 @@
 
                 loadNewForm() {
                     this.formData = {};
-                    this.headers.forEach((h, i) => {
-                        if(String(h).toLowerCase().includes('date of visit')) this.formData[i] = new Date().toISOString().split('T')[0];
-                        else this.formData[i] = ''; 
-                    });
+                    if(this.headers) {
+                        this.headers.forEach((h, i) => {
+                            if(String(h).toLowerCase().includes('date of visit')) this.formData[i] = new Date().toISOString().split('T')[0];
+                            else this.formData[i] = ''; 
+                        });
+                    }
                     this.view = 'form';
                 },
 
@@ -455,7 +463,9 @@
                         const history = await this.performAction('getHistory', { trainee: traineeName });
                         this.formData = {};
                         this.headers.forEach((h, i) => {
-                            const lowerH = String(h).toLowerCase();
+                            // CRITICAL FIX: Ensure h is treated as string
+                            const strH = String(h || ''); 
+                            const lowerH = strH.toLowerCase();
                             const isExcluded = lowerH.includes('date of visit') || lowerH.includes('volunteer') || lowerH.includes('timestamp');
                             if (isExcluded) {
                                 if(lowerH.includes('date of visit')) this.formData[i] = new Date().toISOString().split('T')[0];
@@ -576,35 +586,41 @@
                 showToast(msg, type) { this.toast.message = msg; this.toast.type = type; this.toast.visible = true; setTimeout(() => this.toast.visible = false, 3000); },
                 
                 get groupedHeaders() {
+                    // Safety check at start
+                    if (!this.headers || !Array.isArray(this.headers) || this.headers.length === 0) return [];
+
                     const sections = [
                         { id: 'visit', title: 'Visit Details', keywords: ['date', 'volunteer', 'project'], bgClass: 'bg-blue-50 dark:bg-blue-900', textClass: 'text-blue-700 dark:text-blue-200' },
                         { id: 'trainee', title: 'Trainee Details', keywords: ['trainee', 'nric', 'address', 'gender', 'birth', 'blood', 'race', 'religion', 'language', 'shirt'], bgClass: 'bg-green-50 dark:bg-green-900', textClass: 'text-green-700 dark:text-green-200' },
                         { id: 'caregiver', title: 'Caregiver & Family', keywords: ['caregiver', 'guardian', 'family', 'financial', 'difficulties', 'contact'], bgClass: 'bg-yellow-50 dark:bg-yellow-900', textClass: 'text-yellow-700 dark:text-yellow-200' },
                         { id: 'medical', title: 'Medical & Health', keywords: ['medical', 'medication', 'health', 'allergy', 'allergies', 'disability', 'dietary', 'condition', 'diagnosis', 'height', 'weight'], bgClass: 'bg-red-50 dark:bg-red-900', textClass: 'text-red-700 dark:text-red-200' },
+                        
                         { id: 'abilities', title: "Trainee's Abilities", keywords: ['life skills', 'social skills', 'motor skills', 'other abilities'], bgClass: 'bg-purple-50 dark:bg-purple-900', textClass: 'text-purple-700 dark:text-purple-200' },
+                        
                         { id: 'schooling', title: "For Schooling Trainees Only", guide: "Elaborate further on what trainees are doing from Mondays to Fridays", keywords: ['location of school', 'activities in school', 'peers at school', 'disciplinary', 'school'], bgClass: 'bg-indigo-50 dark:bg-indigo-900', textClass: 'text-indigo-800 dark:text-indigo-200' },
+                        
                         { id: 'working', title: "For Working Trainees Only", guide: "Elaborate further on what trainees are doing from Mondays to Fridays", keywords: ['location of workplace', 'job scope', 'working hours', 'workplace', 'employment history', 'work'], bgClass: 'bg-indigo-50 dark:bg-indigo-900', textClass: 'text-indigo-800 dark:text-indigo-200' },
+                        
                         { id: 'observation', title: 'Volunteer Observation', keywords: ['observation', 'attention', 'responsiveness', 'confidence', 'feedback', 'incident', 'receptiveness', 'recommendation', 'well-being', 'academic', 'abilities'], bgClass: 'bg-indigo-50 dark:bg-indigo-900', textClass: 'text-indigo-800 dark:text-indigo-200' }
                     ];
                     
                     const misc = { title: 'Miscellaneous', fields: [], bgClass: 'bg-slate-100 dark:bg-gray-800', textClass: 'text-slate-600 dark:text-slate-400' };
                     const seenFields = new Set(); 
 
-                    if (!this.headers || !Array.isArray(this.headers)) return [];
-
                     this.headers.forEach((h, i) => {
-                        if (!h) return;
-                        const lower = String(h).toLowerCase();
-                        if (lower.includes('timestamp') || h.trim() === '') return; 
+                        // CRITICAL FIX: Convert ANY header type (including null/number) to string
+                        const strH = String(h || ''); 
+                        const lower = strH.toLowerCase();
+                        if (lower.includes('timestamp') || strH.trim() === '') return; 
                         
-                        let label = h;
+                        let label = strH;
                         let guide = '';
-                        const match = h.match(/^(.+?)(\s*[\(\（].+)/);
+                        const match = strH.match(/^(.+?)(\s*[\(\（].+)/);
                         if (match) {
                             let potentialLabel = match[1].trim();
                             let potentialGuide = match[2].trim();
                             if (/^[\(\（][s\d]+[\)\）]$/i.test(potentialGuide)) {
-                                label = h; 
+                                label = strH; 
                                 guide = '';
                             } else {
                                 label = potentialLabel;
@@ -627,45 +643,10 @@
                             guide = guide.replace(/\(\d+\)/g, '').replace(/\(s\)/g, '').replace(/[\(\（\)\）]/g, '').trim();
                         }
 
-                        const fieldObj = { label: label, guide: guide, index: i, raw: h };
+                        const fieldObj = { label: label, guide: guide, index: i, raw: strH };
                         
                         if (seenFields.has(label)) return;
                         seenFields.add(label);
 
                         let placed = false;
-                        for (const sec of grouped) { 
-                            if (sec.keywords.some(k => lower.includes(k))) { 
-                                if (lower.includes('disciplinary')) {
-                                    if (sec.id === 'schooling' && !lower.includes('school')) continue;
-                                    if (sec.id === 'working' && !lower.includes('work')) continue;
-                                }
-                                if (sec.id === 'behavior' && lower.includes('academic')) continue;
-                                if (sec.id === 'visit' && (lower.includes('incident') || lower.includes('recommendation') || lower.includes('well-being'))) continue;
-                                if (sec.id === 'behavior' && lower.includes('fees')) continue;
-
-                                sec.fields.push(fieldObj); 
-                                placed = true; 
-                                break; 
-                            } 
-                        }
-                        if (!placed) misc.fields.push(fieldObj);
-                    });
-
-                    // Sorters (Truncated to save space, logic is same as before)
-                    // ... (Identical Sorters Code) ...
-                    
-                    return [...grouped, misc].filter(s => s.fields.length > 0);
-                },
-                
-                isLikertScale(name) { return String(name).toLowerCase().includes('mobility') || String(name).toLowerCase().includes('comprehension') || String(name).toLowerCase().includes('verbal'); },
-                getLikertLabel(name, side) { return (this.likertConfig[Object.keys(this.likertConfig).find(k => String(name).toLowerCase().includes(k))] || {})[side] || ''; },
-                isDate(name) { return String(name).toLowerCase().includes('date'); },
-                isProjectField(name) { return String(name).toLowerCase().trim() === 'project'; },
-                isShortInput(name) { return ['name', 'nric', 'gender', 'sex', 'race', 'religion', 'blood', 'height', 'weight', 'shirt', 'relation', 'contact', 'mobile', 'phone', 'email'].some(k => String(name).toLowerCase().includes(k)); },
-                isLongText(name) { return !this.isDate(name) && !this.isShortInput(name) && !this.isProjectField(name) && !this.isLikertScale(name); },
-                isRegularInput(name) { return !this.isDate(name) && !this.isLongText(name); }
-            }
-        }
-    </script>
-</body>
-</html>
+                        for (const sec of
