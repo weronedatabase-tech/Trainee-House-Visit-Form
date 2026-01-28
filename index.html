@@ -31,6 +31,12 @@
         .dark textarea {
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 2 L2 8' stroke='%236B7280' stroke-width='1.5'/%3E%3Cpath d='M8 6 L6 8' stroke='%236B7280' stroke-width='1.5'/%3E%3C/svg%3E");
         }
+        
+        /* Custom Radio Style */
+        .custom-radio:checked {
+            background-color: #4F46E5;
+            border-color: #4F46E5;
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-200 min-h-screen"
@@ -38,7 +44,6 @@
 
     <!-- CONFIGURATION -->
     <script>
-        // REPLACE WITH NEW DEPLOYMENT URL
         const API_URL = 'https://script.google.com/macros/s/AKfycbw21ZGdd-SfmRJrB-zMcfzVKTzIG-hU-BwKaA33J1bukq-4_ZJGQfH6_KBr4LdgjZvXmw/exec'; 
     </script>
 
@@ -135,10 +140,33 @@
                         <div class="p-4 space-y-5">
                             <template x-for="field in section.fields" :key="field.index">
                                 <div>
+                                    <!-- LABEL & GUIDE -->
                                     <label class="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200" x-text="field.label"></label>
                                     <p x-show="field.guide" class="text-xs text-gray-500 dark:text-gray-400 mb-2 italic" x-text="field.guide"></p>
                                     
-                                    <!-- PROJECT DROPDOWN -->
+                                    <!-- 1. LIKERT SCALE (1-5 Radio) -->
+                                    <template x-if="isLikertScale(field.label)">
+                                        <div class="mt-2 mb-4">
+                                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs text-gray-500 dark:text-gray-400 gap-2 mb-2">
+                                                <div class="sm:w-1/3 text-left sm:text-right" x-text="getLikertLabel(field.label, 'left')"></div>
+                                                
+                                                <!-- Radio Group -->
+                                                <div class="flex justify-center gap-3 sm:gap-6 bg-gray-50 dark:bg-gray-900 p-2 rounded-lg border dark:border-gray-700">
+                                                    <template x-for="val in [1, 2, 3, 4, 5]" :key="val">
+                                                        <label class="flex flex-col items-center cursor-pointer">
+                                                            <span class="text-xs font-bold mb-1" x-text="val"></span>
+                                                            <input type="radio" :name="'likert-'+field.index" :value="val" x-model="formData[field.index]" 
+                                                                   class="custom-radio w-5 h-5 border-2 border-gray-300 rounded-full focus:ring-0 cursor-pointer appearance-none bg-white dark:bg-gray-700 checked:bg-primary checked:border-primary transition-all">
+                                                        </label>
+                                                    </template>
+                                                </div>
+
+                                                <div class="sm:w-1/3 text-right sm:text-left" x-text="getLikertLabel(field.label, 'right')"></div>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    <!-- 2. PROJECT DROPDOWN -->
                                     <template x-if="isProjectField(field.label)">
                                         <select x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
                                             <option value="">Select Project...</option>
@@ -148,18 +176,18 @@
                                         </select>
                                     </template>
 
-                                    <!-- RESIZABLE TEXT AREA -->
-                                    <template x-if="isLongText(field.label)">
+                                    <!-- 3. RESIZABLE TEXT AREA -->
+                                    <template x-if="isLongText(field.label) && !isLikertScale(field.label)">
                                         <textarea x-model="formData[field.index]" rows="3" 
                                                   class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary min-h-[100px]"></textarea>
                                     </template>
                                     
-                                    <!-- DATE INPUT -->
+                                    <!-- 4. DATE INPUT -->
                                     <template x-if="isDate(field.label)">
                                         <input type="date" x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
                                     </template>
                                     
-                                    <!-- SHORT INPUT -->
+                                    <!-- 5. SHORT INPUT -->
                                     <template x-if="isShortInput(field.label) && !isProjectField(field.label)">
                                         <input type="text" x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
                                     </template>
@@ -264,6 +292,13 @@
                     'attention span': 'Is your trainee attentive/distracted? Please elaborate.',
                     'responsiveness': 'Is your trainee quick to respond/slow to respond/has no response? Please elaborate.',
                     'receptiveness': 'Able to understand instructions with/without help OR unable even with help? What kind of help?'
+                },
+
+                // LIKERT CONFIGURATION
+                likertConfig: {
+                    'mobility': { left: 'Need support to walk and can be clumsy', right: 'Agile and stable' },
+                    'comprehension': { left: 'Very Low (unable to follow instructions)', right: 'High (able to follow instructions effectively)' },
+                    'verbal': { left: 'Very Low (non-verbal)', right: 'High (able to engage in conversations)' }
                 },
 
                 setLoading(state, text = 'Loading...') {
@@ -493,19 +528,13 @@
                     const sections = [
                         { id: 'visit', title: 'Visit Details', keywords: ['date', 'volunteer', 'project'], bgClass: 'bg-blue-50 dark:bg-blue-900', textClass: 'text-blue-700 dark:text-blue-200' },
                         { id: 'trainee', title: 'Trainee Details', keywords: ['trainee', 'nric', 'address', 'gender', 'birth', 'blood', 'race', 'religion', 'language', 'shirt'], bgClass: 'bg-green-50 dark:bg-green-900', textClass: 'text-green-700 dark:text-green-200' },
-                        
                         { id: 'caregiver', title: 'Caregiver & Family', keywords: ['caregiver', 'guardian', 'family', 'financial', 'difficulties', 'contact'], bgClass: 'bg-yellow-50 dark:bg-yellow-900', textClass: 'text-yellow-700 dark:text-yellow-200' },
-                        
                         { id: 'medical', title: 'Medical & Health', keywords: ['medical', 'medication', 'health', 'allergy', 'allergies', 'disability', 'dietary', 'condition', 'diagnosis', 'height', 'weight'], bgClass: 'bg-red-50 dark:bg-red-900', textClass: 'text-red-700 dark:text-red-200' },
-                        
                         { id: 'behavior', title: 'Behaviour & Skills', keywords: ['personality', 'behavior', 'skills', 'interaction', 'activity', 'work', 'school'], bgClass: 'bg-purple-50 dark:bg-purple-900', textClass: 'text-purple-700 dark:text-purple-200' },
-                        
                         { id: 'observation', title: 'Volunteer Observation', keywords: ['observation', 'attention', 'responsiveness', 'confidence', 'feedback', 'fees', 'incident', 'receptiveness', 'recommendation', 'well-being', 'academic', 'abilities'], bgClass: 'bg-indigo-50 dark:bg-indigo-900', textClass: 'text-indigo-800 dark:text-indigo-200' }
                     ];
-                    
-                    const misc = { title: 'Miscellaneous', fields: [], bgClass: 'bg-slate-100 dark:bg-gray-800', textClass: 'text-slate-600 dark:text-slate-400' };
-                    
                     const grouped = sections.map(s => ({ ...s, fields: [] }));
+                    const misc = { title: 'Miscellaneous', fields: [], bgClass: 'bg-slate-100 dark:bg-gray-800', textClass: 'text-slate-600 dark:text-slate-400' };
                     const seenFields = new Set(); 
 
                     this.headers.forEach((h, i) => {
@@ -514,7 +543,6 @@
                         
                         let label = h;
                         let guide = '';
-                        
                         const match = h.match(/^(.+?)(\s*[\(\（].+)/);
                         if (match) {
                             label = match[1].trim();
@@ -531,9 +559,7 @@
                                 break;
                             }
                         }
-
                         if (!foundStatic && guide) {
-                            // Clean unwanted text like (1), (s) from guide
                             guide = guide.replace(/\(\d+\)/g, '').replace(/\(s\)/g, 's').replace(/[\(\（\)\）]/g, '').trim();
                         }
 
@@ -545,9 +571,7 @@
                         let placed = false;
                         for (const sec of grouped) { 
                             if (sec.keywords.some(k => lower.includes(k))) { 
-                                // Specific Exceptions to override keyword matching
                                 if (sec.id === 'behavior' && lower.includes('academic')) continue;
-                                
                                 sec.fields.push(fieldObj); 
                                 placed = true; 
                                 break; 
@@ -556,6 +580,7 @@
                         if (!placed) misc.fields.push(fieldObj);
                     });
 
+                    // 1. Caregiver Sorter
                     const caregiverSection = grouped.find(s => s.id === 'caregiver');
                     if (caregiverSection) {
                         caregiverSection.fields.sort((a, b) => {
@@ -563,9 +588,7 @@
                             const nameB = b.raw.toLowerCase();
                             const numA = (nameA.match(/\((\d+)\)/) || [0, 99])[1]; 
                             const numB = (nameB.match(/\((\d+)\)/) || [0, 99])[1];
-                            
                             if (numA != numB) return numA - numB;
-                            
                             const getRank = (n) => {
                                 if (n.includes('name')) return 1;
                                 if (n.includes('relation')) return 2;
@@ -576,6 +599,41 @@
                         });
                     }
 
+                    // 2. Trainee Sorter (Short Name after Full Name)
+                    const traineeSection = grouped.find(s => s.id === 'trainee');
+                    if (traineeSection) {
+                        traineeSection.fields.sort((a, b) => {
+                            const nA = a.label.toLowerCase();
+                            const nB = b.label.toLowerCase();
+                            const getRank = (n) => {
+                                if (n.includes('full name')) return 1;
+                                if (n.includes('short name')) return 2;
+                                return 10;
+                            };
+                            return getRank(nA) - getRank(nB);
+                        });
+                    }
+
+                    // 3. Medical Sorter (Special Needs after Past Medical)
+                    const medSection = grouped.find(s => s.id === 'medical');
+                    if (medSection) {
+                        medSection.fields.sort((a, b) => {
+                            const nA = a.label.toLowerCase();
+                            const nB = b.label.toLowerCase();
+                            const getRank = (n) => {
+                                if (n.includes('past medical')) return 5;
+                                if (n.includes('special needs')) return 6;
+                                return 10; // Default others later
+                            };
+                            // If both have specific ranks, sort by rank
+                            if (getRank(nA) !== 10 || getRank(nB) !== 10) {
+                                return getRank(nA) - getRank(nB);
+                            }
+                            return 0; // Default sheet order for others
+                        });
+                    }
+
+                    // 4. Observation Sorter
                     const obsSection = grouped.find(s => s.id === 'observation');
                     if (obsSection) {
                         obsSection.fields.sort((a, b) => {
@@ -601,6 +659,18 @@
                     return [...grouped, misc].filter(s => s.fields.length > 0);
                 },
                 
+                // Helper to identify Likert Scale Fields
+                isLikertScale(name) {
+                    const n = String(name).toLowerCase();
+                    return Object.keys(this.likertConfig).some(key => n.includes(key) && (n.includes('level') || n.includes('ability')));
+                },
+
+                getLikertLabel(name, side) {
+                    const n = String(name).toLowerCase();
+                    const key = Object.keys(this.likertConfig).find(k => n.includes(k));
+                    return key ? this.likertConfig[key][side] : '';
+                },
+
                 isDate(name) { return String(name).toLowerCase().includes('date'); },
                 isProjectField(name) { return String(name).toLowerCase().trim() === 'project'; },
                 
@@ -609,7 +679,7 @@
                     const shortKeywords = ['name', 'nric', 'gender', 'sex', 'race', 'religion', 'blood', 'height', 'weight', 'shirt', 'relation', 'contact', 'mobile', 'phone', 'email'];
                     return shortKeywords.some(k => n.includes(k));
                 },
-                isLongText(name) { return !this.isDate(name) && !this.isShortInput(name) && !this.isProjectField(name); },
+                isLongText(name) { return !this.isDate(name) && !this.isShortInput(name) && !this.isProjectField(name) && !this.isLikertScale(name); },
                 isRegularInput(name) { return !this.isDate(name) && !this.isLongText(name); }
             }
         }
