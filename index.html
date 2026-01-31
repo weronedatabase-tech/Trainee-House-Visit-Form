@@ -329,6 +329,7 @@
                         if (!this.headers || this.headers.length === 0) await this.fetchConfig();
                     }
                     try {
+                        // Backend now returns { "Header Name": "Value", "Other Header": "Value" }
                         const history = await this.performAction('getHistory', { trainee: name });
                         this.formData = {};
                         if(this.headers) {
@@ -433,17 +434,22 @@
 
                         let label = rawH, guide = '';
                         
-                        const hyphenMatch = rawH.match(/^(.+?\(\d+\))\s*[-–]\s*(.+)/);
-                        
-                        if (hyphenMatch) {
-                            label = hyphenMatch[1].trim();
-                            guide = hyphenMatch[2].trim();
+                        // EXCEPTION: Keep "Area" fields intact
+                        if (rawH.toLowerCase().startsWith('area')) {
+                             label = rawH;
+                             guide = '';
                         } else {
-                            const match = rawH.match(/^(.+?)(\s*[\(\（].+)/);
-                            if (match) {
-                                if (!/^[\(\（][s\d]+[\)\）]$/i.test(match[2].trim())) {
-                                    label = match[1].trim(); 
-                                    guide = match[2].trim();
+                            const hyphenMatch = rawH.match(/^(.+?\(\d+\))\s*[-–]\s*(.+)/);
+                            if (hyphenMatch) {
+                                label = hyphenMatch[1].trim();
+                                guide = hyphenMatch[2].trim();
+                            } else {
+                                const match = rawH.match(/^(.+?)(\s*[\(\（].+)/);
+                                if (match) {
+                                    if (!/^[\(\（][s\d]+[\)\）]$/i.test(match[2].trim())) {
+                                        label = match[1].trim(); 
+                                        guide = match[2].trim();
+                                    }
                                 }
                             }
                         }
