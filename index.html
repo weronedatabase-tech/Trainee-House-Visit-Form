@@ -330,13 +330,21 @@
                         if (!this.headers || this.headers.length === 0) await this.fetchConfig();
                     }
                     try {
+                        // Backend now returns { "Header Name": "Value", "Other Header": "Value" }
                         const history = await this.performAction('getHistory', { trainee: name });
                         this.formData = {};
                         if(this.headers) {
                             this.headers.forEach((h, i) => {
-                                const lower = String(h).toLowerCase();
+                                const rawHeader = String(h);
+                                const lower = rawHeader.toLowerCase();
+                                
                                 if(!lower.includes('date of visit')) {
-                                     this.formData[i] = history[i] || '';
+                                     // ROBUST MAPPING: Lookup by exact Header String first
+                                     if (history[rawHeader] !== undefined) {
+                                         this.formData[i] = history[rawHeader];
+                                     } else {
+                                         this.formData[i] = '';
+                                     }
                                 } else {
                                      // Date of visit is always "Today" for a new form
                                      this.formData[i] = new Date().toISOString().split('T')[0];
@@ -366,7 +374,6 @@
                     this.setLoading(true, 'Submitting...');
                     
                     try {
-                        // Create row data mapping to all headers (sending blank for hidden/unmapped fields)
                         const rowData = this.headers.map((header, index) => {
                             let val = this.formData[index];
                             if (val === undefined || val === null) return '';
@@ -427,17 +434,14 @@
 
                         let label = rawH, guide = '';
                         
-                        // NEW LOGIC: Handle "Name (1) - Guide" pattern correctly
                         const hyphenMatch = rawH.match(/^(.+?\(\d+\))\s*[-–]\s*(.+)/);
                         
                         if (hyphenMatch) {
                             label = hyphenMatch[1].trim();
                             guide = hyphenMatch[2].trim();
                         } else {
-                            // Standard Regex for generic brackets
                             const match = rawH.match(/^(.+?)(\s*[\(\（].+)/);
                             if (match) {
-                                // Don't split if the bracket part is JUST a number or 's' (e.g. Contact (1))
                                 if (!/^[\(\（][s\d]+[\)\）]$/i.test(match[2].trim())) {
                                     label = match[1].trim(); 
                                     guide = match[2].trim();
