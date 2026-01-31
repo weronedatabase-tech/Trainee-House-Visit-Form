@@ -6,9 +6,7 @@
     <title>House Visit Form</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <!-- Alpine Collapse for Accordion -->
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     <script>
         tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#4F46E5', secondary: '#10B981' } } } }
     </script>
@@ -75,10 +73,7 @@
         <!-- DASHBOARD -->
         <div x-show="view === 'dashboard'">
             <div class="mb-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-                <h2 class="text-lg font-semibold mb-4 flex justify-between">
-                    <span>Find Trainee</span>
-                    <span x-show="loadingTrainees" class="text-xs text-primary animate-pulse">Syncing...</span>
-                </h2>
+                <h2 class="text-lg font-semibold mb-4">Find Trainee</h2>
                 <div class="relative">
                     <input type="text" x-model="searchQuery" @focus="refreshTrainees" placeholder="Search name..." class="w-full p-3 pl-4 border rounded-lg text-gray-900 dark:text-gray-100 dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
                     <div x-show="searchQuery.length > 0" class="mt-2 max-h-60 overflow-y-auto border rounded-lg dark:border-gray-700">
@@ -91,7 +86,6 @@
                         <div x-show="filteredTrainees.length === 0" class="p-3 text-gray-500 bg-white dark:bg-gray-800 text-center">No matches found</div>
                     </div>
                 </div>
-                <div class="mt-2 text-xs text-gray-400">Pulls list from 'lookup' tab</div>
             </div>
             <div class="text-center">
                 <button @click="loadNewForm" class="w-full sm:w-auto px-8 bg-secondary text-white p-4 rounded-lg shadow-md font-bold text-lg">+ Start New Blank Visit</button>
@@ -108,14 +102,13 @@
                 
                 <div x-show="groupedHeaders.length === 0" class="text-center p-8 text-gray-500 border-2 border-dashed rounded-lg">
                     <p class="text-lg font-bold">No questions loaded.</p>
-                    <p class="text-sm">Check mapping sheet. Only mapped fields are shown.</p>
                     <button @click="resetAppData" type="button" class="mt-4 bg-red-600 text-white px-4 py-2 rounded text-sm">Reset App</button>
                 </div>
 
                 <template x-for="(section, secIndex) in groupedHeaders" :key="secIndex">
                     <div class="mb-6 rounded-lg overflow-hidden shadow-sm border dark:border-gray-700 bg-white dark:bg-gray-800">
                         
-                        <!-- HEADER (ACCORDION) -->
+                        <!-- HEADER (ACCORDION) WITH COLORS -->
                         <div @click="toggleSection(section.title)" 
                              class="p-4 font-bold uppercase text-sm tracking-wide border-b dark:border-gray-600 cursor-pointer flex justify-between items-center select-none" 
                              :class="section.bgClass + ' ' + section.textClass">
@@ -195,7 +188,17 @@
                 </div>
                 <div x-show="!settingsUnlocked">
                     <div x-show="settingsError" class="text-red-500 text-sm mb-2" x-text="settingsError"></div>
-                    <input type="password" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Password" class="w-full p-3 border rounded mb-3 dark:bg-gray-700">
+                    
+                    <!-- SETTINGS PASSWORD WITH SHOW/HIDE -->
+                    <div class="relative w-full mb-3">
+                        <input :type="showSettingsPass ? 'text' : 'password'" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Settings Password" 
+                               class="w-full p-3 border rounded dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
+                        <button type="button" @click="showSettingsPass = !showSettingsPass" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-primary">
+                            <svg x-show="!showSettingsPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            <svg x-show="showSettingsPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
+                        </button>
+                    </div>
+
                     <button @click="unlockSettings" class="w-full bg-gray-800 text-white p-3 rounded">Unlock</button>
                 </div>
                 <div x-show="settingsUnlocked" class="space-y-6">
@@ -220,7 +223,7 @@
                 toast: { visible: false, message: '', type: 'success' },
                 headers: [], trainees: [], projects: [], mapping: {}, sectionOrder: [], searchQuery: '', loadingTrainees: false,
                 formData: {}, isSubmitting: false, isLoading: false, loadingText: 'Please wait...',
-                showSettings: false, settingsPass: '', settingsUnlocked: false, settingsError: '', 
+                showSettings: false, settingsPass: '', showSettingsPass: false, settingsUnlocked: false, settingsError: '', 
                 newColumnName: '', newAppPass: '', newSettingsPass: '',
                 
                 expandedSections: {},
@@ -320,11 +323,11 @@
 
                         this.view = 'form';
                     } catch(e) {
-                        this.loadNewForm(); 
+                        this.loadNewForm(); // Fallback
                     } finally { this.setLoading(false); }
                 },
 
-                // DYNAMIC GROUPING
+                // DYNAMIC GROUPING LOGIC (MAPPING SHEET)
                 get groupedHeaders() {
                     if (!this.headers || !Array.isArray(this.headers) || this.headers.length === 0) return [];
                     
@@ -332,28 +335,29 @@
                     // Use Order from Backend or Fallback
                     const orderToUse = (this.sectionOrder && this.sectionOrder.length > 0) ? this.sectionOrder : ['General Details'];
 
-                    // Helper to get color based on section title keywords
+                    // IMPROVED COLOR MAPPING
                     const getColors = (t) => {
                         const l=t.toLowerCase();
-                        if(l.includes('visit')||l.includes('general')||l.includes('volunteer')) return {bg:'bg-blue-50 dark:bg-blue-900', txt:'text-blue-700 dark:text-blue-200'};
+                        if(l.includes('general')||l.includes('visit')||l.includes('volunteer')) return {bg:'bg-blue-50 dark:bg-blue-900', txt:'text-blue-700 dark:text-blue-200'};
                         if(l.includes('trainee')) return {bg:'bg-green-50 dark:bg-green-900', txt:'text-green-700 dark:text-green-200'};
-                        if(l.includes('caregiver')||l.includes('family')) return {bg:'bg-yellow-50 dark:bg-yellow-900', txt:'text-yellow-700 dark:text-yellow-200'};
+                        if(l.includes('caregiver')||l.includes('family')||l.includes('emergency')||l.includes('background')) return {bg:'bg-yellow-50 dark:bg-yellow-900', txt:'text-yellow-700 dark:text-yellow-200'};
                         if(l.includes('medical')||l.includes('health')) return {bg:'bg-red-50 dark:bg-red-900', txt:'text-red-700 dark:text-red-200'};
-                        if(l.includes('ability')||l.includes('behaviour')) return {bg:'bg-purple-50 dark:bg-purple-900', txt:'text-purple-700 dark:text-purple-200'};
-                        if(l.includes('schooling')||l.includes('working')) return {bg:'bg-indigo-50 dark:bg-indigo-900', txt:'text-indigo-800 dark:text-indigo-200'};
+                        if(l.includes('abilit')||l.includes('behavio')) return {bg:'bg-purple-50 dark:bg-purple-900', txt:'text-purple-700 dark:text-purple-200'};
+                        if(l.includes('school')||l.includes('work')) return {bg:'bg-indigo-50 dark:bg-indigo-900', txt:'text-indigo-800 dark:text-indigo-200'};
                         if(l.includes('observation')) return {bg:'bg-pink-50 dark:bg-pink-900', txt:'text-pink-700 dark:text-pink-200'};
                         return {bg:'bg-slate-100 dark:bg-gray-800', txt:'text-slate-600 dark:text-slate-400'};
                     };
 
                     groups = orderToUse.map(title => ({ title: title, fields: [], ...getColors(title) }));
                     
-                    // Always ensure Misc exists
                     let misc = groups.find(g => g.title === 'Miscellaneous');
                     if (!misc) {
                         misc = { title: 'Miscellaneous', fields: [], ...getColors('Miscellaneous') };
                         groups.push(misc);
                     }
 
+                    const seen = new Set();
+                    
                     this.headers.forEach((h, i) => {
                         const rawH = String(h);
                         const lower = rawH.toLowerCase();
@@ -367,13 +371,23 @@
                             }
                         }
                         
-                        // Keep full label logic for duplicate headers
+                        // Keep full label for duplicate headers
                         if (this.headers.filter((v, idx) => v === h && idx < i).length > 0) label = `${label} (${this.headers.filter((v, idx) => v === h && idx < i).length + 1})`;
                         
                         for(const k in this.staticGuides) if(label.toLowerCase().includes(k)) { guide = this.staticGuides[k]; break; }
                         if(guide) guide = guide.replace(/[\(\（]dd\/mm\/yy.*?[\)\）]/gi, '').replace(/\(\d+\)/g, '').replace(/\(s\)/g, '').replace(/[\(\（\)\）]/g, '').trim();
 
                         const field = { label, guide, index: i, raw: rawH };
+                        
+                        // NOTE: Duplicate fields (like Attached Volunteer) have same label if we don't distinguish them.
+                        // But here we use 'i' index for uniqueness. 
+                        // Just ensure we don't skip based on label alone if duplicates exist.
+                        // Actually, 'seen' set logic below might hide duplicates if labels match exactly.
+                        // Fix: Don't add to seen if we expect duplicates for this field?
+                        // Better Fix: Append index to label in 'seen' set to allow dupes with same text
+                        const seenKey = label + '_' + i;
+                        if(seen.has(seenKey)) return; 
+                        seen.add(seenKey);
 
                         // MAPPING LOGIC
                         let mappedSection = this.mapping[rawH] || this.mapping[label];
@@ -387,7 +401,6 @@
                             if(group) { group.fields.push(field); return; }
                         }
                         
-                        // Default to Misc if no map found
                         misc.fields.push(field);
                     });
 
