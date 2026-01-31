@@ -201,9 +201,10 @@
                     </div>
                 </template>
                 <div class="h-24"></div>
-                <div class="fixed bottom-0 left-0 w-full p-4 bg-white dark:bg-gray-900 border-t dark:border-gray-700 flex gap-3 z-20 shadow-lg">
-                    <button type="button" @click="saveOffline" class="flex-1 bg-gray-500 text-white p-3 rounded-lg font-bold">Save Later</button>
-                    <button type="submit" class="flex-1 bg-primary text-white p-3 rounded-lg font-bold">Submit</button>
+                
+                <!-- FOOTER (NO SAVE LATER) -->
+                <div class="fixed bottom-0 left-0 w-full p-4 bg-white dark:bg-gray-900 border-t dark:border-gray-700 flex z-20 shadow-lg">
+                    <button type="submit" class="w-full bg-primary text-white p-3 rounded-lg font-bold shadow-md hover:bg-indigo-700 transition">Submit</button>
                 </div>
             </form>
         </div>
@@ -259,7 +260,6 @@
 
                 async initApp() {
                     this.toggleTheme(false);
-                    window.addEventListener('online', () => this.syncOfflineData());
                     this.loadConfigFromStorage();
                     if (navigator.onLine) this.fetchConfig();
                     if (localStorage.getItem('isLoggedIn') === 'true') this.isLoggedIn = true;
@@ -314,7 +314,6 @@
                             mapping: this.mapping,
                             sectionOrder: this.sectionOrder
                         }));
-                        this.syncOfflineData();
                     } catch(e) {}
                 },
 
@@ -330,7 +329,6 @@
                         if (!this.headers || this.headers.length === 0) await this.fetchConfig();
                     }
                     try {
-                        // Backend now returns { "Header Name": "Value", "Other Header": "Value" }
                         const history = await this.performAction('getHistory', { trainee: name });
                         this.formData = {};
                         if(this.headers) {
@@ -395,7 +393,8 @@
                                 throw new Error(result.error || 'Submission failed');
                             }
                         } else {
-                            this.saveOffline(rowData);
+                             // REMOVED OFFLINE SAVE LOGIC
+                             this.showToast('You are offline. Please connect to internet to submit.', 'error');
                         }
                     } catch (e) {
                         this.showToast('Error: ' + e.message, 'error');
@@ -526,12 +525,6 @@
                     } 
                 },
                 resetAppData() { localStorage.clear(); window.location.reload(true); },
-                saveOffline(row) { 
-                    this.showToast('Offline: Saved locally. Sync later.', 'warning');
-                    this.view = 'dashboard';
-                    this.formData = {};
-                },
-                syncOfflineData() { /* ... */ },
                 openSettings() { this.showSettings=true; },
                 unlockSettings() { if(this.settingsPass==='werone') this.settingsUnlocked=true; else this.settingsError='Wrong Password'; },
                 addColumn() { this.performAction('addColumn', {headerName:this.newColumnName}); },
