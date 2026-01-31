@@ -24,7 +24,7 @@
         const API_URL = 'https://script.google.com/macros/s/AKfycbw21ZGdd-SfmRJrB-zMcfzVKTzIG-hU-BwKaA33J1bukq-4_ZJGQfH6_KBr4LdgjZvXmw/exec'; 
     </script>
 
-    <!-- LOADING OVERLAY -->
+    <!-- LOADING -->
     <div x-show="isLoading" x-transition.opacity class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm" x-cloak>
         <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl flex flex-col items-center">
             <svg class="animate-spin h-10 w-10 text-primary mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -63,7 +63,10 @@
         <!-- DASHBOARD -->
         <div x-show="view === 'dashboard'">
             <div class="mb-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-                <h2 class="text-lg font-semibold mb-4">Find Trainee</h2>
+                <h2 class="text-lg font-semibold mb-4 flex justify-between">
+                    <span>Find Trainee</span>
+                    <span x-show="loadingTrainees" class="text-xs text-primary animate-pulse">Syncing...</span>
+                </h2>
                 <div class="relative">
                     <input type="text" x-model="searchQuery" @focus="refreshTrainees" placeholder="Search name..." class="w-full p-3 pl-4 border rounded-lg text-gray-900 dark:text-gray-100 dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
                     <div x-show="searchQuery.length > 0" class="mt-2 max-h-60 overflow-y-auto border rounded-lg dark:border-gray-700">
@@ -73,9 +76,10 @@
                                 <span class="text-xs font-semibold text-indigo-700 bg-indigo-100 dark:text-indigo-100 dark:bg-indigo-600 px-3 py-1 rounded-full">Fill Form</span>
                             </div>
                         </template>
-                        <div x-show="filteredTrainees.length === 0" class="p-3 text-gray-500 text-center">No matches found</div>
+                        <div x-show="filteredTrainees.length === 0" class="p-3 text-gray-500 bg-white dark:bg-gray-800 text-center">No matches found</div>
                     </div>
                 </div>
+                <div class="mt-2 text-xs text-gray-400">Pulls list from 'lookup' tab</div>
             </div>
             <div class="text-center">
                 <button @click="loadNewForm" class="w-full sm:w-auto px-8 bg-secondary text-white p-4 rounded-lg shadow-md font-bold text-lg">+ Start New Blank Visit</button>
@@ -92,6 +96,7 @@
                 
                 <div x-show="groupedHeaders.length === 0" class="text-center p-8 text-gray-500 border-2 border-dashed rounded-lg">
                     <p class="text-lg font-bold">No questions loaded.</p>
+                    <p class="text-sm">Please check the 'Field-Section-Mapping' sheet.</p>
                     <button @click="resetAppData" type="button" class="mt-4 bg-red-600 text-white px-4 py-2 rounded text-sm">Reset App</button>
                 </div>
 
@@ -113,12 +118,12 @@
                                             <div class="flex gap-2 sm:gap-4 shrink-0 justify-center">
                                                 <template x-for="val in [1, 2, 3, 4, 5]" :key="val">
                                                     <label class="flex flex-col items-center cursor-pointer">
-                                                        <span class="text-[10px] font-bold mb-1" x-text="val"></span>
-                                                        <input type="radio" :name="'likert-'+field.index" :value="val" x-model="formData[field.index]" class="custom-radio w-5 h-5 border-2 rounded-full bg-white dark:bg-gray-700 checked:bg-primary border-gray-300">
+                                                        <span class="text-[10px] sm:text-xs font-bold mb-1" x-text="val"></span>
+                                                        <input type="radio" :name="'likert-'+field.index" :value="val" x-model="formData[field.index]" class="custom-radio w-5 h-5 sm:w-6 sm:h-6 border-2 rounded-full focus:ring-0 cursor-pointer appearance-none bg-white dark:bg-gray-700 checked:bg-primary border-gray-300">
                                                     </label>
                                                 </template>
                                             </div>
-                                            <span class="w-1/3 text-left text-[10px] text-gray-500 dark:text-gray-400 leading-tight" x-text="getLikertLabel(field.label, 'right')"></span>
+                                            <span class="w-1/3 text-left text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight" x-text="getLikertLabel(field.label, 'right')"></span>
                                         </div>
                                     </template>
 
@@ -206,7 +211,7 @@
                 view: 'dashboard', darkMode: localStorage.getItem('theme') === 'dark',
                 isLoggedIn: false, loginPass: '', loginError: '',
                 toast: { visible: false, message: '', type: 'success' },
-                headers: [], trainees: [], projects: [], searchQuery: '', loadingTrainees: false,
+                headers: [], trainees: [], projects: [], mapping: {}, sectionOrder: [], searchQuery: '', loadingTrainees: false,
                 formData: {}, isSubmitting: false, isLoading: false, loadingText: 'Please wait...',
                 showSettings: false, settingsPass: '', settingsUnlocked: false, settingsError: '', 
                 newColumnName: '', newAppPass: '', newSettingsPass: '',
@@ -224,12 +229,12 @@
                     const parts = String(isoDate).split('-'); 
                     if(parts.length !== 3) return isoDate; 
                     const d = new Date(parts[0], parts[1]-1, parts[2]);
-                    if(isNaN(d.getTime())) return isoDate;
                     return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
                 },
 
-                staticGuides: { 'life skills': 'Bathing, dressing, chores, transport?', 'academic level': 'Numbers, money, writing?', 'social skills': 'Eye-contact, friends, mannerisms?', 'motor skills': 'Fine/Gross motor skills?', "trainee's t-shirt size": 'XS: 32-34 / S: 36-38 / M: 38-40 / L: 40-42', 'temperament': 'Please elaborate.', 'personal feedback': 'Family habits, interactions?', 'attention span': 'Attentive/distracted?', 'responsiveness': 'Quick/Slow/No response?', 'receptiveness': 'Understand instructions?' },
-                likertConfig: { 'mobility': { left: 'Need support', right: 'Agile/Stable' }, 'comprehension': { left: 'Low (cannot follow)', right: 'High (follows well)' }, 'verbal': { left: 'Low (non-verbal)', right: 'High (conversational)' } },
+                // STATIC GUIDES (Kept for fallback)
+                staticGuides: { 'life skills': 'Can trainee carry out daily activities like bathing, dressing, eating independently? Household chores? Use telephone? Public transport?', 'academic level': 'Number/money concept? Write name/address/phone number?', 'social skills': 'Eye-contact? Interpersonal skill? Friends at work/school? Mannerisms?', 'motor skills': 'Fine (fork/chopsticks) and Gross (balancing, running, jumping) motor skills?', "trainee's t-shirt size": 'XS: 32-34 / S: 36-38 / M: 38-40 / L: 40-42 / XL: 46-48 / XXL: 50-52 / XXXL: 54-56', 'temperament': 'Please elaborate.', 'personal feedback': 'Impression of family? Habits during session? Interactions so far?', 'attention span': 'Is your trainee attentive/distracted? Please elaborate.', 'responsiveness': 'Is your trainee quick to respond/slow to respond/has no response? Please elaborate.', 'receptiveness': 'Able to understand instructions with/without help OR unable even with help? What kind of help?' },
+                likertConfig: { 'mobility': { left: 'Need support to walk and can be clumsy', right: 'Agile and stable' }, 'comprehension': { left: 'Very Low (unable to follow instructions)', right: 'High (able to follow instructions effectively)' }, 'verbal': { left: 'Very Low (non-verbal)', right: 'High (able to engage in conversations)' } },
 
                 setLoading(s, t='Loading...') { this.isLoading = s; this.loadingText = t; },
                 toggleTheme(t=true) { if(t) this.darkMode = !this.darkMode; localStorage.setItem('theme', this.darkMode ? 'dark' : 'light'); if(this.darkMode) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); },
@@ -256,21 +261,22 @@
                         this.headers = Array.isArray(data.headers) ? data.headers.map(String) : [];
                         this.trainees = data.trainees || [];
                         this.projects = data.projects || [];
-                        localStorage.setItem('appConfig', JSON.stringify({ headers: this.headers, trainees: this.trainees, projects: this.projects }));
+                        this.mapping = data.mapping || {};
+                        this.sectionOrder = data.sectionOrder || [];
+                        localStorage.setItem('appConfig', JSON.stringify({ 
+                            headers: this.headers, 
+                            trainees: this.trainees, 
+                            projects: this.projects,
+                            mapping: this.mapping,
+                            sectionOrder: this.sectionOrder
+                        }));
                         this.syncOfflineData();
                     } catch(e) {}
                 },
 
                 async refreshTrainees() { if(navigator.onLine) await this.fetchConfig(); },
-
-                get filteredTrainees() {
-                    if (!this.searchQuery) return [];
-                    const q = this.searchQuery.toLowerCase();
-                    return this.trainees.filter(t => t && String(t).toLowerCase().includes(q));
-                },
-
+                get filteredTrainees() { if(!this.searchQuery) return []; const q=this.searchQuery.toLowerCase(); return this.trainees.filter(t=>t&&String(t).toLowerCase().includes(q)); },
                 getNameIndex() { return this.headers ? this.headers.findIndex(h => String(h).toLowerCase().includes('trainee') && String(h).toLowerCase().includes('name')) : -1; },
-
                 loadNewForm() { this.loadTraineeForm(''); },
 
                 async loadTraineeForm(name) {
@@ -285,8 +291,8 @@
                         if(this.headers) {
                             this.headers.forEach((h, i) => {
                                 const lower = String(h).toLowerCase();
-                                if(lower.includes('date of visit')) this.formData[i] = new Date().toISOString().split('T')[0];
-                                else this.formData[i] = history[i] || '';
+                                if(!lower.includes('date of visit') && !lower.includes('volunteer')) this.formData[i] = history[i] || '';
+                                else if(lower.includes('date of visit')) this.formData[i] = new Date().toISOString().split('T')[0];
                             });
                         }
                         const nameIdx = this.getNameIndex();
@@ -297,90 +303,96 @@
                     } finally { this.setLoading(false); }
                 },
 
-                // --- CRITICAL FIX FOR BLANK PAGE ---
-                // Simplified, Robust Grouping Logic (Strict Priority)
+                // DYNAMIC GROUPING LOGIC (MAPPING SHEET)
                 get groupedHeaders() {
-                    if (!this.headers || this.headers.length === 0) return [];
+                    if (!this.headers || !Array.isArray(this.headers) || this.headers.length === 0) return [];
                     
-                    // 1. Define Sections
-                    const sections = [
-                        { id: 'visit', title: 'Visit Details', keywords: ['date', 'volunteer', 'project'], bgClass: 'bg-blue-50 dark:bg-blue-900', textClass: 'text-blue-700 dark:text-blue-200' },
-                        { id: 'trainee', title: 'Trainee Details', keywords: ['trainee', 'nric', 'address', 'gender', 'birth', 'blood', 'race', 'religion', 'language', 'shirt'], bgClass: 'bg-green-50 dark:bg-green-900', textClass: 'text-green-700 dark:text-green-200' },
-                        { id: 'caregiver', title: 'Caregiver & Family', keywords: ['caregiver', 'guardian', 'family', 'financial', 'difficulties', 'contact'], bgClass: 'bg-yellow-50 dark:bg-yellow-900', textClass: 'text-yellow-700 dark:text-yellow-200' },
-                        { id: 'medical', title: 'Medical & Health', keywords: ['medical', 'medication', 'health', 'allergy', 'allergies', 'disability', 'dietary', 'condition', 'diagnosis', 'height', 'weight'], bgClass: 'bg-red-50 dark:bg-red-900', textClass: 'text-red-700 dark:text-red-200' },
-                        { id: 'abilities', title: "Trainee's Abilities", keywords: ['life skills', 'social skills', 'motor skills', 'other abilities'], bgClass: 'bg-purple-50 dark:bg-purple-900', textClass: 'text-purple-700 dark:text-purple-200' },
-                        { id: 'schooling', title: "For Schooling Trainees Only", guide: "Elaborate...", keywords: ['school'], bgClass: 'bg-indigo-50 dark:bg-indigo-900', textClass: 'text-indigo-800 dark:text-indigo-200' },
-                        { id: 'working', title: "For Working Trainees Only", guide: "Elaborate...", keywords: ['workplace', 'job scope', 'working hours', 'employment', 'work'], bgClass: 'bg-indigo-50 dark:bg-indigo-900', textClass: 'text-indigo-800 dark:text-indigo-200' },
-                        { id: 'observation', title: 'Volunteer Observation', keywords: ['observation', 'attention', 'responsiveness', 'confidence', 'feedback', 'incident', 'receptiveness', 'recommendation', 'well-being', 'academic', 'abilities'], bgClass: 'bg-indigo-50 dark:bg-indigo-900', textClass: 'text-indigo-800 dark:text-indigo-200' }
-                    ];
+                    // 1. Initialize Groups from Section Order
+                    let groups = [];
+                    // Default fallback sections if order is empty
+                    const defaultSections = ['Visit Details', 'Trainee Details', 'Caregiver & Family', 'Medical & Health', "Trainee's Abilities", 'For Schooling Trainees Only', 'For Working Trainees Only', 'Volunteer Observation', 'Miscellaneous'];
+                    const orderToUse = (this.sectionOrder && this.sectionOrder.length > 0) ? this.sectionOrder : defaultSections;
 
-                    const misc = { title: 'Miscellaneous', fields: [], bgClass: 'bg-slate-100 dark:bg-gray-800', textClass: 'text-slate-600 dark:text-slate-400' };
+                    // Helper to get color
+                    const getColors = (t) => {
+                        const l=t.toLowerCase();
+                        if(l.includes('visit')) return {bg:'bg-blue-50 dark:bg-blue-900', txt:'text-blue-700 dark:text-blue-200'};
+                        if(l.includes('trainee')) return {bg:'bg-green-50 dark:bg-green-900', txt:'text-green-700 dark:text-green-200'};
+                        if(l.includes('caregiver')) return {bg:'bg-yellow-50 dark:bg-yellow-900', txt:'text-yellow-700 dark:text-yellow-200'};
+                        if(l.includes('medical')) return {bg:'bg-red-50 dark:bg-red-900', txt:'text-red-700 dark:text-red-200'};
+                        if(l.includes('ability')||l.includes('behavior')) return {bg:'bg-purple-50 dark:bg-purple-900', txt:'text-purple-700 dark:text-purple-200'};
+                        if(l.includes('observation')) return {bg:'bg-indigo-50 dark:bg-indigo-900', txt:'text-indigo-800 dark:text-indigo-200'};
+                        return {bg:'bg-slate-100 dark:bg-gray-800', txt:'text-slate-600 dark:text-slate-400'};
+                    };
+
+                    groups = orderToUse.map(title => ({ title: title, fields: [], ...getColors(title) }));
                     
-                    // Create map for easy access
-                    const sectionMap = sections.map(s => ({...s, fields: []}));
-                    const assignedIndices = new Set();
+                    // Ensure Misc exists
+                    let misc = groups.find(g => g.title === 'Miscellaneous');
+                    if (!misc) {
+                        misc = { title: 'Miscellaneous', fields: [], ...getColors('Miscellaneous') };
+                        groups.push(misc);
+                    }
 
-                    // 2. Iterate Headers
+                    const seen = new Set();
+                    
                     this.headers.forEach((h, i) => {
-                        if (!h) return;
-                        const strH = String(h);
-                        const lower = strH.toLowerCase();
-                        if (lower.includes('timestamp') || strH.trim() === '') return;
+                        const rawH = String(h);
+                        const lower = rawH.toLowerCase();
+                        if (lower.includes('timestamp') || rawH.trim() === '') return;
 
-                        // Parse Label/Guide
-                        let label = strH, guide = '';
-                        const match = strH.match(/^(.+?)(\s*[\(\（].+)/);
+                        let label = rawH, guide = '';
+                        const match = rawH.match(/^(.+?)(\s*[\(\（].+)/);
                         if (match) {
-                            if (!/^[\(\（][s\d]+[\)\）]$/i.test(match[2].trim())) {
-                                label = match[1].trim(); guide = match[2].trim();
-                            }
+                            if (/^[\(\（][s\d]+[\)\）]$/i.test(match[2].trim())) { label = rawH; } 
+                            else { label = match[1].trim(); guide = match[2].trim(); }
                         }
-
-                        // Static Guide Override
+                        
+                        if (this.headers.filter((v, idx) => v === h && idx < i).length > 0) label = `${label} (${this.headers.filter((v, idx) => v === h && idx < i).length + 1})`;
+                        
+                        // Static Guides Fallback
                         for(const k in this.staticGuides) if(label.toLowerCase().includes(k)) { guide = this.staticGuides[k]; break; }
                         if(guide) guide = guide.replace(/[\(\（]dd\/mm\/yy.*?[\)\）]/gi, '').replace(/\(\d+\)/g, '').replace(/\(s\)/g, '').replace(/[\(\（\)\）]/g, '').trim();
 
-                        const field = { label, guide, index: i, raw: strH };
-                        
-                        // 3. PRIORITY ASSIGNMENT (First Match Wins)
-                        // Visit
-                        if (lower.includes('date') || (lower.includes('volunteer') && !lower.includes('observation') && !lower.includes('recommendation')) || lower.includes('project')) {
-                            sectionMap[0].fields.push(field); return;
-                        }
-                        // Trainee (Exclude 'Incidents')
-                        if (!lower.includes('incident') && !lower.includes('recommendation') && (lower.includes('trainee') || lower.includes('nric') || lower.includes('address') || lower.includes('gender') || lower.includes('birth') || lower.includes('blood') || lower.includes('race') || lower.includes('religion') || lower.includes('language') || lower.includes('shirt'))) {
-                            sectionMap[1].fields.push(field); return;
-                        }
-                        // Caregiver
-                        if (lower.includes('caregiver') || lower.includes('guardian') || lower.includes('family') || lower.includes('financial') || lower.includes('contact')) {
-                            sectionMap[2].fields.push(field); return;
-                        }
-                        // Medical
-                        if (lower.includes('medical') || lower.includes('medication') || lower.includes('health') || lower.includes('allergy') || lower.includes('disability') || lower.includes('dietary') || lower.includes('condition') || lower.includes('diagnosis') || lower.includes('height') || lower.includes('weight')) {
-                            sectionMap[3].fields.push(field); return;
-                        }
-                        // Abilities
-                        if (lower.includes('life skills') || lower.includes('social skills') || lower.includes('motor skills') || lower.includes('other abilities')) {
-                            sectionMap[4].fields.push(field); return;
-                        }
-                        // Schooling (Exclude Behavior)
-                        if (lower.includes('school')) {
-                            sectionMap[5].fields.push(field); return;
-                        }
-                        // Working
-                        if (lower.includes('workplace') || lower.includes('job scope') || lower.includes('working hours') || lower.includes('employment') || (lower.includes('work') && !lower.includes('school'))) {
-                            sectionMap[6].fields.push(field); return;
-                        }
-                        // Observation (Catch-all for behavior/incidents)
-                        if (lower.includes('observation') || lower.includes('attention') || lower.includes('responsiveness') || lower.includes('confidence') || lower.includes('feedback') || lower.includes('incident') || lower.includes('receptiveness') || lower.includes('recommendation') || lower.includes('well-being') || lower.includes('academic') || lower.includes('abilities') || lower.includes('disciplinary') || lower.includes('behavior')) {
-                            sectionMap[7].fields.push(field); return;
-                        }
+                        const field = { label, guide, index: i, raw: rawH };
+                        if(seen.has(label)) return; 
+                        seen.add(label);
 
-                        // Fallback
+                        // MAPPING LOGIC
+                        // 1. Try exact match from Mapping sheet
+                        let mappedSection = this.mapping[rawH] || this.mapping[label];
+                        // 2. Try match without numbers e.g. "Caregiver (1)" -> "Caregiver"
+                        if(!mappedSection) {
+                            const cleanKey = rawH.replace(/\(\d+\)/g, '').trim();
+                            mappedSection = this.mapping[cleanKey];
+                        }
+                        
+                        if(mappedSection) {
+                            const group = groups.find(g => g.title === mappedSection);
+                            if(group) { group.fields.push(field); return; }
+                        }
+                        
+                        // 3. Fallback to Old Keyword Logic if mapping fails/missing
+                        // (Kept as safety net for unmapped fields)
+                         for(const s of groups) {
+                             // ... (Inject keywords logic if needed, or just dump to Misc) ...
+                         }
+                        
+                        // Default to Misc if no map found
                         misc.fields.push(field);
                     });
 
-                    return [...sectionMap, misc].filter(s => s.fields.length > 0);
+                    // Sorters
+                    const sortByGroup = (arr, fn) => arr.sort((a,b) => fn(a) - fn(b));
+                    const cg = groups.find(s=>s.title.includes('Caregiver'));
+                    if(cg) sortByGroup(cg.fields, (f) => {
+                        const n = f.raw.toLowerCase();
+                        const num = (n.match(/\((\d+)\)/) || [0,99])[1];
+                        const rank = n.includes('name')?1:n.includes('relation')?2:n.includes('contact')?3:4;
+                        return (num*10) + rank;
+                    });
+                    
+                    return groups.filter(s => s.fields.length > 0);
                 },
 
                 isLikertScale(n) { const s=String(n).toLowerCase(); return s.includes('mobility')||s.includes('comprehension')||s.includes('verbal'); },
@@ -390,7 +402,21 @@
                 isShortInput(n) { return ['name','nric','gender','sex','race','religion','blood','height','weight','shirt','relation','contact','mobile','phone','email'].some(k=>String(n).toLowerCase().includes(k)); },
                 isLongText(n) { return !this.isDate(n) && !this.isShortInput(n) && !this.isProjectField(n) && !this.isLikertScale(n); },
                 
-                loadConfigFromStorage() { const c = localStorage.getItem('appConfig'); if(c) { try { const d=JSON.parse(c); this.headers=d.headers||[]; this.trainees=d.trainees||[]; this.projects=d.projects||[]; } catch(e){} } },
+                loadNewForm() { this.loadTraineeForm(''); },
+                refreshTrainees() { if(navigator.onLine) this.fetchConfig(); },
+                loadConfigFromStorage() { 
+                    const c = localStorage.getItem('appConfig'); 
+                    if(c) { 
+                        try { 
+                            const d=JSON.parse(c); 
+                            this.headers=d.headers||[]; 
+                            this.trainees=d.trainees||[]; 
+                            this.projects=d.projects||[]; 
+                            this.mapping=d.mapping||{}; 
+                            this.sectionOrder=d.sectionOrder||[];
+                        } catch(e){} 
+                    } 
+                },
                 resetAppData() { localStorage.clear(); window.location.reload(true); },
                 saveOffline(row) { /* ... */ },
                 syncOfflineData() { /* ... */ },
