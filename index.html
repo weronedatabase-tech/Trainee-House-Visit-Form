@@ -6,6 +6,9 @@
     <title>House Visit Form</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Alpine Collapse Plugin for smooth accordion -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     <script>
         tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: '#4F46E5', secondary: '#10B981' } } } }
     </script>
@@ -50,23 +53,32 @@
     <!-- LOGIN -->
     <div x-show="!isLoggedIn" class="flex flex-col items-center justify-center min-h-[80vh] p-6">
         <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-sm">
-            <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
+            <h2 class="text-2xl font-bold mb-6 text-center">Volunteer Login</h2>
             <div x-show="loginError" class="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm text-center" x-text="loginError"></div>
-            <input type="password" x-model="loginPass" @keyup.enter="performLogin" placeholder="Password" class="w-full p-3 border rounded mb-4 dark:bg-gray-700 dark:border-gray-600 outline-none">
-            <button @click="performLogin" class="w-full bg-primary text-white p-3 rounded font-bold">Login</button>
+            
+            <!-- PASSWORD WITH SHOW/HIDE -->
+            <div class="relative w-full mb-4">
+                <input :type="showLoginPass ? 'text' : 'password'" x-model="loginPass" @keyup.enter="performLogin" placeholder="Enter Password" 
+                       class="w-full p-3 border rounded dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
+                <button type="button" @click="showLoginPass = !showLoginPass" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-primary">
+                    <!-- Eye Icon -->
+                    <svg x-show="!showLoginPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    <!-- Eye Off Icon -->
+                    <svg x-show="showLoginPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
+                </button>
+            </div>
+
+            <button @click="performLogin" class="w-full bg-primary text-white p-3 rounded font-bold hover:bg-indigo-700 transition">Login</button>
         </div>
     </div>
 
-    <!-- MAIN -->
+    <!-- APP -->
     <div x-show="isLoggedIn" x-cloak class="p-4 max-w-4xl mx-auto pb-24">
         
         <!-- DASHBOARD -->
         <div x-show="view === 'dashboard'">
             <div class="mb-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-                <h2 class="text-lg font-semibold mb-4 flex justify-between">
-                    <span>Find Trainee</span>
-                    <span x-show="loadingTrainees" class="text-xs text-primary animate-pulse">Syncing...</span>
-                </h2>
+                <h2 class="text-lg font-semibold mb-4">Find Trainee</h2>
                 <div class="relative">
                     <input type="text" x-model="searchQuery" @focus="refreshTrainees" placeholder="Search name..." class="w-full p-3 pl-4 border rounded-lg text-gray-900 dark:text-gray-100 dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
                     <div x-show="searchQuery.length > 0" class="mt-2 max-h-60 overflow-y-auto border rounded-lg dark:border-gray-700">
@@ -79,7 +91,6 @@
                         <div x-show="filteredTrainees.length === 0" class="p-3 text-gray-500 bg-white dark:bg-gray-800 text-center">No matches found</div>
                     </div>
                 </div>
-                <div class="mt-2 text-xs text-gray-400">Pulls list from 'lookup' tab</div>
             </div>
             <div class="text-center">
                 <button @click="loadNewForm" class="w-full sm:w-auto px-8 bg-secondary text-white p-4 rounded-lg shadow-md font-bold text-lg">+ Start New Blank Visit</button>
@@ -96,60 +107,75 @@
                 
                 <div x-show="groupedHeaders.length === 0" class="text-center p-8 text-gray-500 border-2 border-dashed rounded-lg">
                     <p class="text-lg font-bold">No questions loaded.</p>
-                    <p class="text-sm">Please check the 'Field-Section-Mapping' sheet.</p>
+                    <p class="text-sm">Check mapping sheet. Only mapped fields are shown.</p>
                     <button @click="resetAppData" type="button" class="mt-4 bg-red-600 text-white px-4 py-2 rounded text-sm">Reset App</button>
                 </div>
 
                 <template x-for="(section, secIndex) in groupedHeaders" :key="secIndex">
+                    <!-- COLLAPSIBLE SECTION -->
                     <div class="mb-6 rounded-lg overflow-hidden shadow-sm border dark:border-gray-700 bg-white dark:bg-gray-800">
-                        <div class="p-4 font-bold uppercase text-sm tracking-wide border-b dark:border-gray-600" :class="section.bgClass + ' ' + section.textClass">
-                             <div x-text="section.title"></div>
-                             <div x-show="section.guide" class="text-xs font-normal opacity-75 mt-1 normal-case tracking-normal" x-text="section.guide"></div>
+                        
+                        <!-- HEADER (CLICK TO TOGGLE) -->
+                        <div @click="toggleSection(section.title)" 
+                             class="p-4 font-bold uppercase text-sm tracking-wide border-b dark:border-gray-600 cursor-pointer flex justify-between items-center select-none" 
+                             :class="section.bgClass + ' ' + section.textClass">
+                             <div>
+                                <div x-text="section.title"></div>
+                                <div x-show="section.guide" class="text-xs font-normal opacity-75 mt-1 normal-case tracking-normal" x-text="section.guide"></div>
+                             </div>
+                             <!-- Chevron Icon -->
+                             <svg class="w-5 h-5 transition-transform duration-200" 
+                                  :class="expandedSections[section.title] ? 'rotate-180' : ''"
+                                  fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </div>
-                        <div class="p-4 space-y-5">
-                            <template x-for="field in section.fields" :key="field.index">
-                                <div>
-                                    <label class="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200" x-text="field.label"></label>
-                                    <p x-show="field.guide" class="text-xs text-gray-500 dark:text-gray-400 mb-2 italic" x-text="field.guide"></p>
-                                    
-                                    <template x-if="isLikertScale(field.label)">
-                                        <div class="mt-2 mb-4 bg-gray-50 dark:bg-gray-900 p-3 sm:p-4 rounded-lg border dark:border-gray-700 flex flex-row items-center justify-between gap-1 sm:gap-4">
-                                            <span class="w-1/3 text-right text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight pr-1" x-text="getLikertLabel(field.label, 'left')"></span>
-                                            <div class="flex gap-2 sm:gap-4 shrink-0 justify-center">
-                                                <template x-for="val in [1, 2, 3, 4, 5]" :key="val">
-                                                    <label class="flex flex-col items-center cursor-pointer">
-                                                        <span class="text-[10px] sm:text-xs font-bold mb-1" x-text="val"></span>
-                                                        <input type="radio" :name="'likert-'+field.index" :value="val" x-model="formData[field.index]" class="custom-radio w-5 h-5 sm:w-6 sm:h-6 border-2 rounded-full focus:ring-0 cursor-pointer appearance-none bg-white dark:bg-gray-700 checked:bg-primary border-gray-300">
-                                                    </label>
-                                                </template>
+                        
+                        <!-- BODY (X-SHOW) -->
+                        <div x-show="expandedSections[section.title]" x-collapse>
+                            <div class="p-4 space-y-5">
+                                <template x-for="field in section.fields" :key="field.index">
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200" x-text="field.label"></label>
+                                        <p x-show="field.guide" class="text-xs text-gray-500 dark:text-gray-400 mb-2 italic" x-text="field.guide"></p>
+                                        
+                                        <template x-if="isLikertScale(field.label)">
+                                            <div class="mt-2 mb-4 bg-gray-50 dark:bg-gray-900 p-3 sm:p-4 rounded-lg border dark:border-gray-700 flex flex-row items-center justify-between gap-1 sm:gap-4">
+                                                <span class="w-1/3 text-right text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight pr-1" x-text="getLikertLabel(field.label, 'left')"></span>
+                                                <div class="flex gap-2 sm:gap-4 shrink-0 justify-center">
+                                                    <template x-for="val in [1, 2, 3, 4, 5]" :key="val">
+                                                        <label class="flex flex-col items-center cursor-pointer">
+                                                            <span class="text-[10px] sm:text-xs font-bold mb-1" x-text="val"></span>
+                                                            <input type="radio" :name="'likert-'+field.index" :value="val" x-model="formData[field.index]" class="custom-radio w-5 h-5 sm:w-6 sm:h-6 border-2 rounded-full focus:ring-0 cursor-pointer appearance-none bg-white dark:bg-gray-700 checked:bg-primary border-gray-300">
+                                                        </label>
+                                                    </template>
+                                                </div>
+                                                <span class="w-1/3 text-left text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight pl-1" x-text="getLikertLabel(field.label, 'right')"></span>
                                             </div>
-                                            <span class="w-1/3 text-left text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight" x-text="getLikertLabel(field.label, 'right')"></span>
-                                        </div>
-                                    </template>
+                                        </template>
 
-                                    <template x-if="isProjectField(field.label)">
-                                        <select x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700">
-                                            <option value="">Select Project...</option>
-                                            <template x-for="opt in projects" :key="opt"><option :value="opt" x-text="opt"></option></template>
-                                        </select>
-                                    </template>
+                                        <template x-if="isProjectField(field.label)">
+                                            <select x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700">
+                                                <option value="">Select Project...</option>
+                                                <template x-for="opt in projects" :key="opt"><option :value="opt" x-text="opt"></option></template>
+                                            </select>
+                                        </template>
 
-                                    <template x-if="isDate(field.label)">
-                                        <div class="relative">
-                                            <input type="text" readonly :value="formatDateDisplay(formData[field.index])" placeholder="DD MMM YYYY" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700">
-                                            <input type="date" x-model="formData[field.index]" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                                        </div>
-                                    </template>
+                                        <template x-if="isDate(field.label)">
+                                            <div class="relative">
+                                                <input type="text" readonly :value="formatDateDisplay(formData[field.index])" placeholder="DD MMM YYYY" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700">
+                                                <input type="date" x-model="formData[field.index]" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                            </div>
+                                        </template>
 
-                                    <template x-if="isLongText(field.label) && !isLikertScale(field.label)">
-                                        <textarea x-model="formData[field.index]" rows="3" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none min-h-[100px]"></textarea>
-                                    </template>
-                                    
-                                    <template x-if="isShortInput(field.label) && !isProjectField(field.label)">
-                                        <input type="text" x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none">
-                                    </template>
-                                </div>
-                            </template>
+                                        <template x-if="isLongText(field.label) && !isLikertScale(field.label)">
+                                            <textarea x-model="formData[field.index]" rows="3" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none min-h-[100px]"></textarea>
+                                        </template>
+                                        
+                                        <template x-if="isShortInput(field.label) && !isProjectField(field.label)">
+                                            <input type="text" x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none">
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -177,24 +203,6 @@
                     <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200">
                         <button @click="resetAppData" class="w-full bg-red-600 text-white px-4 py-2 rounded font-bold text-sm">Reset App Data</button>
                     </div>
-                    <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300">Add Question</h3>
-                        <div class="flex gap-2">
-                            <input type="text" x-model="newColumnName" placeholder="Title" class="flex-1 p-2 border rounded dark:bg-gray-600">
-                            <button @click="addColumn" class="bg-secondary text-white px-4 rounded">+</button>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300">Edit Questions</h3>
-                        <div class="space-y-2 max-h-48 overflow-y-auto border p-2 rounded dark:border-gray-600">
-                            <template x-for="(header, idx) in headers" :key="idx">
-                                <div class="flex gap-2 items-center">
-                                    <div class="text-xs text-gray-400 w-6" x-text="idx+1"></div>
-                                    <input type="text" x-model="headers[idx]" @change="renameColumn(idx, headers[idx])" class="flex-1 p-2 text-sm border rounded dark:bg-gray-700">
-                                </div>
-                            </template>
-                        </div>
-                    </div>
                     <div class="border-t pt-4 dark:border-gray-600">
                          <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300">Security</h3>
                          <div class="mb-3"><input type="text" x-model="newAppPass" placeholder="New App Password" class="w-full p-2 border rounded dark:bg-gray-700 text-sm mb-1"><button @click="changePassword('APP')" class="bg-gray-600 text-white px-3 py-1 rounded text-xs">Update App Pass</button></div>
@@ -209,12 +217,15 @@
         function appData() {
             return {
                 view: 'dashboard', darkMode: localStorage.getItem('theme') === 'dark',
-                isLoggedIn: false, loginPass: '', loginError: '',
+                isLoggedIn: false, loginPass: '', showLoginPass: false, loginError: '',
                 toast: { visible: false, message: '', type: 'success' },
                 headers: [], trainees: [], projects: [], mapping: {}, sectionOrder: [], searchQuery: '', loadingTrainees: false,
                 formData: {}, isSubmitting: false, isLoading: false, loadingText: 'Please wait...',
                 showSettings: false, settingsPass: '', settingsUnlocked: false, settingsError: '', 
                 newColumnName: '', newAppPass: '', newSettingsPass: '',
+                
+                // ACCORDION STATE
+                expandedSections: {},
 
                 async initApp() {
                     this.toggleTheme(false);
@@ -222,6 +233,10 @@
                     this.loadConfigFromStorage();
                     if (navigator.onLine) this.fetchConfig();
                     if (localStorage.getItem('isLoggedIn') === 'true') this.isLoggedIn = true;
+                },
+
+                toggleSection(title) {
+                    this.expandedSections[title] = !this.expandedSections[title];
                 },
 
                 formatDateDisplay(isoDate) {
@@ -232,7 +247,6 @@
                     return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
                 },
 
-                // STATIC GUIDES (Kept for fallback)
                 staticGuides: { 'life skills': 'Can trainee carry out daily activities like bathing, dressing, eating independently? Household chores? Use telephone? Public transport?', 'academic level': 'Number/money concept? Write name/address/phone number?', 'social skills': 'Eye-contact? Interpersonal skill? Friends at work/school? Mannerisms?', 'motor skills': 'Fine (fork/chopsticks) and Gross (balancing, running, jumping) motor skills?', "trainee's t-shirt size": 'XS: 32-34 / S: 36-38 / M: 38-40 / L: 40-42 / XL: 46-48 / XXL: 50-52 / XXXL: 54-56', 'temperament': 'Please elaborate.', 'personal feedback': 'Impression of family? Habits during session? Interactions so far?', 'attention span': 'Is your trainee attentive/distracted? Please elaborate.', 'responsiveness': 'Is your trainee quick to respond/slow to respond/has no response? Please elaborate.', 'receptiveness': 'Able to understand instructions with/without help OR unable even with help? What kind of help?' },
                 likertConfig: { 'mobility': { left: 'Need support to walk and can be clumsy', right: 'Agile and stable' }, 'comprehension': { left: 'Very Low (unable to follow instructions)', right: 'High (able to follow instructions effectively)' }, 'verbal': { left: 'Very Low (non-verbal)', right: 'High (able to engage in conversations)' } },
 
@@ -297,6 +311,17 @@
                         }
                         const nameIdx = this.getNameIndex();
                         if(nameIdx !== -1) this.formData[nameIdx] = name;
+                        
+                        // INITIALIZE ACCORDION STATE
+                        this.expandedSections = {};
+                        if(this.sectionOrder && this.sectionOrder.length > 0) {
+                            this.sectionOrder.forEach(sec => {
+                                // Expand if contains "General Details", else collapse
+                                if(sec.toLowerCase().includes("general details")) this.expandedSections[sec] = true;
+                                else this.expandedSections[sec] = false;
+                            });
+                        }
+
                         this.view = 'form';
                     } catch(e) {
                         this.loadNewForm(); // Fallback
@@ -307,31 +332,23 @@
                 get groupedHeaders() {
                     if (!this.headers || !Array.isArray(this.headers) || this.headers.length === 0) return [];
                     
-                    // 1. Initialize Groups from Section Order
                     let groups = [];
-                    // Default fallback sections if order is empty
-                    const defaultSections = ['Visit Details', 'Trainee Details', 'Caregiver & Family', 'Medical & Health', "Trainee's Abilities", 'For Schooling Trainees Only', 'For Working Trainees Only', 'Volunteer Observation', 'Miscellaneous'];
-                    const orderToUse = (this.sectionOrder && this.sectionOrder.length > 0) ? this.sectionOrder : defaultSections;
-
-                    // Helper to get color
-                    const getColors = (t) => {
-                        const l=t.toLowerCase();
-                        if(l.includes('visit')) return {bg:'bg-blue-50 dark:bg-blue-900', txt:'text-blue-700 dark:text-blue-200'};
-                        if(l.includes('trainee')) return {bg:'bg-green-50 dark:bg-green-900', txt:'text-green-700 dark:text-green-200'};
-                        if(l.includes('caregiver')) return {bg:'bg-yellow-50 dark:bg-yellow-900', txt:'text-yellow-700 dark:text-yellow-200'};
-                        if(l.includes('medical')) return {bg:'bg-red-50 dark:bg-red-900', txt:'text-red-700 dark:text-red-200'};
-                        if(l.includes('ability')||l.includes('behavior')) return {bg:'bg-purple-50 dark:bg-purple-900', txt:'text-purple-700 dark:text-purple-200'};
-                        if(l.includes('observation')) return {bg:'bg-indigo-50 dark:bg-indigo-900', txt:'text-indigo-800 dark:text-indigo-200'};
-                        return {bg:'bg-slate-100 dark:bg-gray-800', txt:'text-slate-600 dark:text-slate-400'};
-                    };
-
-                    groups = orderToUse.map(title => ({ title: title, fields: [], ...getColors(title) }));
-                    
-                    // Ensure Misc exists
-                    let misc = groups.find(g => g.title === 'Miscellaneous');
-                    if (!misc) {
-                        misc = { title: 'Miscellaneous', fields: [], ...getColors('Miscellaneous') };
-                        groups.push(misc);
+                    // Use Order from Backend
+                    if(this.sectionOrder && this.sectionOrder.length > 0) {
+                        const getColors = (t) => {
+                            const l=t.toLowerCase();
+                            if(l.includes('visit')||l.includes('general')) return {bg:'bg-blue-50 dark:bg-blue-900', txt:'text-blue-700 dark:text-blue-200'};
+                            if(l.includes('trainee')) return {bg:'bg-green-50 dark:bg-green-900', txt:'text-green-700 dark:text-green-200'};
+                            if(l.includes('caregiver')) return {bg:'bg-yellow-50 dark:bg-yellow-900', txt:'text-yellow-700 dark:text-yellow-200'};
+                            if(l.includes('medical')) return {bg:'bg-red-50 dark:bg-red-900', txt:'text-red-700 dark:text-red-200'};
+                            if(l.includes('ability')||l.includes('behavior')) return {bg:'bg-purple-50 dark:bg-purple-900', txt:'text-purple-700 dark:text-purple-200'};
+                            if(l.includes('observation')) return {bg:'bg-indigo-50 dark:bg-indigo-900', txt:'text-indigo-800 dark:text-indigo-200'};
+                            return {bg:'bg-slate-100 dark:bg-gray-800', txt:'text-slate-600 dark:text-slate-400'};
+                        };
+                        groups = this.sectionOrder.map(title => ({ title: title, fields: [], ...getColors(title) }));
+                    } else {
+                        // Fallback if no order found
+                        groups.push({title:'General Details', fields:[], bg:'bg-blue-50', txt:'text-blue-700'});
                     }
 
                     const seen = new Set();
@@ -344,13 +361,12 @@
                         let label = rawH, guide = '';
                         const match = rawH.match(/^(.+?)(\s*[\(\（].+)/);
                         if (match) {
-                            if (/^[\(\（][s\d]+[\)\）]$/i.test(match[2].trim())) { label = rawH; } 
-                            else { label = match[1].trim(); guide = match[2].trim(); }
+                            if (!/^[\(\（][s\d]+[\)\）]$/i.test(match[2].trim())) {
+                                label = match[1].trim(); guide = match[2].trim();
+                            }
                         }
-                        
-                        if (this.headers.filter((v, idx) => v === h && idx < i).length > 0) label = `${label} (${this.headers.filter((v, idx) => v === h && idx < i).length + 1})`;
-                        
-                        // Static Guides Fallback
+
+                        // Static Guide Fallback
                         for(const k in this.staticGuides) if(label.toLowerCase().includes(k)) { guide = this.staticGuides[k]; break; }
                         if(guide) guide = guide.replace(/[\(\（]dd\/mm\/yy.*?[\)\）]/gi, '').replace(/\(\d+\)/g, '').replace(/\(s\)/g, '').replace(/[\(\（\)\）]/g, '').trim();
 
@@ -358,10 +374,8 @@
                         if(seen.has(label)) return; 
                         seen.add(label);
 
-                        // MAPPING LOGIC
-                        // 1. Try exact match from Mapping sheet
+                        // STRICT MAPPING
                         let mappedSection = this.mapping[rawH] || this.mapping[label];
-                        // 2. Try match without numbers e.g. "Caregiver (1)" -> "Caregiver"
                         if(!mappedSection) {
                             const cleanKey = rawH.replace(/\(\d+\)/g, '').trim();
                             mappedSection = this.mapping[cleanKey];
@@ -369,27 +383,28 @@
                         
                         if(mappedSection) {
                             const group = groups.find(g => g.title === mappedSection);
-                            if(group) { group.fields.push(field); return; }
+                            if(group) group.fields.push(field);
                         }
-                        
-                        // 3. Fallback to Old Keyword Logic if mapping fails/missing
-                        // (Kept as safety net for unmapped fields)
-                         for(const s of groups) {
-                             // ... (Inject keywords logic if needed, or just dump to Misc) ...
-                         }
-                        
-                        // Default to Misc if no map found
-                        misc.fields.push(field);
+                        // IF NOT MAPPED -> IT IS DROPPED (Hidden)
                     });
 
-                    // Sorters
+                    // INTERNAL SORTERS
                     const sortByGroup = (arr, fn) => arr.sort((a,b) => fn(a) - fn(b));
-                    const cg = groups.find(s=>s.title.includes('Caregiver'));
+                    const cg = groups.find(s=>s.title.toLowerCase().includes('caregiver'));
                     if(cg) sortByGroup(cg.fields, (f) => {
                         const n = f.raw.toLowerCase();
                         const num = (n.match(/\((\d+)\)/) || [0,99])[1];
                         const rank = n.includes('name')?1:n.includes('relation')?2:n.includes('contact')?3:4;
                         return (num*10) + rank;
+                    });
+                    
+                    const obs = groups.find(s=>s.title.toLowerCase().includes('observation'));
+                    if(obs) sortByGroup(obs.fields, (f)=>{
+                       const n=f.label.toLowerCase();
+                       const grps=['sing-along','cdt','prt','teabreak'];
+                       const gA=grps.findIndex(g=>n.includes(g));
+                       if(gA!==-1) return gA;
+                       return 99;
                     });
                     
                     return groups.filter(s => s.fields.length > 0);
