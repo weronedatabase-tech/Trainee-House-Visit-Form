@@ -15,7 +15,6 @@
                     colors: { primary: '#4F46E5', secondary: '#10B981' } 
                 } 
             },
-            // CRITICAL FIX: Safelist classes so dynamic colors work
             safelist: [
                 'bg-blue-50', 'dark:bg-blue-900', 'text-blue-700', 'dark:text-blue-200',
                 'bg-green-50', 'dark:bg-green-900', 'text-green-700', 'dark:text-green-200',
@@ -40,7 +39,6 @@
       x-data="appData()" x-init="initApp()">
 
     <script>
-        // REPLACE THIS URL WITH YOUR DEPLOYED GOOGLE APPS SCRIPT URL
         const API_URL = 'https://script.google.com/macros/s/AKfycbw21ZGdd-SfmRJrB-zMcfzVKTzIG-hU-BwKaA33J1bukq-4_ZJGQfH6_KBr4LdgjZvXmw/exec'; 
     </script>
 
@@ -337,8 +335,13 @@
                         if(this.headers) {
                             this.headers.forEach((h, i) => {
                                 const lower = String(h).toLowerCase();
-                                if(!lower.includes('date of visit') && !lower.includes('volunteer')) this.formData[i] = history[i] || '';
-                                else if(lower.includes('date of visit')) this.formData[i] = new Date().toISOString().split('T')[0];
+                                // FIX: Removed !lower.includes('volunteer') to allow volunteer data to load
+                                if(!lower.includes('date of visit')) {
+                                     this.formData[i] = history[i] || '';
+                                } else {
+                                     // Date of visit is always "Today" for a new form
+                                     this.formData[i] = new Date().toISOString().split('T')[0];
+                                }
                             });
                         }
                         const nameIdx = this.getNameIndex();
@@ -358,7 +361,6 @@
                     } finally { this.setLoading(false); }
                 },
 
-                // SUBMIT FORM FUNCTION (Added)
                 async submitForm() {
                     if (this.isSubmitting) return;
                     this.isSubmitting = true;
@@ -372,7 +374,6 @@
                             return val;
                         });
 
-                        // Set Timestamp for column 0 if it looks like a timestamp column
                         if (this.headers.length > 0 && String(this.headers[0]).toLowerCase().includes('timestamp')) {
                             rowData[0] = new Date();
                         }
@@ -398,15 +399,12 @@
                     }
                 },
 
-                // DYNAMIC GROUPING LOGIC (MAPPING SHEET)
                 get groupedHeaders() {
                     if (!this.headers || !Array.isArray(this.headers) || this.headers.length === 0) return [];
                     
                     let groups = [];
-                    // Use Order from Backend or Fallback
                     const orderToUse = (this.sectionOrder && this.sectionOrder.length > 0) ? this.sectionOrder : ['General Details'];
 
-                    // IMPROVED COLOR MAPPING
                     const getColors = (t) => {
                         const l=t.toLowerCase();
                         if(l.includes('general')||l.includes('visit')||l.includes('volunteer')) return {bgClass:'bg-blue-50 dark:bg-blue-900', textClass:'text-blue-700 dark:text-blue-200'};
@@ -421,8 +419,6 @@
 
                     groups = orderToUse.map(title => ({ title: title, fields: [], ...getColors(title) }));
                     
-                    // REMOVED MISCELLANEOUS SECTION CREATION HERE
-
                     const seen = new Set();
                     
                     this.headers.forEach((h, i) => {
@@ -438,7 +434,6 @@
                             }
                         }
                         
-                        // Keep full label for duplicate headers
                         if (this.headers.filter((v, idx) => v === h && idx < i).length > 0) label = `${label} (${this.headers.filter((v, idx) => v === h && idx < i).length + 1})`;
                         
                         for(const k in this.staticGuides) if(label.toLowerCase().includes(k)) { guide = this.staticGuides[k]; break; }
@@ -450,21 +445,18 @@
                         if(seen.has(seenKey)) return; 
                         seen.add(seenKey);
 
-                        // MAPPING LOGIC
                         let mappedSection = this.mapping[rawH] || this.mapping[label];
                         if(!mappedSection) {
                             const cleanKey = rawH.replace(/\(\d+\)/g, '').trim();
                             mappedSection = this.mapping[cleanKey];
                         }
                         
-                        // IF FOUND, ADD TO SECTION. IF NOT FOUND, SKIP (DO NOT ADD TO MISC)
                         if(mappedSection) {
                             const group = groups.find(g => g.title === mappedSection);
                             if(group) { group.fields.push(field); }
                         }
                     });
 
-                    // Sorters
                     const sortByGroup = (arr, fn) => arr.sort((a,b) => fn(a) - fn(b));
                     
                     const cg = groups.find(s=>s.title.toLowerCase().includes('caregiver'));
@@ -511,7 +503,6 @@
                 },
                 resetAppData() { localStorage.clear(); window.location.reload(true); },
                 saveOffline(row) { 
-                    // Basic Offline Save Implementation
                     this.showToast('Offline: Saved locally. Sync later.', 'warning');
                     this.view = 'dashboard';
                     this.formData = {};
