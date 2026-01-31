@@ -15,12 +15,15 @@
                     colors: { primary: '#4F46E5', secondary: '#10B981' } 
                 } 
             },
-            // CRITICAL: Safelist all potential color combinations for the headers
             safelist: [
-                { pattern: /bg-(blue|green|yellow|red|purple|indigo|pink|slate|gray|orange|teal)-50/ },
-                { pattern: /bg-(blue|green|yellow|red|purple|indigo|pink|slate|gray|orange|teal)-900/, variants: ['dark'] },
-                { pattern: /text-(blue|green|yellow|red|purple|indigo|pink|slate|gray|orange|teal)-700/ },
-                { pattern: /text-(blue|green|yellow|red|purple|indigo|pink|slate|gray|orange|teal)-200/, variants: ['dark'] }
+                'bg-blue-50', 'dark:bg-blue-900', 'text-blue-700', 'dark:text-blue-200',
+                'bg-green-50', 'dark:bg-green-900', 'text-green-700', 'dark:text-green-200',
+                'bg-yellow-50', 'dark:bg-yellow-900', 'text-yellow-700', 'dark:text-yellow-200',
+                'bg-red-50', 'dark:bg-red-900', 'text-red-700', 'dark:text-red-200',
+                'bg-purple-50', 'dark:bg-purple-900', 'text-purple-700', 'dark:text-purple-200',
+                'bg-indigo-50', 'dark:bg-indigo-900', 'text-indigo-800', 'dark:text-indigo-200',
+                'bg-pink-50', 'dark:bg-pink-900', 'text-pink-700', 'dark:text-pink-200',
+                'bg-slate-100', 'dark:bg-gray-800', 'text-slate-600', 'dark:text-slate-400'
             ]
         }
     </script>
@@ -215,6 +218,7 @@
                 <div x-show="!settingsUnlocked">
                     <div x-show="settingsError" class="text-red-500 text-sm mb-2" x-text="settingsError"></div>
                     
+                    <!-- SETTINGS PASSWORD WITH SHOW/HIDE -->
                     <div class="relative w-full mb-3">
                         <input :type="showSettingsPass ? 'text' : 'password'" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Settings Password" 
                                class="w-full p-3 border rounded dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
@@ -223,46 +227,13 @@
                             <svg x-show="showSettingsPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
                         </button>
                     </div>
+
                     <button @click="unlockSettings" class="w-full bg-gray-800 text-white p-3 rounded">Unlock</button>
                 </div>
                 <div x-show="settingsUnlocked" class="space-y-6">
                     <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200">
                         <button @click="resetAppData" class="w-full bg-red-600 text-white px-4 py-2 rounded font-bold text-sm">Reset App Data</button>
                     </div>
-
-                    <!-- NEW: Section Color Settings -->
-                    <div class="border-t pt-4 dark:border-gray-600">
-                        <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300 uppercase">Section Appearance</h3>
-                        <div class="space-y-3 max-h-48 overflow-y-auto">
-                            <template x-for="sec in sectionOrder" :key="sec">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-xs truncate w-1/2" x-text="sec"></span>
-                                    <select x-model="sectionColors[sec]" @change="saveColors" class="w-1/2 p-1 text-xs border rounded dark:bg-gray-700 dark:border-gray-600">
-                                        <option value="">Auto (Default)</option>
-                                        <option value="blue">Blue</option>
-                                        <option value="green">Green</option>
-                                        <option value="yellow">Yellow</option>
-                                        <option value="red">Red</option>
-                                        <option value="purple">Purple</option>
-                                        <option value="indigo">Indigo</option>
-                                        <option value="pink">Pink</option>
-                                        <option value="orange">Orange</option>
-                                        <option value="teal">Teal</option>
-                                        <option value="slate">Slate</option>
-                                    </select>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-
-                    <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300 uppercase">Add New Question</h3>
-                        <div class="flex gap-2">
-                            <input type="text" x-model="newColumnName" placeholder="Title" class="flex-1 p-2 border rounded dark:bg-gray-600">
-                            <button @click="addColumn" class="bg-secondary text-white px-4 rounded">+</button>
-                        </div>
-                    </div>
-                    
                     <div class="border-t pt-4 dark:border-gray-600">
                          <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300">Security</h3>
                          <div class="mb-3"><input type="text" x-model="newAppPass" placeholder="New App Password" class="w-full p-2 border rounded dark:bg-gray-700 text-sm mb-1"><button @click="changePassword('APP')" class="bg-gray-600 text-white px-3 py-1 rounded text-xs">Update App Pass</button></div>
@@ -284,24 +255,7 @@
                 showSettings: false, settingsPass: '', showSettingsPass: false, settingsUnlocked: false, settingsError: '', 
                 newColumnName: '', newAppPass: '', newSettingsPass: '',
                 
-                // USER PREFERENCES
-                sectionColors: {},
                 expandedSections: {},
-
-                // COLOR THEMES
-                colorThemes: {
-                    blue:   {bgClass:'bg-blue-50 dark:bg-blue-900', textClass:'text-blue-700 dark:text-blue-200'},
-                    green:  {bgClass:'bg-green-50 dark:bg-green-900', textClass:'text-green-700 dark:text-green-200'},
-                    yellow: {bgClass:'bg-yellow-50 dark:bg-yellow-900', textClass:'text-yellow-700 dark:text-yellow-200'},
-                    red:    {bgClass:'bg-red-50 dark:bg-red-900', textClass:'text-red-700 dark:text-red-200'},
-                    purple: {bgClass:'bg-purple-50 dark:bg-purple-900', textClass:'text-purple-700 dark:text-purple-200'},
-                    indigo: {bgClass:'bg-indigo-50 dark:bg-indigo-900', textClass:'text-indigo-800 dark:text-indigo-200'},
-                    pink:   {bgClass:'bg-pink-50 dark:bg-pink-900', textClass:'text-pink-700 dark:text-pink-200'},
-                    orange: {bgClass:'bg-orange-50 dark:bg-gray-800', textClass:'text-orange-700 dark:text-orange-200'},
-                    teal:   {bgClass:'bg-teal-50 dark:bg-gray-800', textClass:'text-teal-700 dark:text-teal-200'},
-                    slate:  {bgClass:'bg-slate-100 dark:bg-gray-800', textClass:'text-slate-600 dark:text-slate-400'},
-                    gray:   {bgClass:'bg-gray-100 dark:bg-gray-800', textClass:'text-gray-600 dark:text-gray-400'}
-                },
 
                 async initApp() {
                     this.toggleTheme(false);
@@ -309,32 +263,6 @@
                     this.loadConfigFromStorage();
                     if (navigator.onLine) this.fetchConfig();
                     if (localStorage.getItem('isLoggedIn') === 'true') this.isLoggedIn = true;
-                },
-
-                // COLOR LOGIC
-                saveColors() {
-                    localStorage.setItem('sectionColors', JSON.stringify(this.sectionColors));
-                    this.showToast('Theme Saved', 'success');
-                },
-
-                getColors(t) {
-                    // 1. User Preference
-                    if (this.sectionColors[t] && this.colorThemes[this.sectionColors[t]]) {
-                        return this.colorThemes[this.sectionColors[t]];
-                    }
-
-                    // 2. Default Heuristics
-                    const l=t.toLowerCase();
-                    if(l.includes('general')||l.includes('visit')||l.includes('volunteer')) return this.colorThemes.blue;
-                    if(l.includes('trainee')) return this.colorThemes.green;
-                    if(l.includes('caregiver')||l.includes('family')||l.includes('emergency')||l.includes('background')) return this.colorThemes.yellow;
-                    if(l.includes('medical')||l.includes('health')) return this.colorThemes.red;
-                    if(l.includes('abilit')||l.includes('behavio')) return this.colorThemes.purple;
-                    if(l.includes('school')||l.includes('work')) return this.colorThemes.indigo;
-                    if(l.includes('observation')) return this.colorThemes.pink;
-                    
-                    // 3. Fallback
-                    return this.colorThemes.slate;
                 },
 
                 toggleSection(title) {
@@ -428,25 +356,28 @@
                     } finally { this.setLoading(false); }
                 },
 
-                // DYNAMIC GROUPING LOGIC
+                // DYNAMIC GROUPING LOGIC (MAPPING SHEET)
                 get groupedHeaders() {
                     if (!this.headers || !Array.isArray(this.headers) || this.headers.length === 0) return [];
                     
                     let groups = [];
                     // Use Order from Backend
-                    const orderToUse = (this.sectionOrder && this.sectionOrder.length > 0) ? this.sectionOrder : ['General Details'];
-
-                    // MAP GROUPS WITH COLORS
-                    groups = orderToUse.map(title => ({ 
-                        title: title, 
-                        fields: [], 
-                        ...this.getColors(title) // Use the new dynamic function
-                    }));
-                    
-                    let misc = groups.find(g => g.title === 'Miscellaneous');
-                    if (!misc) {
-                        misc = { title: 'Miscellaneous', fields: [], ...this.getColors('Miscellaneous') };
-                        groups.push(misc);
+                    if(this.sectionOrder && this.sectionOrder.length > 0) {
+                        const getColors = (t) => {
+                            const l=t.toLowerCase();
+                            if(l.includes('visit')||l.includes('general')||l.includes('volunteer')) return {bgClass:'bg-blue-50 dark:bg-blue-900', textClass:'text-blue-700 dark:text-blue-200'};
+                            if(l.includes('trainee')) return {bgClass:'bg-green-50 dark:bg-green-900', textClass:'text-green-700 dark:text-green-200'};
+                            if(l.includes('caregiver')||l.includes('family')||l.includes('emergency')||l.includes('background')) return {bgClass:'bg-yellow-50 dark:bg-yellow-900', textClass:'text-yellow-700 dark:text-yellow-200'};
+                            if(l.includes('medical')||l.includes('health')) return {bgClass:'bg-red-50 dark:bg-red-900', textClass:'text-red-700 dark:text-red-200'};
+                            if(l.includes('ability')||l.includes('behavior')) return {bgClass:'bg-purple-50 dark:bg-purple-900', textClass:'text-purple-700 dark:text-purple-200'};
+                            if(l.includes('school')||l.includes('work')) return {bgClass:'bg-indigo-50 dark:bg-indigo-900', textClass:'text-indigo-800 dark:text-indigo-200'};
+                            if(l.includes('observation')) return {bgClass:'bg-pink-50 dark:bg-pink-900', textClass:'text-pink-700 dark:text-pink-200'};
+                            return {bgClass:'bg-slate-100 dark:bg-gray-800', textClass:'text-slate-600 dark:text-slate-400'};
+                        };
+                        groups = this.sectionOrder.map(title => ({ title: title, fields: [], ...getColors(title) }));
+                    } else {
+                        // Fallback if no order found
+                        groups.push({title:'General Details', fields:[], bgClass:'bg-blue-50', textClass:'text-blue-700'});
                     }
 
                     const seen = new Set();
@@ -464,6 +395,7 @@
                             }
                         }
                         
+                        // Keep full label for duplicate headers
                         if (this.headers.filter((v, idx) => v === h && idx < i).length > 0) label = `${label} (${this.headers.filter((v, idx) => v === h && idx < i).length + 1})`;
                         
                         for(const k in this.staticGuides) if(label.toLowerCase().includes(k)) { guide = this.staticGuides[k]; break; }
@@ -471,6 +403,8 @@
 
                         const field = { label, guide, index: i, raw: rawH };
 
+                        // Check uniqueness (index ensures unique objects, but logic for duplicates matters)
+                        // Allow duplicates to flow through
                         const seenKey = label + '_' + i;
                         if(seen.has(seenKey)) return; 
                         seen.add(seenKey);
@@ -482,12 +416,14 @@
                             mappedSection = this.mapping[cleanKey];
                         }
                         
+                        // Match with Case Insensitive Title
                         if(mappedSection) {
-                            const group = groups.find(g => g.title === mappedSection);
+                            const group = groups.find(g => g.title.toLowerCase() === mappedSection.toLowerCase());
                             if(group) { group.fields.push(field); return; }
                         }
                         
-                        misc.fields.push(field);
+                        // Default to Misc if no map found
+                        // misc.fields.push(field); // DISABLED AS REQUESTED
                     });
 
                     // Sorters
@@ -520,6 +456,8 @@
                 isShortInput(n) { return ['name','nric','gender','sex','race','religion','blood','height','weight','shirt','relation','contact','mobile','phone','email'].some(k=>String(n).toLowerCase().includes(k)); },
                 isLongText(n) { return !this.isDate(n) && !this.isShortInput(n) && !this.isProjectField(n) && !this.isLikertScale(n); },
                 
+                loadNewForm() { this.loadTraineeForm(''); },
+                refreshTrainees() { if(navigator.onLine) this.fetchConfig(); },
                 loadConfigFromStorage() { 
                     const c = localStorage.getItem('appConfig'); 
                     if(c) { 
@@ -531,9 +469,7 @@
                             this.mapping=d.mapping||{}; 
                             this.sectionOrder=d.sectionOrder||[];
                         } catch(e){} 
-                    }
-                    const sc = localStorage.getItem('sectionColors');
-                    if(sc) this.sectionColors = JSON.parse(sc);
+                    } 
                 },
                 resetAppData() { localStorage.clear(); window.location.reload(true); },
                 saveOffline(row) { /* ... */ },
