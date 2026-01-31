@@ -235,111 +235,9 @@
                         <button type="button" @click="showSettingsPass = !showSettingsPass" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-primary">
                             <svg x-show="!showSettingsPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                             <svg x-show="showSettingsPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
-                        <()] || 'New Visit'"></h2>
-            </div>
-            <form @submit.prevent="submitForm">
-                
-                <div x-show="groupedHeaders.length === 0" class="text-center p-8 text-gray-500 border-2 border-dashed rounded-lg">
-                    <p class="text-lg font-bold">No questions loaded.</p>
-                    <p class="text-sm">Check mapping sheet. Only mapped fields are shown.</p>
-                    <button @click="resetAppData" type="button" class="mt-4 bg-red-600 text-white px-4 py-2 rounded text-sm">Reset App</button>
-                </div>
-
-                <template x-for="(section, secIndex) in groupedHeaders" :key="secIndex">
-                    <div class="mb-6 rounded-lg overflow-hidden shadow-sm border dark:border-gray-700 bg-white dark:bg-gray-800">
-                        
-                        <!-- HEADER (ACCORDION) WITH COLORS -->
-                        <div @click="toggleSection(section.title)" 
-                             class="p-4 font-bold uppercase text-sm tracking-wide border-b dark:border-gray-600 cursor-pointer flex justify-between items-center select-none" 
-                             :class="section.bgClass + ' ' + section.textClass">
-                             <div>
-                                <div x-text="section.title"></div>
-                                <div x-show="section.guide" class="text-xs font-normal opacity-75 mt-1 normal-case tracking-normal" x-text="section.guide"></div>
-                             </div>
-                             <svg class="w-5 h-5 transition-transform duration-200" 
-                                  :class="expandedSections[section.title] ? 'rotate-180' : ''"
-                                  fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </div>
-                        
-                        <!-- BODY -->
-                        <div x-show="expandedSections[section.title]" x-collapse>
-                            <div class="p-4 space-y-5">
-                                <template x-for="field in section.fields" :key="field.index">
-                                    <div>
-                                        <label class="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200" x-text="field.label"></label>
-                                        <p x-show="field.guide" class="text-xs text-gray-500 dark:text-gray-400 mb-2 italic" x-text="field.guide"></p>
-                                        
-                                        <template x-if="isLikertScale(field.label)">
-                                            <div class="mt-2 mb-4 bg-gray-50 dark:bg-gray-900 p-3 sm:p-4 rounded-lg border dark:border-gray-700 flex flex-row items-center justify-between gap-1 sm:gap-4">
-                                                <span class="w-1/3 text-right text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight pr-1" x-text="getLikertLabel(field.label, 'left')"></span>
-                                                <div class="flex gap-2 sm:gap-4 shrink-0 justify-center">
-                                                    <template x-for="val in [1, 2, 3, 4, 5]" :key="val">
-                                                        <label class="flex flex-col items-center cursor-pointer">
-                                                            <span class="text-[10px] sm:text-xs font-bold mb-1" x-text="val"></span>
-                                                            <input type="radio" :name="'likert-'+field.index" :value="val" x-model="formData[field.index]" class="custom-radio w-5 h-5 sm:w-6 sm:h-6 border-2 rounded-full focus:ring-0 cursor-pointer appearance-none bg-white dark:bg-gray-700 checked:bg-primary border-gray-300">
-                                                        </label>
-                                                    </template>
-                                                </div>
-                                                <span class="w-1/3 text-left text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight pl-1" x-text="getLikertLabel(field.label, 'right')"></span>
-                                            </div>
-                                        </template>
-
-                                        <template x-if="isProjectField(field.label)">
-                                            <select x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700">
-                                                <option value="">Select Project...</option>
-                                                <template x-for="opt in projects" :key="opt"><option :value="opt" x-text="opt"></option></template>
-                                            </select>
-                                        </template>
-
-                                        <template x-if="isDate(field.label)">
-                                            <div class="relative">
-                                                <input type="text" readonly :value="formatDateDisplay(formData[field.index])" placeholder="DD MMM YYYY" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700">
-                                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                                </div>
-                                                <input type="date" x-model="formData[field.index]" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                                            </div>
-                                        </template>
-
-                                        <template x-if="isLongText(field.label) && !isLikertScale(field.label)">
-                                            <textarea x-model="formData[field.index]" rows="3" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none min-h-[100px]"></textarea>
-                                        </template>
-                                        
-                                        <template x-if="isShortInput(field.label) && !isProjectField(field.label)">
-                                            <input type="text" x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none">
-                                        </template>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-                <div class="h-24"></div>
-                <div class="fixed bottom-0 left-0 w-full p-4 bg-white dark:bg-gray-900 border-t dark:border-gray-700 flex gap-3 z-20 shadow-lg">
-                    <button type="button" @click="saveOffline" class="flex-1 bg-gray-500 text-white p-3 rounded-lg font-bold">Save Later</button>
-                    <button type="submit" class="flex-1 bg-primary text-white p-3 rounded-lg font-bold">Submit</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- SETTINGS -->
-        <div x-show="showSettings" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm" x-cloak>
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold">Settings</h2>
-                    <button @click="showSettings = false" class="text-xl">✕</button>
-                </div>
-                <div x-show="!settingsUnlocked">
-                    <div x-show="settingsError" class="text-red-500 text-sm mb-2" x-text="settingsError"></div>
-                    
-                    <div class="relative w-full mb-3">
-                        <input :type="showSettingsPass ? 'text' : 'password'" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Settings Password" 
-                               class="w-full p-3 border rounded dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
-                        <button type="button" @click="showSettingsPass = !showSettingsPass" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-primary">
-                            <svg x-show="!showSettingsPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                            <svg x-show="showSettingsPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
                         </button>
                     </div>
+
 
                     <button @click="unlockSettings" class="w-full bg-gray-800 text-white p-3 rounded">Unlock</button>
                 </div>
@@ -347,6 +245,7 @@
                     <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200">
                         <button @click="resetAppData" class="w-full bg-red-600 text-white px-4 py-2 rounded font-bold text-sm">Reset App Data</button>
                     </div>
+
 
                     <!-- NEW: Section Color Settings -->
                     <div class="border-t pt-4 dark:border-gray-600">
@@ -373,6 +272,7 @@
                         </div>
                     </div>
 
+
                     <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300 uppercase">Add New Question</h3>
                         <div class="flex gap-2">
@@ -391,6 +291,7 @@
         </div>
     </div>
 
+
     <script>
         function appData() {
             return {
@@ -405,6 +306,7 @@
                 // USER PREFERENCES
                 sectionColors: {},
                 expandedSections: {},
+
 
                 // COLOR THEMES
                 colorThemes: {
@@ -421,13 +323,23 @@
                     gray:   {bgClass:'bg-gray-100 dark:bg-gray-800', textClass:'text-gray-600 dark:text-gray-400'}
                 },
 
+
                 async initApp() {
                     this.toggleTheme(false);
                     window.addEventListener('online', () => this.syncOfflineData());
                     this.loadConfigFromStorage();
-                    if (navigator.onLine) this.fetchConfig();
+                    
+                    if (navigator.onLine) {
+                        try {
+                            await this.fetchConfig();
+                        } catch (e) {
+                            console.error("Init Error:", e);
+                            this.setLoading(false); // Ensure loading stops even on error
+                        }
+                    }
                     if (localStorage.getItem('isLoggedIn') === 'true') this.isLoggedIn = true;
                 },
+
 
                 // COLOR LOGIC (UPDATED: API Call)
                 async saveColors() {
@@ -445,11 +357,13 @@
                     }
                 },
 
+
                 getColors(t) {
                     // 1. User Preference (from Backend/Storage)
                     if (this.sectionColors[t] && this.colorThemes[this.sectionColors[t]]) {
                         return this.colorThemes[this.sectionColors[t]];
                     }
+
 
                     // 2. Default Heuristics
                     const l=t.toLowerCase();
@@ -465,9 +379,11 @@
                     return this.colorThemes.slate;
                 },
 
+
                 toggleSection(title) {
                     this.expandedSections[title] = !this.expandedSections[title];
                 },
+
 
                 formatDateDisplay(isoDate) {
                     if (!isoDate) return '';
@@ -477,17 +393,39 @@
                     return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
                 },
 
+
                 staticGuides: { 'life skills': 'Can trainee carry out daily activities like bathing, dressing, eating independently? Household chores? Use telephone? Public transport?', 'academic level': 'Number/money concept? Write name/address/phone number?', 'social skills': 'Eye-contact? Interpersonal skill? Friends at work/school? Mannerisms?', 'motor skills': 'Fine (fork/chopsticks) and Gross (balancing, running, jumping) motor skills?', "trainee's t-shirt size": 'XS: 32-34 / S: 36-38 / M: 38-40 / L: 40-42 / XL: 46-48 / XXL: 50-52 / XXXL: 54-56', 'temperament': 'Please elaborate.', 'personal feedback': 'Impression of family? Habits during session? Interactions so far?', 'attention span': 'Is your trainee attentive/distracted? Please elaborate.', 'responsiveness': 'Is your trainee quick to respond/slow to respond/has no response? Please elaborate.', 'receptiveness': 'Able to understand instructions with/without help OR unable even with help? What kind of help?' },
                 likertConfig: { 'mobility': { left: 'Need support to walk and can be clumsy', right: 'Agile and stable' }, 'comprehension': { left: 'Very Low (unable to follow instructions)', right: 'High (able to follow instructions effectively)' }, 'verbal': { left: 'Very Low (non-verbal)', right: 'High (able to engage in conversations)' } },
+
 
                 setLoading(s, t='Loading...') { this.isLoading = s; this.loadingText = t; },
                 toggleTheme(t=true) { if(t) this.darkMode = !this.darkMode; localStorage.setItem('theme', this.darkMode ? 'dark' : 'light'); if(this.darkMode) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); },
                 
                 async performAction(action, payload = {}) {
                     payload.action = action;
-                    const res = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
-                    return await res.json();
+                    try {
+                        const res = await fetch(API_URL, { 
+                            method: "POST", 
+                            headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+                            body: JSON.stringify(payload) 
+                        });
+
+
+                        // Check content type to catch permissions errors which return HTML instead of JSON
+                        const contentType = res.headers.get("content-type");
+                        if (contentType && contentType.indexOf("application/json") === -1) {
+                            throw new Error("Setup Error: Backend returned HTML. Check deployment permissions are set to 'Anyone'.");
+                        }
+
+
+                        if (!res.ok) throw new Error("Network response was not ok");
+                        return await res.json();
+                    } catch(e) {
+                        this.showToast(e.message, 'error');
+                        throw e; // Rethrow so caller knows it failed
+                    }
                 },
+
 
                 async performLogin() {
                     this.setLoading(true);
@@ -495,9 +433,10 @@
                         const data = await this.performAction('login', { password: this.loginPass });
                         if (data.success) { this.isLoggedIn = true; localStorage.setItem('isLoggedIn', 'true'); await this.fetchConfig(); } 
                         else this.loginError = 'Incorrect Password';
-                    } catch(e) { this.loginError = 'Connection Error.'; }
+                    } catch(e) { this.loginError = 'Connection Failed. ' + e.message; }
                     finally { this.setLoading(false); }
                 },
+
 
                 async fetchConfig() {
                     try {
@@ -507,7 +446,6 @@
                         this.projects = data.projects || [];
                         this.mapping = data.mapping || {};
                         this.sectionOrder = data.sectionOrder || [];
-                        // NEW: Load Colors from backend
                         if(data.colors) this.sectionColors = data.colors;
                         
                         localStorage.setItem('appConfig', JSON.stringify({ 
@@ -516,16 +454,22 @@
                             projects: this.projects,
                             mapping: this.mapping,
                             sectionOrder: this.sectionOrder,
-                            colors: this.sectionColors // Save to storage for offline
+                            colors: this.sectionColors 
                         }));
                         this.syncOfflineData();
-                    } catch(e) {}
+                    } catch(e) {
+                         // Fallback to storage if API fails
+                         console.warn("Using offline config due to error");
+                         this.loadConfigFromStorage();
+                    }
                 },
+
 
                 async refreshTrainees() { if(navigator.onLine) await this.fetchConfig(); },
                 get filteredTrainees() { if(!this.searchQuery) return []; const q=this.searchQuery.toLowerCase(); return this.trainees.filter(t=>t&&String(t).toLowerCase().includes(q)); },
                 getNameIndex() { return this.headers ? this.headers.findIndex(h => String(h).toLowerCase().includes('trainee') && String(h).toLowerCase().includes('name')) : -1; },
                 loadNewForm() { this.loadTraineeForm(''); },
+
 
                 async loadTraineeForm(name) {
                     this.setLoading(true);
@@ -534,7 +478,13 @@
                         if (!this.headers || this.headers.length === 0) await this.fetchConfig();
                     }
                     try {
-                        const history = await this.performAction('getHistory', { trainee: name });
+                        let history = {};
+                        // Only fetch history if we have a name and we are online
+                        if (name && navigator.onLine) {
+                            history = await this.performAction('getHistory', { trainee: name });
+                        }
+
+
                         this.formData = {};
                         if(this.headers) {
                             this.headers.forEach((h, i) => {
@@ -554,11 +504,14 @@
                             });
                         }
 
+
                         this.view = 'form';
                     } catch(e) {
-                        this.loadNewForm(); // Fallback
+                         // Even if history fetch fails, load the form
+                        this.view = 'form';
                     } finally { this.setLoading(false); }
                 },
+
 
                 // DYNAMIC GROUPING LOGIC
                 get groupedHeaders() {
@@ -567,6 +520,7 @@
                     let groups = [];
                     // Use Order from Backend
                     const orderToUse = (this.sectionOrder && this.sectionOrder.length > 0) ? this.sectionOrder : ['General Details'];
+
 
                     // MAP GROUPS WITH COLORS
                     groups = orderToUse.map(title => ({ 
@@ -581,12 +535,14 @@
                         groups.push(misc);
                     }
 
+
                     const seen = new Set();
                     
                     this.headers.forEach((h, i) => {
                         const rawH = String(h);
                         const lower = rawH.toLowerCase();
                         if (lower.includes('timestamp') || rawH.trim() === '') return;
+
 
                         let label = rawH, guide = '';
                         const match = rawH.match(/^(.+?)(\s*[\(\（].+)/);
@@ -601,11 +557,14 @@
                         for(const k in this.staticGuides) if(label.toLowerCase().includes(k)) { guide = this.staticGuides[k]; break; }
                         if(guide) guide = guide.replace(/[\(\（]dd\/mm\/yy.*?[\)\）]/gi, '').replace(/\(\d+\)/g, '').replace(/\(s\)/g, '').replace(/[\(\（\)\）]/g, '').trim();
 
+
                         const field = { label, guide, index: i, raw: rawH };
+
 
                         const seenKey = label + '_' + i;
                         if(seen.has(seenKey)) return; 
                         seen.add(seenKey);
+
 
                         // MAPPING LOGIC
                         let mappedSection = this.mapping[rawH] || this.mapping[label];
@@ -621,6 +580,7 @@
                         
                         misc.fields.push(field);
                     });
+
 
                     // Sorters
                     const sortByGroup = (arr, fn) => arr.sort((a,b) => fn(a) - fn(b));
@@ -645,6 +605,7 @@
                     return groups.filter(s => s.fields.length > 0);
                 },
 
+
                 isLikertScale(n) { const s=String(n).toLowerCase(); return s.includes('mobility')||s.includes('comprehension')||s.includes('verbal'); },
                 getLikertLabel(n, side) { const k = Object.keys(this.likertConfig).find(k=>String(n).toLowerCase().includes(k)); return k ? this.likertConfig[k][side] : ''; },
                 isDate(n) { return String(n).toLowerCase().includes('date'); },
@@ -667,14 +628,17 @@
                     }
                 },
                 resetAppData() { localStorage.clear(); window.location.reload(true); },
-                saveOffline(row) { /* ... */ },
-                syncOfflineData() { /* ... */ },
+                saveOffline(row) { this.showToast('Save Later functionality coming soon', 'info'); },
+                syncOfflineData() { /* Implement offline sync here */ },
                 openSettings() { this.showSettings=true; },
                 unlockSettings() { if(this.settingsPass==='werone') this.settingsUnlocked=true; else this.settingsError='Wrong Password'; },
-                addColumn() { this.performAction('addColumn', {headerName:this.newColumnName}); },
+                addColumn() { this.performAction('addColumn', {headerName:this.newColumnName}).then(()=>this.fetchConfig()); },
                 renameColumn(idx, name) { this.performAction('renameColumn', {colIndex:idx, newName:name}); },
-                changePassword() { /* ... */ },
-                showToast(m,t) { this.toast.message=m;this.toast.type=t;this.toast.visible=true;setTimeout(()=>this.toast.visible=false,3000); }
+                changePassword(type) { 
+                   const pass = type === 'APP' ? this.newAppPass : this.newSettingsPass;
+                   this.performAction('changePassword', {type, newPassword: pass}).then(r=>{if(r.success) this.showToast('Password Updated','success')});
+                },
+                showToast(m,t) { this.toast.message=m;this.toast.type=t;this.toast.visible=true;setTimeout(()=>this.toast.visible=false,5000); }
             }
         }
     </script>
