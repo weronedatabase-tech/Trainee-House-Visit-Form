@@ -15,15 +15,12 @@
                     colors: { primary: '#4F46E5', secondary: '#10B981' } 
                 } 
             },
+            // SAFELIST FOR DYNAMIC COLORS
             safelist: [
-                'bg-blue-50', 'dark:bg-blue-900', 'text-blue-700', 'dark:text-blue-200',
-                'bg-green-50', 'dark:bg-green-900', 'text-green-700', 'dark:text-green-200',
-                'bg-yellow-50', 'dark:bg-yellow-900', 'text-yellow-700', 'dark:text-yellow-200',
-                'bg-red-50', 'dark:bg-red-900', 'text-red-700', 'dark:text-red-200',
-                'bg-purple-50', 'dark:bg-purple-900', 'text-purple-700', 'dark:text-purple-200',
-                'bg-indigo-50', 'dark:bg-indigo-900', 'text-indigo-800', 'dark:text-indigo-200',
-                'bg-pink-50', 'dark:bg-pink-900', 'text-pink-700', 'dark:text-pink-200',
-                'bg-slate-100', 'dark:bg-gray-800', 'text-slate-600', 'dark:text-slate-400'
+                { pattern: /bg-(blue|green|yellow|red|purple|indigo|pink|slate|gray|orange|teal)-50/ },
+                { pattern: /bg-(blue|green|yellow|red|purple|indigo|pink|slate|gray|orange|teal)-900/, variants: ['dark'] },
+                { pattern: /text-(blue|green|yellow|red|purple|indigo|pink|slate|gray|orange|teal)-700/ },
+                { pattern: /text-(blue|green|yellow|red|purple|indigo|pink|slate|gray|orange|teal)-200/, variants: ['dark'] }
             ]
         }
     </script>
@@ -120,6 +117,114 @@
         <!-- FORM -->
         <div x-show="view === 'form'">
             <div class="flex justify-between items-center mb-6">
+                <button @click="view = 'dashboard'" class="text-gray-500 flex items-center gap-1">← Back</button>
+                <h2 class="font-bold text-lg truncate ml-4" x-text="formData[getNameIndex()] || 'New Visit'"></h2>
+            </div>
+            <form @submit.prevent="submitForm">
+                
+                <div x-show="groupedHeaders.length === 0" class="text-center p-8 text-gray-500 border-2 border-dashed rounded-lg">
+                    <p class="text-lg font-bold">No questions loaded.</p>
+                    <p class="text-sm">Check mapping sheet. Only mapped fields are shown.</p>
+                    <button @click="resetAppData" type="button" class="mt-4 bg-red-600 text-white px-4 py-2 rounded text-sm">Reset App</button>
+                </div>
+
+                <template x-for="(section, secIndex) in groupedHeaders" :key="secIndex">
+                    <div class="mb-6 rounded-lg overflow-hidden shadow-sm border dark:border-gray-700 bg-white dark:bg-gray-800">
+                        
+                        <!-- HEADER (ACCORDION) WITH COLORS -->
+                        <div @click="toggleSection(section.title)" 
+                             class="p-4 font-bold uppercase text-sm tracking-wide border-b dark:border-gray-600 cursor-pointer flex justify-between items-center select-none" 
+                             :class="section.bgClass + ' ' + section.textClass">
+                             <div>
+                                <div x-text="section.title"></div>
+                                <div x-show="section.guide" class="text-xs font-normal opacity-75 mt-1 normal-case tracking-normal" x-text="section.guide"></div>
+                             </div>
+                             <svg class="w-5 h-5 transition-transform duration-200" 
+                                  :class="expandedSections[section.title] ? 'rotate-180' : ''"
+                                  fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                        
+                        <!-- BODY -->
+                        <div x-show="expandedSections[section.title]" x-collapse>
+                            <div class="p-4 space-y-5">
+                                <template x-for="field in section.fields" :key="field.index">
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200" x-text="field.label"></label>
+                                        <p x-show="field.guide" class="text-xs text-gray-500 dark:text-gray-400 mb-2 italic" x-text="field.guide"></p>
+                                        
+                                        <template x-if="isLikertScale(field.label)">
+                                            <div class="mt-2 mb-4 bg-gray-50 dark:bg-gray-900 p-3 sm:p-4 rounded-lg border dark:border-gray-700 flex flex-row items-center justify-between gap-1 sm:gap-4">
+                                                <span class="w-1/3 text-right text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight pr-1" x-text="getLikertLabel(field.label, 'left')"></span>
+                                                <div class="flex gap-2 sm:gap-4 shrink-0 justify-center">
+                                                    <template x-for="val in [1, 2, 3, 4, 5]" :key="val">
+                                                        <label class="flex flex-col items-center cursor-pointer">
+                                                            <span class="text-[10px] sm:text-xs font-bold mb-1" x-text="val"></span>
+                                                            <input type="radio" :name="'likert-'+field.index" :value="val" x-model="formData[field.index]" class="custom-radio w-5 h-5 sm:w-6 sm:h-6 border-2 rounded-full focus:ring-0 cursor-pointer appearance-none bg-white dark:bg-gray-700 checked:bg-primary border-gray-300">
+                                                        </label>
+                                                    </template>
+                                                </div>
+                                                <span class="w-1/3 text-left text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight pl-1" x-text="getLikertLabel(field.label, 'right')"></span>
+                                            </div>
+                                        </template>
+
+                                        <template x-if="isProjectField(field.label)">
+                                            <select x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700">
+                                                <option value="">Select Project...</option>
+                                                <template x-for="opt in projects" :key="opt"><option :value="opt" x-text="opt"></option></template>
+                                            </select>
+                                        </template>
+
+                                        <template x-if="isDate(field.label)">
+                                            <div class="relative">
+                                                <input type="text" readonly :value="formatDateDisplay(formData[field.index])" placeholder="DD MMM YYYY" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700">
+                                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                                </div>
+                                                <input type="date" x-model="formData[field.index]" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                            </div>
+                                        </template>
+
+                                        <template x-if="isLongText(field.label) && !isLikertScale(field.label)">
+                                            <textarea x-model="formData[field.index]" rows="3" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none min-h-[100px]"></textarea>
+                                        </template>
+                                        
+                                        <template x-if="isShortInput(field.label) && !isProjectField(field.label)">
+                                            <input type="text" x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none">
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div class="h-24"></div>
+                <div class="fixed bottom-0 left-0 w-full p-4 bg-white dark:bg-gray-900 border-t dark:border-gray-700 flex gap-3 z-20 shadow-lg">
+                    <button type="button" @click="saveOffline" class="flex-1 bg-gray-500 text-white p-3 rounded-lg font-bold">Save Later</button>
+                    <button type="submit" class="flex-1 bg-primary text-white p-3 rounded-lg font-bold">Submit</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- SETTINGS -->
+        <div x-show="showSettings" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm" x-cloak>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Settings</h2>
+                    <button @click="showSettings = false" class="text-xl">✕</button>
+                </div>
+                <div x-show="!settingsUnlocked">
+                    <div x-show="settingsError" class="text-red-500 text-sm mb-2" x-text="settingsError"></div>
+                    
+                    <div class="relative w-full mb-3">
+                        <input :type="showSettingsPass ? 'text' : 'password'" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Settings Password" 
+                               class="w-full p-3 border rounded dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
+                        <button type="button" @click="showSettingsPass = !showSettingsPass" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-primary">
+                            <svg x-show="!showSettingsPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            <svg x-show="showSettingsPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
+                        </button>
+                    </div>
+
+                    <button @click="unlockSettings" cfy-between items-center mb-6">
                 <button @click="view = 'dashboard'" class="text-gray-500 flex items-center gap-1">← Back</button>
                 <h2 class="font-bold text-lg truncate ml-4" x-text="formData[getNameIndex()] || 'New Visit'"></h2>
             </div>
