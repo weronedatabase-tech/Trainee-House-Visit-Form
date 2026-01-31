@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     <script>
         tailwind.config = { 
             darkMode: 'class', 
@@ -15,7 +16,6 @@
                     colors: { primary: '#4F46E5', secondary: '#10B981' } 
                 } 
             },
-            // CRITICAL FIX: Safelist classes so dynamic colors work
             safelist: [
                 'bg-blue-50', 'dark:bg-blue-900', 'text-blue-700', 'dark:text-blue-200',
                 'bg-green-50', 'dark:bg-green-900', 'text-green-700', 'dark:text-green-200',
@@ -95,13 +95,10 @@
         <!-- DASHBOARD -->
         <div x-show="view === 'dashboard'">
             <div class="mb-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-semibold">Find Trainee</h2>
-                    <span class="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
-                        <span x-text="trainees.length"></span> Loaded
-                    </span>
-                </div>
-                
+                <h2 class="text-lg font-semibold mb-4 flex justify-between">
+                    <span>Find Trainee</span>
+                    <span x-show="loadingTrainees" class="text-xs text-primary animate-pulse">Syncing...</span>
+                </h2>
                 <div class="relative">
                     <input type="text" x-model="searchQuery" @focus="refreshTrainees" placeholder="Search name..." class="w-full p-3 pl-4 border rounded-lg text-gray-900 dark:text-gray-100 dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
                     <div x-show="searchQuery.length > 0" class="mt-2 max-h-60 overflow-y-auto border rounded-lg dark:border-gray-700">
@@ -184,6 +181,9 @@
                                         <template x-if="isDate(field.label)">
                                             <div class="relative">
                                                 <input type="text" readonly :value="formatDateDisplay(formData[field.index])" placeholder="DD MMM YYYY" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700">
+                                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                                </div>
                                                 <input type="date" x-model="formData[field.index]" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                                             </div>
                                         </template>
@@ -362,7 +362,7 @@
                     if (!this.headers || !Array.isArray(this.headers) || this.headers.length === 0) return [];
                     
                     let groups = [];
-                    // Use Order from Backend or Fallback
+                    // Use Order from Backend
                     const orderToUse = (this.sectionOrder && this.sectionOrder.length > 0) ? this.sectionOrder : ['General Details'];
 
                     // IMPROVED COLOR MAPPING
@@ -380,12 +380,6 @@
 
                     groups = orderToUse.map(title => ({ title: title, fields: [], ...getColors(title) }));
                     
-                    let misc = groups.find(g => g.title === 'Miscellaneous');
-                    if (!misc) {
-                        misc = { title: 'Miscellaneous', fields: [], ...getColors('Miscellaneous') };
-                        groups.push(misc);
-                    }
-
                     const seen = new Set();
                     
                     this.headers.forEach((h, i) => {
@@ -427,8 +421,7 @@
                             if(group) { group.fields.push(field); return; }
                         }
                         
-                        // Default to Misc if no map found
-                        misc.fields.push(field);
+                        // IF NOT MAPPED -> DROP (HIDDEN)
                     });
 
                     // Sorters
