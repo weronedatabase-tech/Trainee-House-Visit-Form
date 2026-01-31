@@ -42,9 +42,13 @@
     <header class="bg-white dark:bg-gray-800 shadow p-4 sticky top-0 z-30 flex justify-between items-center">
         <h1 class="text-xl font-bold text-green-600 dark:text-green-400">House Visit Form</h1>
         <div class="flex items-center gap-3">
-            <button @click="openSettings" class="text-gray-500 hover:text-primary"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button>
-            <button @click="window.location.reload(true)" class="text-gray-500 hover:text-primary"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
-            <button @click="toggleTheme" class="text-2xl">🌗</button>
+            <button @click="openSettings" class="text-gray-500 hover:text-primary transition" title="Settings">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </button>
+            <button @click="window.location.reload(true)" class="text-gray-500 hover:text-primary transition" title="Update App">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
+            <button @click="toggleTheme" class="text-2xl focus:outline-none" title="Toggle Dark Mode">🌗</button>
         </div>
     </header>
 
@@ -73,7 +77,10 @@
         <!-- DASHBOARD -->
         <div x-show="view === 'dashboard'">
             <div class="mb-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-                <h2 class="text-lg font-semibold mb-4">Find Trainee</h2>
+                <h2 class="text-lg font-semibold mb-4 flex justify-between">
+                    <span>Find Trainee</span>
+                    <span x-show="loadingTrainees" class="text-xs text-primary animate-pulse">Syncing...</span>
+                </h2>
                 <div class="relative">
                     <input type="text" x-model="searchQuery" @focus="refreshTrainees" placeholder="Search name..." class="w-full p-3 pl-4 border rounded-lg text-gray-900 dark:text-gray-100 dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
                     <div x-show="searchQuery.length > 0" class="mt-2 max-h-60 overflow-y-auto border rounded-lg dark:border-gray-700">
@@ -86,6 +93,7 @@
                         <div x-show="filteredTrainees.length === 0" class="p-3 text-gray-500 bg-white dark:bg-gray-800 text-center">No matches found</div>
                     </div>
                 </div>
+                <div class="mt-2 text-xs text-gray-400">Pulls list from 'lookup' tab</div>
             </div>
             <div class="text-center">
                 <button @click="loadNewForm" class="w-full sm:w-auto px-8 bg-secondary text-white p-4 rounded-lg shadow-md font-bold text-lg">+ Start New Blank Visit</button>
@@ -102,6 +110,7 @@
                 
                 <div x-show="groupedHeaders.length === 0" class="text-center p-8 text-gray-500 border-2 border-dashed rounded-lg">
                     <p class="text-lg font-bold">No questions loaded.</p>
+                    <p class="text-sm">Check mapping sheet. Only mapped fields are shown.</p>
                     <button @click="resetAppData" type="button" class="mt-4 bg-red-600 text-white px-4 py-2 rounded text-sm">Reset App</button>
                 </div>
 
@@ -134,6 +143,81 @@
                                                 <span class="w-1/3 text-right text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight pr-1" x-text="getLikertLabel(field.label, 'left')"></span>
                                                 <div class="flex gap-2 sm:gap-4 shrink-0 justify-center">
                                                     <template x-for="val in [1, 2, 3, 4, 5]" :key="val">
+                                                        <label class="flex flex-col items-center cursor-pointer">
+                                                            <span class="text-[10px] sm:text-xs font-bold mb-1" x-text="val"></span>
+                                                            <input type="radio" :name="'likert-'+field.index" :value="val" x-model="formData[field.index]" class="custom-radio w-5 h-5 sm:w-6 sm:h-6 border-2 rounded-full focus:ring-0 cursor-pointer appearance-none bg-white dark:bg-gray-700 checked:bg-primary border-gray-300">
+                                                        </label>
+                                                    </template>
+                                                </div>
+                                                <span class="w-1/3 text-left text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight pl-1" x-text="getLikertLabel(field.label, 'right')"></span>
+                                            </div>
+                                        </template>
+
+                                        <template x-if="isProjectField(field.label)">
+                                            <select x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700">
+                                                <option value="">Select Project...</option>
+                                                <template x-for="opt in projects" :key="opt"><option :value="opt" x-text="opt"></option></template>
+                                            </select>
+                                        </template>
+
+                                        <template x-if="isDate(field.label)">
+                                            <div class="relative">
+                                                <input type="text" readonly :value="formatDateDisplay(formData[field.index])" placeholder="DD MMM YYYY" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700">
+                                                <input type="date" x-model="formData[field.index]" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                            </div>
+                                        </template>
+
+                                        <template x-if="isLongText(field.label) && !isLikertScale(field.label)">
+                                            <textarea x-model="formData[field.index]" rows="3" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none min-h-[100px]"></textarea>
+                                        </template>
+                                        
+                                        <template x-if="isShortInput(field.label) && !isProjectField(field.label)">
+                                            <input type="text" x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none">
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div class="h-24"></div>
+                <div class="fixed bottom-0 left-0 w-full p-4 bg-white dark:bg-gray-900 border-t dark:border-gray-700 flex gap-3 z-20 shadow-lg">
+                    <button type="button" @click="saveOffline" class="flex-1 bg-gray-500 text-white p-3 rounded-lg font-bold">Save Later</button>
+                    <button type="submit" class="flex-1 bg-primary text-white p-3 rounded-lg font-bold">Submit</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- SETTINGS -->
+        <div x-show="showSettings" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm" x-cloak>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Settings</h2>
+                    <button @click="showSettings = false" class="text-xl">✕</button>
+                </div>
+                <div x-show="!settingsUnlocked">
+                    <div x-show="settingsError" class="text-red-500 text-sm mb-2" x-text="settingsError"></div>
+                    
+                    <!-- SETTINGS PASSWORD WITH SHOW/HIDE -->
+                    <div class="relative w-full mb-3">
+                        <input :type="showSettingsPass ? 'text' : 'password'" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Settings Password" 
+                               class="w-full p-3 border rounded dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
+                        <button type="button" @click="showSettingsPass = !showSettingsPass" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-primary">
+                            <svg x-show="!showSettingsPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            <svg x-show="showSettingsPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
+                        </button>
+                    </div>
+
+                    <button @click="unlockSettings" class="w-full bg-gray-800 text-white p-3 rounded">Unlock</button>
+                </div>
+                <div x-show="settingsUnlocked" class="space-y-6">
+                    <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200">
+                        <button @click="resetAppData" class="w-full bg-red-600 text-white px-4 py-2 rounded font-bold text-sm">Reset App Data</button>
+                    </div>
+                    <div class="border-t pt-4 dark:border-gray-600">
+                         <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300">Security</h3>
+                         <div class="mb-3"><input type="text" x-model="newAppPass" placeholder="New App Password" class="w-full p-2 border rounded dark:bg-gray-700 text-sm mb-1"><button @click="changePassword('APP')" class="bg-gray-600 text-white px-3 py-1 rounded text-xs">Update App Pass</button></div>
+                         <div><input type="text" x-model="newSettingsPass" placeholder="New Settings Password" class="w-full p-2 border rounded dark:bg-gray-700 text-sm mb-1"                                                    <template x-for="val in [1, 2, 3, 4, 5]" :key="val">
                                                         <label class="flex flex-col items-center cursor-pointer">
                                                             <span class="text-[10px] sm:text-xs font-bold mb-1" x-text="val"></span>
                                                             <input type="radio" :name="'likert-'+field.index" :value="val" x-model="formData[field.index]" class="custom-radio w-5 h-5 sm:w-6 sm:h-6 border-2 rounded-full focus:ring-0 cursor-pointer appearance-none bg-white dark:bg-gray-700 checked:bg-primary border-gray-300">
