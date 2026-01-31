@@ -335,7 +335,6 @@
                         if(this.headers) {
                             this.headers.forEach((h, i) => {
                                 const lower = String(h).toLowerCase();
-                                // FIX: Removed !lower.includes('volunteer') to allow volunteer data to load
                                 if(!lower.includes('date of visit')) {
                                      this.formData[i] = history[i] || '';
                                 } else {
@@ -474,6 +473,17 @@
                        const gA=grps.findIndex(g=>n.includes(g));
                        if(gA!==-1) return gA*100;
                        return 999;
+                    });
+                    
+                    // NEW: Volunteer Sorting (1 before 2 before Senior)
+                    const volGroup = groups.find(s=>s.title.toLowerCase().includes('volunteer'));
+                    if(volGroup) sortByGroup(volGroup.fields, (f) => {
+                        const n = f.raw.toLowerCase();
+                        // (1) -> 10, (2) -> 20, Senior -> 30
+                        if (n.includes('(1)')) return 10;
+                        if (n.includes('(2)')) return 20;
+                        if (n.includes('senior')) return 30;
+                        return 99; // Others
                     });
                     
                     return groups.filter(s => s.fields.length > 0);
