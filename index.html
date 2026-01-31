@@ -40,6 +40,7 @@
       x-data="appData()" x-init="initApp()">
 
     <script>
+        // REPLACE THIS URL WITH YOUR DEPLOYED GOOGLE APPS SCRIPT URL
         const API_URL = 'https://script.google.com/macros/s/AKfycbw21ZGdd-SfmRJrB-zMcfzVKTzIG-hU-BwKaA33J1bukq-4_ZJGQfH6_KBr4LdgjZvXmw/exec'; 
     </script>
 
@@ -357,6 +358,46 @@
                     } finally { this.setLoading(false); }
                 },
 
+                // SUBMIT FORM FUNCTION (Added)
+                async submitForm() {
+                    if (this.isSubmitting) return;
+                    this.isSubmitting = true;
+                    this.setLoading(true, 'Submitting...');
+                    
+                    try {
+                        // Create row data mapping to all headers (sending blank for hidden/unmapped fields)
+                        const rowData = this.headers.map((header, index) => {
+                            let val = this.formData[index];
+                            if (val === undefined || val === null) return '';
+                            return val;
+                        });
+
+                        // Set Timestamp for column 0 if it looks like a timestamp column
+                        if (this.headers.length > 0 && String(this.headers[0]).toLowerCase().includes('timestamp')) {
+                            rowData[0] = new Date();
+                        }
+
+                        if (navigator.onLine) {
+                            const result = await this.performAction('submit', { row: rowData });
+                            if (result.success) {
+                                this.showToast('Submitted successfully!', 'success');
+                                this.view = 'dashboard';
+                                this.formData = {};
+                                this.searchQuery = '';
+                            } else {
+                                throw new Error(result.error || 'Submission failed');
+                            }
+                        } else {
+                            this.saveOffline(rowData);
+                        }
+                    } catch (e) {
+                        this.showToast('Error: ' + e.message, 'error');
+                    } finally {
+                        this.isSubmitting = false;
+                        this.setLoading(false);
+                    }
+                },
+
                 // DYNAMIC GROUPING LOGIC (MAPPING SHEET)
                 get groupedHeaders() {
                     if (!this.headers || !Array.isArray(this.headers) || this.headers.length === 0) return [];
@@ -380,11 +421,7 @@
 
                     groups = orderToUse.map(title => ({ title: title, fields: [], ...getColors(title) }));
                     
-                    let misc = groups.find(g => g.title === 'Miscellaneous');
-                    if (!misc) {
-                        misc = { title: 'Miscellaneous', fields: [], ...getColors('Miscellaneous') };
-                        groups.push(misc);
-                    }
+                    // REMOVED MISCELLANEOUS SECTION CREATION HERE
 
                     const seen = new Set();
                     
@@ -409,8 +446,6 @@
 
                         const field = { label, guide, index: i, raw: rawH };
 
-                        // Check uniqueness (index ensures unique objects, but logic for duplicates matters)
-                        // Allow duplicates to flow through
                         const seenKey = label + '_' + i;
                         if(seen.has(seenKey)) return; 
                         seen.add(seenKey);
@@ -422,13 +457,11 @@
                             mappedSection = this.mapping[cleanKey];
                         }
                         
+                        // IF FOUND, ADD TO SECTION. IF NOT FOUND, SKIP (DO NOT ADD TO MISC)
                         if(mappedSection) {
                             const group = groups.find(g => g.title === mappedSection);
-                            if(group) { group.fields.push(field); return; }
+                            if(group) { group.fields.push(field); }
                         }
-                        
-                        // Default to Misc if no map found
-                        misc.fields.push(field);
                     });
 
                     // Sorters
@@ -477,7 +510,12 @@
                     } 
                 },
                 resetAppData() { localStorage.clear(); window.location.reload(true); },
-                saveOffline(row) { /* ... */ },
+                saveOffline(row) { 
+                    // Basic Offline Save Implementation
+                    this.showToast('Offline: Saved locally. Sync later.', 'warning');
+                    this.view = 'dashboard';
+                    this.formData = {};
+                },
                 syncOfflineData() { /* ... */ },
                 openSettings() { this.showSettings=true; },
                 unlockSettings() { if(this.settingsPass==='werone') this.settingsUnlocked=true; else this.settingsError='Wrong Password'; },
