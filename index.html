@@ -15,7 +15,7 @@
                     colors: { primary: '#4F46E5', secondary: '#10B981' } 
                 } 
             },
-            safelist: [
+            safelist:[
                 'bg-blue-50', 'dark:bg-blue-900', 'text-blue-700', 'dark:text-blue-200',
                 'bg-green-50', 'dark:bg-green-900', 'text-green-700', 'dark:text-green-200',
                 'bg-yellow-50', 'dark:bg-yellow-900', 'text-yellow-700', 'dark:text-yellow-200',
@@ -33,6 +33,88 @@
         textarea { resize: vertical; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 2 L2 8' stroke='%239CA3AF' stroke-width='1.5'/%3E%3Cpath d='M8 6 L6 8' stroke='%239CA3AF' stroke-width='1.5'/%3E%3C/svg%3E"); background-position: bottom 2px right 2px; background-repeat: no-repeat; background-size: 12px 12px; }
         .dark textarea { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 2 L2 8' stroke='%236B7280' stroke-width='1.5'/%3E%3Cpath d='M8 6 L6 8' stroke='%236B7280' stroke-width='1.5'/%3E%3C/svg%3E"); }
         .custom-radio:checked { background-color: #4F46E5; border-color: #4F46E5; }
+
+        /* --- ROLODEX VARIABLES (Responsive to Dark Mode) --- */
+        :root {
+            --rolo-bg: #f3f4f6; /* bg-gray-100 */
+            --rolo-text: #1f2937; /* text-gray-800 */
+            --rolo-card: #ffffff;
+            --rolo-border: #e5e7eb; /* border-gray-200 */
+            --rolo-primary: #4F46E5; /* text-primary */
+            --rolo-success: #10B981; /* text-secondary */
+            --rolo-error: #EF4444; /* text-red-500 */
+        }
+        .dark {
+            --rolo-bg: #111827; /* bg-gray-900 */
+            --rolo-text: #f3f4f6; /* text-gray-100 */
+            --rolo-card: #1f2937; /* bg-gray-800 */
+            --rolo-border: #374151; /* border-gray-700 */
+            --rolo-primary: #818cf8; /* text-indigo-400 */
+            --rolo-success: #34d399; /* text-emerald-400 */
+            --rolo-error: #f87171; /* text-red-400 */
+        }
+
+        /* --- ROLODEX PHYSICS UI --- */
+        @keyframes popIn {
+            0% { transform: translateY(100%); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .bottom-sheet-backdrop {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
+            background: rgba(0,0,0,0.6); z-index: 9999; display: none; opacity: 0; transition: opacity 0.3s;
+            backdrop-filter: blur(2px);
+        }
+        .bottom-sheet-backdrop.show { display: block; opacity: 1; }
+
+        .rolodex-sheet {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 320px;
+            background: var(--rolo-card); border-top-left-radius: 20px; border-top-right-radius: 20px;
+            box-shadow: 0 -10px 25px rgba(0,0,0,0.4); z-index: 10000;
+            display: none; flex-direction: column; overflow: hidden; font-family: inherit;
+        }
+        .rolodex-sheet.show { display: flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        .rolodex-header {
+            display: flex; justify-content: space-between; align-items: center; width: 100%;
+            padding: 15px 20px; box-sizing: border-box; border-bottom: 1px solid var(--rolo-border);
+            font-size: 1.1rem; font-weight: 600; background: var(--rolo-card); z-index: 10;
+        }
+        .rolodex-cancel { color: var(--rolo-error); cursor: pointer; font-size: 1rem; }
+        .rolodex-title { color: var(--rolo-text); font-size: 1.1rem; }
+        .rolodex-save { color: var(--rolo-success); cursor: pointer; font-size: 1rem; }
+
+        .rolodex-body { display: flex; width: 100%; height: 220px; position: relative; background: var(--rolo-bg); overflow: hidden; }
+
+        .rolodex-highlight {
+            position: absolute; top: 50%; left: 0; width: 100%; height: 44px; transform: translateY(-50%);
+            background: rgba(79, 70, 229, 0.1); border-top: 2px solid var(--rolo-primary); 
+            border-bottom: 2px solid var(--rolo-primary); pointer-events: none; z-index: 2;
+        }
+
+        .rolodex-col-wrapper { position: relative; display: flex; align-items: center; justify-content: center; height: 100%; }
+        .rolodex-col-wrapper:not(:last-child)::after {
+            content: ''; position: absolute; top: 15%; bottom: 15%; right: 0; width: 1px;
+            background-color: var(--rolo-border); z-index: 5;
+        }
+
+        .rolodex-col {
+            flex: 1; position: relative; z-index: 1; width: 100%; height: 100%;
+            touch-action: none; cursor: grab;
+        }
+        .rolodex-col:active { cursor: grabbing; }
+
+        .rolodex-col-inner { padding: 88px 0; margin: 0; display: flex; flex-direction: column; width: 100%; }
+
+        .rolodex-item {
+            height: 44px; display: flex; align-items: center; justify-content: center;
+            color: var(--rolo-text); opacity: 0.3; transition: opacity 0.2s ease, font-size 0.2s ease;
+            user-select: none; white-space: nowrap; font-size: 1.1rem; flex-shrink: 0;
+        }
+        .rolodex-item.active { 
+            opacity: 1; font-weight: 700; color: var(--rolo-primary); 
+            font-size: clamp(1rem, 4vw, 1.3rem); 
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-200 min-h-screen"
@@ -40,6 +122,190 @@
 
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbw21ZGdd-SfmRJrB-zMcfzVKTzIG-hU-BwKaA33J1bukq-4_ZJGQfH6_KBr4LdgjZvXmw/exec'; 
+
+        // =========================================================
+        // GLOBAL ROLODEX HELPERS
+        // =========================================================
+        const RoloGen = {
+            days31: () => Array.from({length:31}, (_,i) => ({ value: i+1, label: (i+1).toString() })),
+            monthsSpec: () =>[
+                {value:1, label:'1. January (Jan)'}, {value:2, label:'2. February (Feb)'}, {value:3, label:'3. March (Mar)'},
+                {value:4, label:'4. April (Apr)'}, {value:5, label:'5. May (May)'}, {value:6, label:'6. June (Jun)'},
+                {value:7, label:'7. July (Jul)'}, {value:8, label:'8. August (Aug)'}, {value:9, label:'9. September (Sep)'},
+                {value:10, label:'10. October (Oct)'}, {value:11, label:'11. November (Nov)'}, {value:12, label:'12. December (Dec)'}
+            ],
+            years: (start, count) => Array.from({length:count}, (_,i) => ({ value: start+i, label: (start+i).toString() }))
+        };
+
+        function openRolodex(title, columns, onSaveCallback) {
+            let existing = document.getElementById('rolodex-modal');
+            if (existing) existing.remove();
+
+            const backdrop = document.createElement('div');
+            backdrop.id = 'rolodex-modal';
+            backdrop.className = 'bottom-sheet-backdrop';
+            
+            let colsHtml = '';
+            columns.forEach(col => {
+                let itemsHtml = '';
+                col.items.forEach(item => {
+                    itemsHtml += `<div class="rolodex-item" data-value="${item.value}">${item.label}</div>`;
+                });
+                
+                colsHtml += `
+                    <div class="rolodex-col-wrapper" style="flex: ${col.flex || 1}">
+                        <div class="rolodex-col" id="rolo-col-${col.id}">
+                            <div class="rolodex-col-inner" id="rolo-track-${col.id}">
+                                ${itemsHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            backdrop.innerHTML = `
+                <div class="rolodex-sheet">
+                    <div class="rolodex-header">
+                        <span class="rolodex-cancel" onclick="closeRolodex()">Cancel</span>
+                        <span class="rolodex-title">${title}</span>
+                        <span class="rolodex-save" id="rolo-save-btn">Set</span>
+                    </div>
+                    <div class="rolodex-body">
+                        <div class="rolodex-highlight"></div>
+                        ${colsHtml}
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(backdrop);
+            
+            requestAnimationFrame(() => {
+                backdrop.classList.add('show');
+                backdrop.querySelector('.rolodex-sheet').classList.add('show');
+            });
+
+            const results = {};
+
+            columns.forEach(col => {
+                const colDiv = document.getElementById(`rolo-col-${col.id}`);
+                const track = document.getElementById(`rolo-track-${col.id}`);
+                const itemHeight = 44; 
+                const maxIndex = col.items.length - 1;
+                
+                let targetIndex = col.items.findIndex(i => i.value == col.selectedValue);
+                if (targetIndex === -1) targetIndex = 0;
+
+                let currentY = -targetIndex * itemHeight;
+                track.style.transform = `translateY(${currentY}px)`;
+                updateActive(targetIndex);
+
+                let isDragging = false;
+                let startY = 0;
+                let startTransformY = 0;
+                let wheelAccumulator = 0;
+
+                function getClientY(e) { return e.touches ? e.touches[0].clientY : e.clientY; }
+
+                function onStart(e) {
+                    isDragging = true;
+                    startY = getClientY(e);
+                    startTransformY = currentY;
+                    track.style.transition = 'none'; 
+                }
+
+                function onMove(e) {
+                    if (!isDragging) return;
+                    e.preventDefault(); 
+                    
+                    const delta = getClientY(e) - startY;
+                    let newY = startTransformY + delta;
+
+                    const boundsTop = 0;
+                    const boundsBottom = -maxIndex * itemHeight;
+                    if (newY > boundsTop) newY = boundsTop + (newY - boundsTop) * 0.3;
+                    if (newY < boundsBottom) newY = boundsBottom + (newY - boundsBottom) * 0.3;
+
+                    currentY = newY;
+                    track.style.transform = `translateY(${currentY}px)`;
+
+                    let tempIndex = Math.round(-currentY / itemHeight);
+                    tempIndex = Math.max(0, Math.min(tempIndex, maxIndex));
+                    
+                    if (tempIndex !== targetIndex) {
+                        targetIndex = tempIndex;
+                        if (navigator.vibrate) navigator.vibrate(30); 
+                        updateActive(targetIndex);
+                    }
+                }
+
+                function onEnd() {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    
+                    targetIndex = Math.round(-currentY / itemHeight);
+                    targetIndex = Math.max(0, Math.min(targetIndex, maxIndex));
+                    
+                    currentY = -targetIndex * itemHeight;
+                    track.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                    track.style.transform = `translateY(${currentY}px)`;
+                    updateActive(targetIndex);
+                }
+
+                colDiv.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    wheelAccumulator += e.deltaY;
+                    if (Math.abs(wheelAccumulator) >= 30) { 
+                        let direction = Math.sign(wheelAccumulator);
+                        let newIndex = targetIndex + direction;
+                        newIndex = Math.max(0, Math.min(newIndex, maxIndex));
+                        
+                        if (newIndex !== targetIndex) {
+                            targetIndex = newIndex;
+                            currentY = -targetIndex * itemHeight;
+                            track.style.transition = 'transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                            track.style.transform = `translateY(${currentY}px)`;
+                            if (navigator.vibrate) navigator.vibrate(30);
+                            updateActive(targetIndex);
+                        }
+                        wheelAccumulator = 0;
+                    }
+                }, {passive: false});
+
+                colDiv.addEventListener('touchstart', onStart, {passive: false});
+                colDiv.addEventListener('touchmove', onMove, {passive: false});
+                colDiv.addEventListener('touchend', onEnd);
+                colDiv.addEventListener('touchcancel', onEnd);
+                
+                colDiv.addEventListener('mousedown', onStart);
+                window.addEventListener('mousemove', onMove, {passive: false});
+                window.addEventListener('mouseup', onEnd);
+
+                function updateActive(index) {
+                    Array.from(track.children).forEach((child, i) => {
+                        if (i === index) {
+                            child.classList.add('active');
+                            results[col.id] = child.dataset.value;
+                        } else {
+                            child.classList.remove('active');
+                        }
+                    });
+                }
+            });
+
+            document.getElementById('rolo-save-btn').addEventListener('click', () => {
+                onSaveCallback(results);
+                closeRolodex();
+            });
+        }
+
+        function closeRolodex() {
+            const modal = document.getElementById('rolodex-modal');
+            if (modal) {
+                modal.classList.remove('show');
+                modal.querySelector('.rolodex-sheet').classList.remove('show');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
     </script>
 
     <!-- LOADING -->
@@ -180,10 +446,10 @@
                                             </select>
                                         </template>
 
+                                        <!-- CUSTOM ROLODEX DATE PICKER IMPLEMENTATION -->
                                         <template x-if="isDate(field.label)">
-                                            <div class="relative">
-                                                <input type="text" readonly :value="formatDateDisplay(formData[field.index])" placeholder="DD MMM YYYY" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700">
-                                                <input type="date" x-model="formData[field.index]" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                            <div class="relative cursor-pointer" @click="triggerDatePicker(field.index, field.label)">
+                                                <input type="text" readonly :value="formatDateDisplay(formData[field.index])" placeholder="Select Date" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700 cursor-pointer pointer-events-none">
                                             </div>
                                         </template>
 
@@ -251,7 +517,7 @@
                 view: 'dashboard', darkMode: localStorage.getItem('theme') === 'dark',
                 isLoggedIn: false, loginPass: '', showLoginPass: false, loginError: '',
                 toast: { visible: false, message: '', type: 'success' },
-                headers: [], trainees: [], projects: [], mapping: {}, sectionOrder: [], searchQuery: '', loadingTrainees: false,
+                headers: [], trainees: [], projects:[], mapping: {}, sectionOrder:[], searchQuery: '', loadingTrainees: false,
                 formData: {}, isSubmitting: false, isLoading: false, loadingText: 'Please wait...',
                 showSettings: false, settingsPass: '', showSettingsPass: false, settingsUnlocked: false, settingsError: '', 
                 newColumnName: '', newAppPass: '', newSettingsPass: '',
@@ -267,6 +533,34 @@
 
                 toggleSection(title) {
                     this.expandedSections[title] = !this.expandedSections[title];
+                },
+
+                triggerDatePicker(index, label) {
+                    let currentDateStr = this.formData[index];
+                    let d = new Date();
+                    if (currentDateStr) {
+                        const parts = String(currentDateStr).split('-');
+                        if(parts.length === 3) {
+                            d = new Date(parts[0], parts[1] - 1, parts[2]);
+                        }
+                    }
+
+                    const currYear = new Date().getFullYear();
+                    
+                    openRolodex(label || "Select Date",[
+                        { id: 'day', items: RoloGen.days31(), selectedValue: d.getDate() },
+                        { id: 'month', items: RoloGen.monthsSpec(), selectedValue: d.getMonth() + 1, flex: 1.8 },
+                        { id: 'year', items: RoloGen.years(currYear - 5, 11), selectedValue: d.getFullYear() } // 5 years back, up to 5 years future
+                    ], (res) => {
+                        const year = parseInt(res.year);
+                        const month = parseInt(res.month); // 1-indexed
+                        const day = parseInt(res.day);
+                        
+                        // Format specifically as YYYY-MM-DD for GS Backend and formatDateDisplay helper
+                        const mm = String(month).padStart(2, '0');
+                        const dd = String(day).padStart(2, '0');
+                        this.formData[index] = `${year}-${mm}-${dd}`;
+                    });
                 },
 
                 formatDateDisplay(isoDate) {
@@ -303,10 +597,10 @@
                     try {
                         const data = await this.performAction('getConfig');
                         this.headers = Array.isArray(data.headers) ? data.headers.map(String) : [];
-                        this.trainees = data.trainees || [];
-                        this.projects = data.projects || [];
+                        this.trainees = data.trainees ||[];
+                        this.projects = data.projects ||[];
                         this.mapping = data.mapping || {};
-                        this.sectionOrder = data.sectionOrder || [];
+                        this.sectionOrder = data.sectionOrder ||[];
                         localStorage.setItem('appConfig', JSON.stringify({ 
                             headers: this.headers, 
                             trainees: this.trainees, 
@@ -318,7 +612,7 @@
                 },
 
                 async refreshTrainees() { if(navigator.onLine) await this.fetchConfig(); },
-                get filteredTrainees() { if(!this.searchQuery) return []; const q=this.searchQuery.toLowerCase(); return this.trainees.filter(t=>t&&String(t).toLowerCase().includes(q)); },
+                get filteredTrainees() { if(!this.searchQuery) return[]; const q=this.searchQuery.toLowerCase(); return this.trainees.filter(t=>t&&String(t).toLowerCase().includes(q)); },
                 getNameIndex() { return this.headers ? this.headers.findIndex(h => String(h).toLowerCase().includes('trainee') && String(h).toLowerCase().includes('name')) : -1; },
                 loadNewForm() { this.loadTraineeForm(''); },
 
@@ -394,7 +688,6 @@
                                 throw new Error(result.error || 'Submission failed');
                             }
                         } else {
-                             // REMOVED OFFLINE SAVE LOGIC
                              this.showToast('You are offline. Please connect to internet to submit.', 'error');
                         }
                     } catch (e) {
@@ -406,9 +699,9 @@
                 },
 
                 get groupedHeaders() {
-                    if (!this.headers || !Array.isArray(this.headers) || this.headers.length === 0) return [];
+                    if (!this.headers || !Array.isArray(this.headers) || this.headers.length === 0) return[];
                     
-                    let groups = [];
+                    let groups =[];
                     const orderToUse = (this.sectionOrder && this.sectionOrder.length > 0) ? this.sectionOrder : ['General Details'];
 
                     const getColors = (t) => {
@@ -423,7 +716,7 @@
                         return {bgClass:'bg-slate-100 dark:bg-gray-800', textClass:'text-slate-600 dark:text-slate-400'};
                     };
 
-                    groups = orderToUse.map(title => ({ title: title, fields: [], ...getColors(title) }));
+                    groups = orderToUse.map(title => ({ title: title, fields:[], ...getColors(title) }));
                     
                     const seen = new Set();
                     
@@ -482,7 +775,7 @@
                     const cg = groups.find(s=>s.title.toLowerCase().includes('caregiver'));
                     if(cg) sortByGroup(cg.fields, (f) => {
                         const n = f.raw.toLowerCase();
-                        const num = (n.match(/\((\d+)\)/) || [0,99])[1];
+                        const num = (n.match(/\((\d+)\)/) ||[0,99])[1];
                         const rank = n.includes('name')?1:n.includes('relation')?2:n.includes('contact')?3:4;
                         return (num*10) + rank;
                     });
@@ -512,7 +805,7 @@
                 getLikertLabel(n, side) { const k = Object.keys(this.likertConfig).find(k=>String(n).toLowerCase().includes(k)); return k ? this.likertConfig[k][side] : ''; },
                 isDate(n) { return String(n).toLowerCase().includes('date'); },
                 isProjectField(n) { return String(n).toLowerCase().trim() === 'project'; },
-                isShortInput(n) { return ['name','nric','gender','sex','race','religion','blood','height','weight','shirt','relation','contact','mobile','phone','email'].some(k=>String(n).toLowerCase().includes(k)); },
+                isShortInput(n) { return['name','nric','gender','sex','race','religion','blood','height','weight','shirt','relation','contact','mobile','phone','email'].some(k=>String(n).toLowerCase().includes(k)); },
                 isLongText(n) { return !this.isDate(n) && !this.isShortInput(n) && !this.isProjectField(n) && !this.isLikertScale(n); },
                 
                 loadNewForm() { this.loadTraineeForm(''); },
@@ -526,19 +819,4 @@
                             this.trainees=d.trainees||[]; 
                             this.projects=d.projects||[]; 
                             this.mapping=d.mapping||{}; 
-                            this.sectionOrder=d.sectionOrder||[];
-                        } catch(e){} 
-                    } 
-                },
-                resetAppData() { localStorage.clear(); window.location.reload(true); },
-                openSettings() { this.showSettings=true; },
-                unlockSettings() { if(this.settingsPass==='werone') this.settingsUnlocked=true; else this.settingsError='Wrong Password'; },
-                addColumn() { this.performAction('addColumn', {headerName:this.newColumnName}); },
-                renameColumn(idx, name) { this.performAction('renameColumn', {colIndex:idx, newName:name}); },
-                changePassword() { /* ... */ },
-                showToast(m,t) { this.toast.message=m;this.toast.type=t;this.toast.visible=true;setTimeout(()=>this.toast.visible=false,3000); }
-            }
-        }
-    </script>
-</body>
-</html>
+                            this.sectionOrder=d.sectionOrder||[]; } catch(e){} } } }, resetAppData() { localStorage.clear(); window.location.reload(true); }, openSettings() { this.showSettings=true; }, unlockSettings() { if(this.settingsPass==='werone') this.settingsUnlocked=true; else this.settingsError='Wrong Password'; }, addColumn() { this.performAction('addColumn', {headerName:this.newColumnName}); }, renameColumn(idx, name) { this.performAction('renameColumn', {colIndex:idx, newName:name}); }, changePassword() { /* ... */ }, showToast(m,t) { this.toast.message=m;this.toast.type=t;this.toast.visible=true;setTimeout(()=>this.toast.visible=false,3000); } } } </script> </body> </html>`
