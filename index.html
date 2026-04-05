@@ -1,309 +1,601 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Standalone Date Rolodex</title>
-<style>
-    /* --- 1. CORE VARIABLES (Adapt these to your new app's theme) --- */
-    :root {
-        --bg-color: #f4f7f6;
-        --text-color: #333333;
-        --card-bg: #ffffff;
-        --card-border: #e0e0e0;
-        --primary-color: #4a90e2;
-        --success-color: #4CAF50;
-        --error-color: #F44336;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>House Visit Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = { 
+            darkMode: 'class', 
+            theme: { 
+                extend: { 
+                    colors: { primary: '#4F46E5', secondary: '#10B981' } 
+                } 
+            },
+            safelist:[
+                'bg-blue-50', 'dark:bg-blue-900', 'text-blue-700', 'dark:text-blue-200',
+                'bg-green-50', 'dark:bg-green-900', 'text-green-700', 'dark:text-green-200',
+                'bg-yellow-50', 'dark:bg-yellow-900', 'text-yellow-700', 'dark:text-yellow-200',
+                'bg-red-50', 'dark:bg-red-900', 'text-red-700', 'dark:text-red-200',
+                'bg-purple-50', 'dark:bg-purple-900', 'text-purple-700', 'dark:text-purple-200',
+                'bg-indigo-50', 'dark:bg-indigo-900', 'text-indigo-800', 'dark:text-indigo-200',
+                'bg-pink-50', 'dark:bg-pink-900', 'text-pink-700', 'dark:text-pink-200',
+                'bg-slate-100', 'dark:bg-gray-800', 'text-slate-600', 'dark:text-slate-400'
+            ]
+        }
+    </script>
+    <style>[x-cloak] { display: none !important; }
+        input, textarea, select { font-size: 16px; } 
+        textarea { resize: vertical; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 2 L2 8' stroke='%239CA3AF' stroke-width='1.5'/%3E%3Cpath d='M8 6 L6 8' stroke='%239CA3AF' stroke-width='1.5'/%3E%3C/svg%3E"); background-position: bottom 2px right 2px; background-repeat: no-repeat; background-size: 12px 12px; }
+        .dark textarea { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 2 L2 8' stroke='%236B7280' stroke-width='1.5'/%3E%3Cpath d='M8 6 L6 8' stroke='%236B7280' stroke-width='1.5'/%3E%3C/svg%3E"); }
+        .custom-radio:checked { background-color: #4F46E5; border-color: #4F46E5; }
 
-    body { font-family: sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; }
+        /* --- ROLODEX VARIABLES FOR LIGHT & DARK MODE --- */
+        :root {
+            --rolo-bg: #f9fafb;
+            --rolo-text: #1f2937;
+            --rolo-card: #ffffff;
+            --rolo-border: #e5e7eb;
+            --rolo-primary: #4F46E5;
+            --rolo-success: #10B981;
+            --rolo-error: #EF4444;
+            --rolo-highlight: rgba(79, 70, 229, 0.15);
+        }
+        .dark {
+            --rolo-bg: #111827;
+            --rolo-text: #f3f4f6;
+            --rolo-card: #1f2937;
+            --rolo-border: #374151;
+            --rolo-primary: #818cf8;
+            --rolo-highlight: rgba(129, 140, 248, 0.2);
+        }
 
-    /* --- 2. ROLODEX MODAL & SHEET STYLES --- */
-    @keyframes popIn {
-        0% { transform: translateY(100%); opacity: 0; }
-        100% { transform: translateY(0); opacity: 1; }
-    }
+        /* --- ROLODEX MODAL STYLES --- */
+        @keyframes popIn { 0% { transform: translateY(100%); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+        
+        .bottom-sheet-backdrop {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(2px); z-index: 99999; 
+            display: none; opacity: 0; transition: opacity 0.3s;
+        }
+        .bottom-sheet-backdrop.show { display: block; opacity: 1; }
 
-    .bottom-sheet-backdrop {
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
-        background: rgba(0,0,0,0.6); z-index: 9999; display: none; opacity: 0; transition: opacity 0.3s;
-    }
-    .bottom-sheet-backdrop.show { display: block; opacity: 1; }
+        .rolodex-sheet {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 320px;
+            background: var(--rolo-card); border-top-left-radius: 20px; border-top-right-radius: 20px;
+            box-shadow: 0 -10px 25px rgba(0,0,0,0.3); z-index: 100000;
+            display: none; flex-direction: column; overflow: hidden;
+        }
+        .rolodex-sheet.show { display: flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
-    .rolodex-sheet {
-        position: fixed; bottom: 0; left: 0; width: 100%; height: 320px;
-        background: var(--card-bg); border-top-left-radius: 30px; border-top-right-radius: 30px;
-        box-shadow: 0 -10px 25px rgba(0,0,0,0.2); z-index: 10000;
-        display: none; flex-direction: column; overflow: hidden;
-    }
-    .rolodex-sheet.show { display: flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .rolodex-header {
+            display: flex; justify-content: space-between; align-items: center; width: 100%;
+            padding: 15px 20px; box-sizing: border-box; border-bottom: 1px solid var(--rolo-border);
+            font-size: 1.1rem; font-weight: bold; background: var(--rolo-card); z-index: 10;
+        }
+        .rolodex-cancel { color: var(--rolo-error); cursor: pointer; }
+        .rolodex-title { color: var(--rolo-text); font-size: 1.2rem; }
+        .rolodex-save { color: var(--rolo-success); cursor: pointer; }
 
-    .rolodex-header {
-        display: flex; justify-content: space-between; align-items: center; width: 100%;
-        padding: 15px 20px; box-sizing: border-box; border-bottom: 1px solid var(--card-border);
-        font-size: 1.2rem; font-weight: bold; background: var(--card-bg); z-index: 10;
-    }
-    .rolodex-cancel { color: var(--error-color); cursor: pointer; }
-    .rolodex-title { color: var(--text-color); font-size: 1.3rem; }
-    .rolodex-save { color: var(--success-color); cursor: pointer; }
+        .rolodex-body { display: flex; width: 100%; height: 220px; position: relative; background: var(--rolo-bg); overflow: hidden; }
 
-    /* --- 3. ROLODEX PHYSICS TRACK STYLES --- */
-    .rolodex-body { display: flex; width: 100%; height: 220px; position: relative; background: var(--bg-color); overflow: hidden; }
+        .rolodex-highlight {
+            position: absolute; top: 50%; left: 0; width: 100%; height: 44px; transform: translateY(-50%);
+            background: var(--rolo-highlight); border-top: 2px solid var(--rolo-primary); 
+            border-bottom: 2px solid var(--rolo-primary); pointer-events: none; z-index: 2;
+        }
 
-    .rolodex-highlight {
-        position: absolute; top: 50%; left: 0; width: 100%; height: 44px; transform: translateY(-50%);
-        background: rgba(74, 144, 226, 0.15); border-top: 2px solid var(--primary-color); 
-        border-bottom: 2px solid var(--primary-color); pointer-events: none; z-index: 2;
-    }
+        .rolodex-col-wrapper { position: relative; display: flex; align-items: center; justify-content: center; height: 100%; }
+        .rolodex-col-wrapper:not(:last-child)::after {
+            content: ''; position: absolute; top: 15%; bottom: 15%; right: 0; width: 1px;
+            background-color: var(--rolo-border); z-index: 5;
+        }
 
-    .rolodex-col-wrapper { position: relative; display: flex; align-items: center; justify-content: center; height: 100%; }
-    .rolodex-col-wrapper:not(:last-child)::after {
-        content: ''; position: absolute; top: 15%; bottom: 15%; right: 0; width: 1px;
-        background-color: var(--card-border); z-index: 5;
-    }
+        .rolodex-col { flex: 1; position: relative; z-index: 1; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+        .rolodex-col:active { cursor: grabbing; }
 
-    .rolodex-col {
-        flex: 1; position: relative; z-index: 1; width: 100%; height: 100%;
-        touch-action: none; cursor: grab; /* JS Touch Engine handles drag */
-    }
-    .rolodex-col:active { cursor: grabbing; }
+        .rolodex-col-inner { padding: 88px 0; margin: 0; display: flex; flex-direction: column; width: 100%; }
 
-    .rolodex-col-inner {
-        padding: 88px 0; margin: 0; display: flex; flex-direction: column; width: 100%;
-    }
-
-    .rolodex-item {
-        height: 44px; display: flex; align-items: center; justify-content: center;
-        color: var(--text-color); opacity: 0.3; transition: opacity 0.2s ease, font-size 0.2s ease;
-        user-select: none; white-space: nowrap; font-size: 1.2rem; flex-shrink: 0;
-    }
-    .rolodex-item.active { 
-        opacity: 1; font-weight: 900; color: var(--primary-color); 
-        font-size: clamp(1.1rem, 4.5vw, 1.5rem); 
-    }
-
-    /* Simple button to trigger demo */
-    .demo-btn { padding: 15px 20px; font-size: 1.2rem; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; }
-</style>
+        .rolodex-item {
+            height: 44px; display: flex; align-items: center; justify-content: center;
+            color: var(--rolo-text); opacity: 0.3; transition: opacity 0.2s ease, font-size 0.2s ease;
+            user-select: none; white-space: nowrap; font-size: 1.1rem; flex-shrink: 0;
+        }
+        .rolodex-item.active { 
+            opacity: 1; font-weight: 900; color: var(--rolo-primary); 
+            font-size: clamp(1rem, 4.5vw, 1.3rem); 
+        }
+    </style>
 </head>
-<body>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-200 min-h-screen"
+      x-data="appData()" x-init="initApp()">
 
-    <h2>Date Picker Demo</h2>
-    <button class="demo-btn" onclick="openMyDatePicker()">Select a Date</button>
-    <h3 style="margin-top: 20px;">Selected Date: <span id="date-output" style="color: var(--primary-color);">None</span></h3>
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbw21ZGdd-SfmRJrB-zMcfzVKTzIG-hU-BwKaA33J1bukq-4_ZJGQfH6_KBr4LdgjZvXmw/exec'; 
 
-<script>
-// =========================================================
-// 1. DATA GENERATORS (Days, Months, Years)
-// =========================================================
-const RoloGen = {
-    days31: () => Array.from({length:31}, (_,i) => ({ value: i+1, label: (i+1).toString() })),
-    monthsSpec: () =>[
-        {value:1, label:'1. January (Jan)'}, {value:2, label:'2. February (Feb)'}, {value:3, label:'3. March (Mar)'},
-        {value:4, label:'4. April (Apr)'}, {value:5, label:'5. May (May)'}, {value:6, label:'6. June (Jun)'},
-        {value:7, label:'7. July (Jul)'}, {value:8, label:'8. August (Aug)'}, {value:9, label:'9. September (Sep)'},
-        {value:10, label:'10. October (Oct)'}, {value:11, label:'11. November (Nov)'}, {value:12, label:'12. December (Dec)'}
-    ],
-    years: (start, count) => Array.from({length:count}, (_,i) => ({ value: start+i, label: (start+i).toString() }))
-};
+        // ==========================================
+        // ROLODEX LOGIC START
+        // ==========================================
+        const RoloGen = {
+            days31: () => Array.from({length:31}, (_,i) => ({ value: i+1, label: (i+1).toString() })),
+            monthsSpec: () =>[
+                {value:1, label:'Jan'}, {value:2, label:'Feb'}, {value:3, label:'Mar'},
+                {value:4, label:'Apr'}, {value:5, label:'May'}, {value:6, label:'Jun'},
+                {value:7, label:'Jul'}, {value:8, label:'Aug'}, {value:9, label:'Sep'},
+                {value:10, label:'Oct'}, {value:11, label:'Nov'}, {value:12, label:'Dec'}
+            ],
+            years: (start, count) => Array.from({length:count}, (_,i) => ({ value: start+i, label: (start+i).toString() }))
+        };
 
-// =========================================================
-// 2. INVOCATION LOGIC
-// =========================================================
-function openMyDatePicker() {
-    const today = new Date();
-    const currYear = today.getFullYear();
-    
-    openRolodex("Select Date",[
-        { id: 'day', items: RoloGen.days31(), selectedValue: today.getDate() },
-        { id: 'month', items: RoloGen.monthsSpec(), selectedValue: today.getMonth() + 1, flex: 1.8 }, // flex: 1.8 makes the month column wider
-        { id: 'year', items: RoloGen.years(currYear, 10), selectedValue: currYear }
-    ], (res) => {
-        // Callback when user hits "Set"
-        const year = parseInt(res.year);
-        const month = parseInt(res.month) - 1; // JS months are 0-indexed
-        const day = parseInt(res.day);
+        function openRolodex(title, columns, onSaveCallback) {
+            let existing = document.getElementById('rolodex-modal');
+            if (existing) existing.remove();
+
+            const backdrop = document.createElement('div');
+            backdrop.id = 'rolodex-modal';
+            backdrop.className = 'bottom-sheet-backdrop';
+            
+            let colsHtml = '';
+            columns.forEach(col => {
+                let itemsHtml = '';
+                col.items.forEach(item => {
+                    itemsHtml += `<div class="rolodex-item" data-value="${item.value}">${item.label}</div>`;
+                });
+                
+                colsHtml += `
+                    <div class="rolodex-col-wrapper" style="flex: ${col.flex || 1}">
+                        <div class="rolodex-col" id="rolo-col-${col.id}">
+                            <div class="rolodex-col-inner" id="rolo-track-${col.id}">
+                                ${itemsHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            backdrop.innerHTML = `
+                <div class="rolodex-sheet">
+                    <div class="rolodex-header">
+                        <span class="rolodex-cancel" onclick="closeRolodex()">Cancel</span>
+                        <span class="rolodex-title">${title}</span>
+                        <span class="rolodex-save" id="rolo-save-btn">Set</span>
+                    </div>
+                    <div class="rolodex-body">
+                        <div class="rolodex-highlight"></div>
+                        ${colsHtml}
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(backdrop);
+            
+            requestAnimationFrame(() => {
+                backdrop.classList.add('show');
+                backdrop.querySelector('.rolodex-sheet').classList.add('show');
+            });
+
+            const results = {};
+
+            columns.forEach(col => {
+                const colDiv = document.getElementById(`rolo-col-${col.id}`);
+                const track = document.getElementById(`rolo-track-${col.id}`);
+                const itemHeight = 44; 
+                const maxIndex = col.items.length - 1;
+                
+                let targetIndex = col.items.findIndex(i => i.value == col.selectedValue);
+                if (targetIndex === -1) targetIndex = 0;
+
+                let currentY = -targetIndex * itemHeight;
+                track.style.transform = `translateY(${currentY}px)`;
+                updateActive(targetIndex);
+
+                let isDragging = false;
+                let startY = 0;
+                let startTransformY = 0;
+                let wheelAccumulator = 0;
+
+                function getClientY(e) { return e.touches ? e.touches[0].clientY : e.clientY; }
+
+                function onStart(e) {
+                    isDragging = true;
+                    startY = getClientY(e);
+                    startTransformY = currentY;
+                    track.style.transition = 'none'; 
+                }
+
+                function onMove(e) {
+                    if (!isDragging) return;
+                    e.preventDefault(); 
+                    
+                    const delta = getClientY(e) - startY;
+                    let newY = startTransformY + delta;
+
+                    const boundsTop = 0;
+                    const boundsBottom = -maxIndex * itemHeight;
+                    if (newY > boundsTop) newY = boundsTop + (newY - boundsTop) * 0.3;
+                    if (newY < boundsBottom) newY = boundsBottom + (newY - boundsBottom) * 0.3;
+
+                    currentY = newY;
+                    track.style.transform = `translateY(${currentY}px)`;
+
+                    let tempIndex = Math.round(-currentY / itemHeight);
+                    tempIndex = Math.max(0, Math.min(tempIndex, maxIndex));
+                    
+                    if (tempIndex !== targetIndex) {
+                        targetIndex = tempIndex;
+                        if (navigator.vibrate) navigator.vibrate(30);
+                        updateActive(targetIndex);
+                    }
+                }
+
+                function onEnd() {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    
+                    targetIndex = Math.round(-currentY / itemHeight);
+                    targetIndex = Math.max(0, Math.min(targetIndex, maxIndex));
+                    
+                    currentY = -targetIndex * itemHeight;
+                    track.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                    track.style.transform = `translateY(${currentY}px)`;
+                    updateActive(targetIndex);
+                }
+
+                colDiv.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    wheelAccumulator += e.deltaY;
+                    if (Math.abs(wheelAccumulator) >= 30) { 
+                        let direction = Math.sign(wheelAccumulator);
+                        let newIndex = targetIndex + direction;
+                        newIndex = Math.max(0, Math.min(newIndex, maxIndex));
+                        
+                        if (newIndex !== targetIndex) {
+                            targetIndex = newIndex;
+                            currentY = -targetIndex * itemHeight;
+                            track.style.transition = 'transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                            track.style.transform = `translateY(${currentY}px)`;
+                            if (navigator.vibrate) navigator.vibrate(30);
+                            updateActive(targetIndex);
+                        }
+                        wheelAccumulator = 0;
+                    }
+                }, {passive: false});
+
+                colDiv.addEventListener('touchstart', onStart, {passive: false});
+                colDiv.addEventListener('touchmove', onMove, {passive: false});
+                colDiv.addEventListener('touchend', onEnd);
+                colDiv.addEventListener('touchcancel', onEnd);
+                
+                colDiv.addEventListener('mousedown', onStart);
+                window.addEventListener('mousemove', onMove, {passive: false});
+                window.addEventListener('mouseup', onEnd);
+
+                function updateActive(index) {
+                    Array.from(track.children).forEach((child, i) => {
+                        if (i === index) {
+                            child.classList.add('active');
+                            results[col.id] = child.dataset.value;
+                        } else {
+                            child.classList.remove('active');
+                        }
+                    });
+                }
+            });
+
+            document.getElementById('rolo-save-btn').addEventListener('click', () => {
+                onSaveCallback(results);
+                closeRolodex();
+            });
+        }
+
+        function closeRolodex() {
+            const modal = document.getElementById('rolodex-modal');
+            if (modal) {
+                modal.classList.remove('show');
+                modal.querySelector('.rolodex-sheet').classList.remove('show');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+        // ==========================================
+        // ROLODEX LOGIC END
+        // ==========================================
+    </script>
+
+    <!-- LOADING -->
+    <div x-show="isLoading" x-transition.opacity class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm" x-cloak>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl flex flex-col items-center">
+            <svg class="animate-spin h-10 w-10 text-primary mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <span class="font-bold text-gray-800 dark:text-white" x-text="loadingText">Loading...</span>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div x-show="toast.visible" x-transition class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded shadow-lg text-white font-medium" :class="toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'" x-cloak>
+        <span x-text="toast.message"></span>
+    </div>
+
+    <!-- HEADER -->
+    <header class="bg-white dark:bg-gray-800 shadow p-4 sticky top-0 z-30 flex justify-between items-center">
+        <h1 class="text-xl font-bold text-green-600 dark:text-green-400">House Visit Form</h1>
+        <div class="flex items-center gap-3">
+            <button @click="openSettings" class="text-gray-500 hover:text-primary transition" title="Settings">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </button>
+            <button @click="window.location.reload(true)" class="text-gray-500 hover:text-primary transition" title="Update App">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
+            <button @click="toggleTheme" class="text-2xl focus:outline-none" title="Toggle Dark Mode">🌗</button>
+        </div>
+    </header>
+
+    <!-- LOGIN -->
+    <div x-show="!isLoggedIn" class="flex flex-col items-center justify-center min-h-[80vh] p-6">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-sm">
+            <h2 class="text-2xl font-bold mb-6 text-center">Volunteer Login</h2>
+            <div x-show="loginError" class="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm text-center" x-text="loginError"></div>
+            
+            <div class="relative w-full mb-4">
+                <input :type="showLoginPass ? 'text' : 'password'" x-model="loginPass" @keyup.enter="performLogin" placeholder="Enter Password" 
+                       class="w-full p-3 border rounded dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
+                <button type="button" @click="showLoginPass = !showLoginPass" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-primary">
+                    <svg x-show="!showLoginPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    <svg x-show="showLoginPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
+                </button>
+            </div>
+
+            <button @click="performLogin" class="w-full bg-primary text-white p-3 rounded font-bold hover:bg-indigo-700 transition">Login</button>
+        </div>
+    </div>
+
+    <!-- APP -->
+    <div x-show="isLoggedIn" x-cloak class="p-4 max-w-4xl mx-auto pb-24">
         
-        const selectedDate = new Date(year, month, day);
-        const options = { day: 'numeric', month: 'long', year: 'numeric' };
-        
-        // Output result to screen
-        document.getElementById('date-output').innerText = selectedDate.toLocaleDateString('en-GB', options);
-    });
-}
+        <!-- DASHBOARD -->
+        <div x-show="view === 'dashboard'">
+            <div class="mb-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold">Find Trainee</h2>
+                    <span class="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                        <span x-text="trainees.length"></span> Loaded
+                    </span>
+                </div>
+                
+                <div class="relative">
+                    <input type="text" x-model="searchQuery" @focus="refreshTrainees" placeholder="Search name..." class="w-full p-3 pl-4 border rounded-lg text-gray-900 dark:text-gray-100 dark:bg-gray-700 dark:border-gray-600 outline-none focus:border-primary">
+                    <div x-show="searchQuery.length > 0" class="mt-2 max-h-60 overflow-y-auto border rounded-lg dark:border-gray-700">
+                        <template x-for="trainee in filteredTrainees" :key="trainee">
+                            <div @click="loadTraineeForm(trainee)" class="p-3 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b dark:border-gray-700 flex justify-between items-center">
+                                <span x-text="trainee" class="font-medium text-gray-800 dark:text-gray-200"></span>
+                                <span class="text-xs font-semibold text-indigo-700 bg-indigo-100 dark:text-indigo-100 dark:bg-indigo-600 px-3 py-1 rounded-full">Fill Form</span>
+                            </div>
+                        </template>
+                        <div x-show="filteredTrainees.length === 0" class="p-3 text-gray-500 bg-white dark:bg-gray-800 text-center">No matches found</div>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs text-gray-400">Pulls list from 'lookup' tab</div>
+            </div>
+            <div class="text-center">
+                <button @click="loadNewForm" class="w-full sm:w-auto px-8 bg-secondary text-white p-4 rounded-lg shadow-md font-bold text-lg">+ Start New Blank Visit</button>
+            </div>
+        </div>
 
-// =========================================================
-// 3. THE PHYSICS ENGINE (DO NOT MODIFY)
-// =========================================================
-function openRolodex(title, columns, onSaveCallback) {
-    let existing = document.getElementById('rolodex-modal');
-    if (existing) existing.remove();
+        <!-- FORM -->
+        <div x-show="view === 'form'">
+            <div class="flex justify-between items-center mb-6">
+                <button @click="view = 'dashboard'" class="text-gray-500 flex items-center gap-1">← Back</button>
+                <h2 class="font-bold text-lg truncate ml-4" x-text="formData[getNameIndex()] || 'New Visit'"></h2>
+            </div>
+            <form @submit.prevent="submitForm">
+                
+                <div x-show="groupedHeaders.length === 0" class="text-center p-8 text-gray-500 border-2 border-dashed rounded-lg">
+                    <p class="text-lg font-bold">No questions loaded.</p>
+                    <p class="text-sm">Check mapping sheet. Only mapped fields are shown.</p>
+                    <button @click="resetAppData" type="button" class="mt-4 bg-red-600 text-white px-4 py-2 rounded text-sm">Reset App</button>
+                </div>
 
-    const backdrop = document.createElement('div');
-    backdrop.id = 'rolodex-modal';
-    backdrop.className = 'bottom-sheet-backdrop';
-    
-    let colsHtml = '';
-    columns.forEach(col => {
-        let itemsHtml = '';
-        col.items.forEach(item => {
-            itemsHtml += `<div class="rolodex-item" data-value="${item.value}">${item.label}</div>`;
-        });
-        
-        colsHtml += `
-            <div class="rolodex-col-wrapper" style="flex: ${col.flex || 1}">
-                <div class="rolodex-col" id="rolo-col-${col.id}">
-                    <div class="rolodex-col-inner" id="rolo-track-${col.id}">
-                        ${itemsHtml}
+                <template x-for="(section, secIndex) in groupedHeaders" :key="secIndex">
+                    <div class="mb-6 rounded-lg overflow-hidden shadow-sm border dark:border-gray-700 bg-white dark:bg-gray-800">
+                        
+                        <!-- HEADER (ACCORDION) WITH COLORS -->
+                        <div @click="toggleSection(section.title)" 
+                             class="p-4 font-bold uppercase text-sm tracking-wide border-b dark:border-gray-600 cursor-pointer flex justify-between items-center select-none" 
+                             :class="section.bgClass + ' ' + section.textClass">
+                             <div>
+                                <div x-text="section.title"></div>
+                                <div x-show="section.guide" class="text-xs font-normal opacity-75 mt-1 normal-case tracking-normal" x-text="section.guide"></div>
+                             </div>
+                             <svg class="w-5 h-5 transition-transform duration-200" 
+                                  :class="expandedSections[section.title] ? 'rotate-180' : ''"
+                                  fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                        
+                        <!-- BODY -->
+                        <div x-show="expandedSections[section.title]" x-collapse>
+                            <div class="p-4 space-y-5">
+                                <template x-for="field in section.fields" :key="field.index">
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-1 text-gray-800 dark:text-gray-200" x-text="field.label"></label>
+                                        <p x-show="field.guide" class="text-xs text-gray-500 dark:text-gray-400 mb-2 italic" x-text="field.guide"></p>
+                                        
+                                        <template x-if="isLikertScale(field.label)">
+                                            <div class="mt-2 mb-4 bg-gray-50 dark:bg-gray-900 p-3 sm:p-4 rounded-lg border dark:border-gray-700 flex flex-row items-center justify-between gap-1 sm:gap-4">
+                                                <span class="w-1/3 text-right text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight pr-1" x-text="getLikertLabel(field.label, 'left')"></span>
+                                                <div class="flex gap-2 sm:gap-4 shrink-0 justify-center">
+                                                    <template x-for="val in[1, 2, 3, 4, 5]" :key="val">
+                                                        <label class="flex flex-col items-center cursor-pointer">
+                                                            <span class="text-[10px] sm:text-xs font-bold mb-1" x-text="val"></span>
+                                                            <input type="radio" :name="'likert-'+field.index" :value="val" x-model="formData[field.index]" class="custom-radio w-5 h-5 sm:w-6 sm:h-6 border-2 rounded-full focus:ring-0 cursor-pointer appearance-none bg-white dark:bg-gray-700 checked:bg-primary border-gray-300">
+                                                        </label>
+                                                    </template>
+                                                </div>
+                                                <span class="w-1/3 text-left text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight pl-1" x-text="getLikertLabel(field.label, 'right')"></span>
+                                            </div>
+                                        </template>
+
+                                        <template x-if="isProjectField(field.label)">
+                                            <select x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700">
+                                                <option value="">Select Project...</option>
+                                                <template x-for="opt in projects" :key="opt"><option :value="opt" x-text="opt"></option></template>
+                                            </select>
+                                        </template>
+
+                                        <template x-if="isDate(field.label)">
+                                            <div class="relative">
+                                                <!-- Rolodex Trigger Input -->
+                                                <input type="text" readonly 
+                                                       :value="formatDateDisplay(formData[field.index])" 
+                                                       @click="openDatePicker(field.index)"
+                                                       placeholder="Select Date" 
+                                                       class="w-full p-3 border rounded-lg cursor-pointer dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700 dark:text-gray-100">
+                                            </div>
+                                        </template>
+
+                                        <template x-if="isLongText(field.label) && !isLikertScale(field.label)">
+                                            <textarea x-model="formData[field.index]" rows="3" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none min-h-[100px]"></textarea>
+                                        </template>
+                                        
+                                        <template x-if="isShortInput(field.label) && !isProjectField(field.label)">
+                                            <input type="text" x-model="formData[field.index]" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none">
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div class="h-24"></div>
+                
+                <!-- FOOTER -->
+                <div class="fixed bottom-0 left-0 w-full p-4 bg-white dark:bg-gray-900 border-t dark:border-gray-700 flex z-20 shadow-lg">
+                    <button type="submit" class="w-full bg-primary text-white p-3 rounded-lg font-bold shadow-md hover:bg-indigo-700 transition">Submit</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- SETTINGS -->
+        <div x-show="showSettings" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm" x-cloak>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Settings</h2>
+                    <button @click="showSettings = false" class="text-xl">✕</button>
+                </div>
+                <div x-show="!settingsUnlocked">
+                    <div x-show="settingsError" class="text-red-500 text-sm mb-2" x-text="settingsError"></div>
+                    
+                    <div class="relative w-full mb-3">
+                        <input :type="showSettingsPass ? 'text' : 'password'" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Settings Password" 
+                               class="w-full p-3 border rounded dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
+                        <button type="button" @click="showSettingsPass = !showSettingsPass" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-primary">
+                            <svg x-show="!showSettingsPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            <svg x-show="showSettingsPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
+                        </button>
+                    </div>
+
+                    <button @click="unlockSettings" class="w-full bg-gray-800 text-white p-3 rounded">Unlock</button>
+                </div>
+                <div x-show="settingsUnlocked" class="space-y-6">
+                    <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200">
+                        <button @click="resetAppData" class="w-full bg-red-600 text-white px-4 py-2 rounded font-bold text-sm">Reset App Data</button>
+                    </div>
+                    <div class="border-t pt-4 dark:border-gray-600">
+                         <h3 class="font-bold mb-3 text-sm text-gray-500 dark:text-gray-300">Security</h3>
+                         <div class="mb-3"><input type="text" x-model="newAppPass" placeholder="New App Password" class="w-full p-2 border rounded dark:bg-gray-700 text-sm mb-1"><button @click="changePassword('APP')" class="bg-gray-600 text-white px-3 py-1 rounded text-xs">Update App Pass</button></div>
+                         <div><input type="text" x-model="newSettingsPass" placeholder="New Settings Password" class="w-full p-2 border rounded dark:bg-gray-700 text-sm mb-1"><button @click="changePassword('SETTINGS')" class="bg-gray-600 text-white px-3 py-1 rounded text-xs">Update Settings Pass</button></div>
                     </div>
                 </div>
             </div>
-        `;
-    });
-
-    backdrop.innerHTML = `
-        <div class="rolodex-sheet">
-            <div class="rolodex-header">
-                <span class="rolodex-cancel" onclick="closeRolodex()">Cancel</span>
-                <span class="rolodex-title">${title}</span>
-                <span class="rolodex-save" id="rolo-save-btn">Set</span>
-            </div>
-            <div class="rolodex-body">
-                <div class="rolodex-highlight"></div>
-                ${colsHtml}
-            </div>
         </div>
-    `;
+    </div>
 
-    document.body.appendChild(backdrop);
-    
-    requestAnimationFrame(() => {
-        backdrop.classList.add('show');
-        backdrop.querySelector('.rolodex-sheet').classList.add('show');
-    });
+    <script>
+        function appData() {
+            return {
+                view: 'dashboard', darkMode: localStorage.getItem('theme') === 'dark',
+                isLoggedIn: false, loginPass: '', showLoginPass: false, loginError: '',
+                toast: { visible: false, message: '', type: 'success' },
+                headers: [], trainees: [], projects:[], mapping: {}, sectionOrder:[], searchQuery: '', loadingTrainees: false,
+                formData: {}, isSubmitting: false, isLoading: false, loadingText: 'Please wait...',
+                showSettings: false, settingsPass: '', showSettingsPass: false, settingsUnlocked: false, settingsError: '', 
+                newColumnName: '', newAppPass: '', newSettingsPass: '',
+                expandedSections: {},
 
-    const results = {};
+                async initApp() {
+                    this.toggleTheme(false);
+                    this.loadConfigFromStorage();
+                    if (navigator.onLine) this.fetchConfig();
+                    if (localStorage.getItem('isLoggedIn') === 'true') this.isLoggedIn = true;
+                },
 
-    columns.forEach(col => {
-        const colDiv = document.getElementById(`rolo-col-${col.id}`);
-        const track = document.getElementById(`rolo-track-${col.id}`);
-        const itemHeight = 44; 
-        const maxIndex = col.items.length - 1;
-        
-        let targetIndex = col.items.findIndex(i => i.value == col.selectedValue);
-        if (targetIndex === -1) targetIndex = 0;
+                toggleSection(title) {
+                    this.expandedSections[title] = !this.expandedSections[title];
+                },
 
-        let currentY = -targetIndex * itemHeight;
-        track.style.transform = `translateY(${currentY}px)`;
-        updateActive(targetIndex);
+                // Rolodex Date Picker Method
+                openDatePicker(fieldIndex) {
+                    let currentDate = this.formData[fieldIndex] ? new Date(this.formData[fieldIndex]) : new Date();
+                    if (isNaN(currentDate.getTime())) currentDate = new Date();
 
-        let isDragging = false;
-        let startY = 0;
-        let startTransformY = 0;
-        let wheelAccumulator = 0;
+                    const currYear = new Date().getFullYear();
+                    
+                    openRolodex("Select Date",[
+                        { id: 'day', items: RoloGen.days31(), selectedValue: currentDate.getDate() },
+                        { id: 'month', items: RoloGen.monthsSpec(), selectedValue: currentDate.getMonth() + 1, flex: 1.2 },
+                        { id: 'year', items: RoloGen.years(currYear - 100, 110), selectedValue: currentDate.getFullYear(), flex: 1.2 }
+                    ], (res) => {
+                        const year = parseInt(res.year);
+                        const month = parseInt(res.month) - 1; 
+                        const day = parseInt(res.day);
+                        
+                        // Standard JS Date handles overflow (e.g. Feb 31 becomes Mar 3)
+                        const selectedDate = new Date(year, month, day);
+                        
+                        // Format back into YYYY-MM-DD for form data
+                        const isoString =[
+                            selectedDate.getFullYear(),
+                            String(selectedDate.getMonth() + 1).padStart(2, '0'),
+                            String(selectedDate.getDate()).padStart(2, '0')
+                        ].join('-');
+                        
+                        this.formData[fieldIndex] = isoString;
+                    });
+                },
 
-        function getClientY(e) { return e.touches ? e.touches[0].clientY : e.clientY; }
+                formatDateDisplay(isoDate) {
+                    if (!isoDate) return '';
+                    const parts = String(isoDate).split('-'); 
+                    if(parts.length !== 3) return isoDate; 
+                    const d = new Date(parts[0], parts[1]-1, parts[2]);
+                    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                },
 
-        function onStart(e) {
-            isDragging = true;
-            startY = getClientY(e);
-            startTransformY = currentY;
-            track.style.transition = 'none'; 
-        }
+                staticGuides: { 'life skills': 'Can trainee carry out daily activities like bathing, dressing, eating independently? Household chores? Use telephone? Public transport?', 'academic level': 'Number/money concept? Write name/address/phone number?', 'social skills': 'Eye-contact? Interpersonal skill? Friends at work/school? Mannerisms?', 'motor skills': 'Fine (fork/chopsticks) and Gross (balancing, running, jumping) motor skills?', "trainee's t-shirt size": 'XS: 32-34 / S: 36-38 / M: 38-40 / L: 40-42 / XL: 46-48 / XXL: 50-52 / XXXL: 54-56', 'temperament': 'Please elaborate.', 'personal feedback': 'Impression of family? Habits during session? Interactions so far?', 'attention span': 'Is your trainee attentive/distracted? Please elaborate.', 'responsiveness': 'Is your trainee quick to respond/slow to respond/has no response? Please elaborate.', 'receptiveness': 'Able to understand instructions with/without help OR unable even with help? What kind of help?' },
+                likertConfig: { 'mobility': { left: 'Need support to walk and can be clumsy', right: 'Agile and stable' }, 'comprehension': { left: 'Very Low (unable to follow instructions)', right: 'High (able to follow instructions effectively)' }, 'verbal': { left: 'Very Low (non-verbal)', right: 'High (able to engage in conversations)' } },
 
-        function onMove(e) {
-            if (!isDragging) return;
-            e.preventDefault(); 
-            
-            const delta = getClientY(e) - startY;
-            let newY = startTransformY + delta;
-
-            const boundsTop = 0;
-            const boundsBottom = -maxIndex * itemHeight;
-            if (newY > boundsTop) newY = boundsTop + (newY - boundsTop) * 0.3;
-            if (newY < boundsBottom) newY = boundsBottom + (newY - boundsBottom) * 0.3;
-
-            currentY = newY;
-            track.style.transform = `translateY(${currentY}px)`;
-
-            let tempIndex = Math.round(-currentY / itemHeight);
-            tempIndex = Math.max(0, Math.min(tempIndex, maxIndex));
-            
-            if (tempIndex !== targetIndex) {
-                targetIndex = tempIndex;
-                if (navigator.vibrate) navigator.vibrate(30); // Haptic feedback
-                updateActive(targetIndex);
-            }
-        }
-
-        function onEnd() {
-            if (!isDragging) return;
-            isDragging = false;
-            
-            targetIndex = Math.round(-currentY / itemHeight);
-            targetIndex = Math.max(0, Math.min(targetIndex, maxIndex));
-            
-            currentY = -targetIndex * itemHeight;
-            track.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)';
-            track.style.transform = `translateY(${currentY}px)`;
-            updateActive(targetIndex);
-        }
-
-        colDiv.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            wheelAccumulator += e.deltaY;
-            if (Math.abs(wheelAccumulator) >= 30) { 
-                let direction = Math.sign(wheelAccumulator);
-                let newIndex = targetIndex + direction;
-                newIndex = Math.max(0, Math.min(newIndex, maxIndex));
+                setLoading(s, t='Loading...') { this.isLoading = s; this.loadingText = t; },
+                toggleTheme(t=true) { if(t) this.darkMode = !this.darkMode; localStorage.setItem('theme', this.darkMode ? 'dark' : 'light'); if(this.darkMode) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); },
                 
-                if (newIndex !== targetIndex) {
-                    targetIndex = newIndex;
-                    currentY = -targetIndex * itemHeight;
-                    track.style.transition = 'transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1)';
-                    track.style.transform = `translateY(${currentY}px)`;
-                    if (navigator.vibrate) navigator.vibrate(30);
-                    updateActive(targetIndex);
-                }
-                wheelAccumulator = 0;
-            }
-        }, {passive: false});
+                async performAction(action, payload = {}) {
+                    payload.action = action;
+                    const res = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+                    return await res.json();
+                },
 
-        colDiv.addEventListener('touchstart', onStart, {passive: false});
-        colDiv.addEventListener('touchmove', onMove, {passive: false});
-        colDiv.addEventListener('touchend', onEnd);
-        colDiv.addEventListener('touchcancel', onEnd);
-        
-        colDiv.addEventListener('mousedown', onStart);
-        window.addEventListener('mousemove', onMove, {passive: false});
-        window.addEventListener('mouseup', onEnd);
+                async performLogin() {
+                    this.setLoading(true);
+                    try {
+                        const data = await this.performAction('login', { password: this.loginPass });
+                        if (data.success) { this.isLoggedIn = true; localStorage.setItem('isLoggedIn', 'true'); await this.fetchConfig(); } 
+                        else this.loginError = 'Incorrect Password';
+                    } catch(e) { this.loginError = 'Connection Error.'; }
+                    finally { this.setLoading(false); }
+                },
 
-        function updateActive(index) {
-            Array.from(track.children).forEach((child, i) => {
-                if (i === index) {
-                    child.classList.add('active');
-                    results[col.id] = child.dataset.value;
-                } else {
-                    child.classList.remove('active');
-                }
-            });
-        }
-    });
-
-    document.getElementById('rolo-save-btn').addEventListener('click', () => {
-        onSaveCallback(results);
-        closeRolodex();
-    });
-}
-
-function closeRolodex() {
-    const modal = document.getElementById('rolodex-modal');
-    if (modal) {
-        modal.classList.remove('show');
-        modal.querySelector('.rolodex-sheet').classList.remove('show');
-        setTimeout(() => modal.remove(), 300);
-    }
-}
-</script>
-</body>
-</html>
+                async fetchConfig() {
+                    try {
+                        const data = await this.performAction('getConfig');
+                        this.headers = Array.isArray(data.headers) ? data.headers.map(String) :[];
+                        this.trainees = data.trainees || [];
+                        this.projects = data.projects ||
