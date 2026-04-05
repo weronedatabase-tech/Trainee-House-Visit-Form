@@ -15,7 +15,7 @@
                     colors: { primary: '#4F46E5', secondary: '#10B981' } 
                 } 
             },
-            safelist:[
+            safelist: [
                 'bg-blue-50', 'dark:bg-blue-900', 'text-blue-700', 'dark:text-blue-200',
                 'bg-green-50', 'dark:bg-green-900', 'text-green-700', 'dark:text-green-200',
                 'bg-yellow-50', 'dark:bg-yellow-900', 'text-yellow-700', 'dark:text-yellow-200',
@@ -27,87 +27,12 @@
             ]
         }
     </script>
-    <style>[x-cloak] { display: none !important; }
+    <style>
+        [x-cloak] { display: none !important; }
         input, textarea, select { font-size: 16px; } 
         textarea { resize: vertical; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 2 L2 8' stroke='%239CA3AF' stroke-width='1.5'/%3E%3Cpath d='M8 6 L6 8' stroke='%239CA3AF' stroke-width='1.5'/%3E%3C/svg%3E"); background-position: bottom 2px right 2px; background-repeat: no-repeat; background-size: 12px 12px; }
         .dark textarea { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 2 L2 8' stroke='%236B7280' stroke-width='1.5'/%3E%3Cpath d='M8 6 L6 8' stroke='%236B7280' stroke-width='1.5'/%3E%3C/svg%3E"); }
         .custom-radio:checked { background-color: #4F46E5; border-color: #4F46E5; }
-
-        /* --- ROLODEX VARIABLES FOR LIGHT & DARK MODE --- */
-        :root {
-            --rolo-bg: #f9fafb;
-            --rolo-text: #1f2937;
-            --rolo-card: #ffffff;
-            --rolo-border: #e5e7eb;
-            --rolo-primary: #4F46E5;
-            --rolo-success: #10B981;
-            --rolo-error: #EF4444;
-            --rolo-highlight: rgba(79, 70, 229, 0.15);
-        }
-        .dark {
-            --rolo-bg: #111827;
-            --rolo-text: #f3f4f6;
-            --rolo-card: #1f2937;
-            --rolo-border: #374151;
-            --rolo-primary: #818cf8;
-            --rolo-highlight: rgba(129, 140, 248, 0.2);
-        }
-
-        /* --- ROLODEX MODAL STYLES --- */
-        @keyframes popIn { 0% { transform: translateY(100%); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
-        
-        .bottom-sheet-backdrop {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
-            background: rgba(0,0,0,0.7); backdrop-filter: blur(2px); z-index: 99999; 
-            display: none; opacity: 0; transition: opacity 0.3s;
-        }
-        .bottom-sheet-backdrop.show { display: block; opacity: 1; }
-
-        .rolodex-sheet {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 320px;
-            background: var(--rolo-card); border-top-left-radius: 20px; border-top-right-radius: 20px;
-            box-shadow: 0 -10px 25px rgba(0,0,0,0.3); z-index: 100000;
-            display: none; flex-direction: column; overflow: hidden;
-        }
-        .rolodex-sheet.show { display: flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-        .rolodex-header {
-            display: flex; justify-content: space-between; align-items: center; width: 100%;
-            padding: 15px 20px; box-sizing: border-box; border-bottom: 1px solid var(--rolo-border);
-            font-size: 1.1rem; font-weight: bold; background: var(--rolo-card); z-index: 10;
-        }
-        .rolodex-cancel { color: var(--rolo-error); cursor: pointer; }
-        .rolodex-title { color: var(--rolo-text); font-size: 1.2rem; }
-        .rolodex-save { color: var(--rolo-success); cursor: pointer; }
-
-        .rolodex-body { display: flex; width: 100%; height: 220px; position: relative; background: var(--rolo-bg); overflow: hidden; }
-
-        .rolodex-highlight {
-            position: absolute; top: 50%; left: 0; width: 100%; height: 44px; transform: translateY(-50%);
-            background: var(--rolo-highlight); border-top: 2px solid var(--rolo-primary); 
-            border-bottom: 2px solid var(--rolo-primary); pointer-events: none; z-index: 2;
-        }
-
-        .rolodex-col-wrapper { position: relative; display: flex; align-items: center; justify-content: center; height: 100%; }
-        .rolodex-col-wrapper:not(:last-child)::after {
-            content: ''; position: absolute; top: 15%; bottom: 15%; right: 0; width: 1px;
-            background-color: var(--rolo-border); z-index: 5;
-        }
-
-        .rolodex-col { flex: 1; position: relative; z-index: 1; width: 100%; height: 100%; touch-action: none; cursor: grab; }
-        .rolodex-col:active { cursor: grabbing; }
-
-        .rolodex-col-inner { padding: 88px 0; margin: 0; display: flex; flex-direction: column; width: 100%; }
-
-        .rolodex-item {
-            height: 44px; display: flex; align-items: center; justify-content: center;
-            color: var(--rolo-text); opacity: 0.3; transition: opacity 0.2s ease, font-size 0.2s ease;
-            user-select: none; white-space: nowrap; font-size: 1.1rem; flex-shrink: 0;
-        }
-        .rolodex-item.active { 
-            opacity: 1; font-weight: 900; color: var(--rolo-primary); 
-            font-size: clamp(1rem, 4.5vw, 1.3rem); 
-        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-200 min-h-screen"
@@ -115,193 +40,6 @@
 
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbw21ZGdd-SfmRJrB-zMcfzVKTzIG-hU-BwKaA33J1bukq-4_ZJGQfH6_KBr4LdgjZvXmw/exec'; 
-
-        // ==========================================
-        // ROLODEX LOGIC START
-        // ==========================================
-        const RoloGen = {
-            days31: () => Array.from({length:31}, (_,i) => ({ value: i+1, label: (i+1).toString() })),
-            monthsSpec: () =>[
-                {value:1, label:'Jan'}, {value:2, label:'Feb'}, {value:3, label:'Mar'},
-                {value:4, label:'Apr'}, {value:5, label:'May'}, {value:6, label:'Jun'},
-                {value:7, label:'Jul'}, {value:8, label:'Aug'}, {value:9, label:'Sep'},
-                {value:10, label:'Oct'}, {value:11, label:'Nov'}, {value:12, label:'Dec'}
-            ],
-            years: (start, count) => Array.from({length:count}, (_,i) => ({ value: start+i, label: (start+i).toString() }))
-        };
-
-        function openRolodex(title, columns, onSaveCallback) {
-            let existing = document.getElementById('rolodex-modal');
-            if (existing) existing.remove();
-
-            const backdrop = document.createElement('div');
-            backdrop.id = 'rolodex-modal';
-            backdrop.className = 'bottom-sheet-backdrop';
-            
-            let colsHtml = '';
-            columns.forEach(col => {
-                let itemsHtml = '';
-                col.items.forEach(item => {
-                    itemsHtml += `<div class="rolodex-item" data-value="${item.value}">${item.label}</div>`;
-                });
-                
-                colsHtml += `
-                    <div class="rolodex-col-wrapper" style="flex: ${col.flex || 1}">
-                        <div class="rolodex-col" id="rolo-col-${col.id}">
-                            <div class="rolodex-col-inner" id="rolo-track-${col.id}">
-                                ${itemsHtml}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            backdrop.innerHTML = `
-                <div class="rolodex-sheet">
-                    <div class="rolodex-header">
-                        <span class="rolodex-cancel" onclick="closeRolodex()">Cancel</span>
-                        <span class="rolodex-title">${title}</span>
-                        <span class="rolodex-save" id="rolo-save-btn">Set</span>
-                    </div>
-                    <div class="rolodex-body">
-                        <div class="rolodex-highlight"></div>
-                        ${colsHtml}
-                    </div>
-                </div>
-            `;
-
-            document.body.appendChild(backdrop);
-            
-            requestAnimationFrame(() => {
-                backdrop.classList.add('show');
-                backdrop.querySelector('.rolodex-sheet').classList.add('show');
-            });
-
-            const results = {};
-
-            columns.forEach(col => {
-                const colDiv = document.getElementById(`rolo-col-${col.id}`);
-                const track = document.getElementById(`rolo-track-${col.id}`);
-                const itemHeight = 44; 
-                const maxIndex = col.items.length - 1;
-                
-                let targetIndex = col.items.findIndex(i => i.value == col.selectedValue);
-                if (targetIndex === -1) targetIndex = 0;
-
-                let currentY = -targetIndex * itemHeight;
-                track.style.transform = `translateY(${currentY}px)`;
-                updateActive(targetIndex);
-
-                let isDragging = false;
-                let startY = 0;
-                let startTransformY = 0;
-                let wheelAccumulator = 0;
-
-                function getClientY(e) { return e.touches ? e.touches[0].clientY : e.clientY; }
-
-                function onStart(e) {
-                    isDragging = true;
-                    startY = getClientY(e);
-                    startTransformY = currentY;
-                    track.style.transition = 'none'; 
-                }
-
-                function onMove(e) {
-                    if (!isDragging) return;
-                    e.preventDefault(); 
-                    
-                    const delta = getClientY(e) - startY;
-                    let newY = startTransformY + delta;
-
-                    const boundsTop = 0;
-                    const boundsBottom = -maxIndex * itemHeight;
-                    if (newY > boundsTop) newY = boundsTop + (newY - boundsTop) * 0.3;
-                    if (newY < boundsBottom) newY = boundsBottom + (newY - boundsBottom) * 0.3;
-
-                    currentY = newY;
-                    track.style.transform = `translateY(${currentY}px)`;
-
-                    let tempIndex = Math.round(-currentY / itemHeight);
-                    tempIndex = Math.max(0, Math.min(tempIndex, maxIndex));
-                    
-                    if (tempIndex !== targetIndex) {
-                        targetIndex = tempIndex;
-                        if (navigator.vibrate) navigator.vibrate(30);
-                        updateActive(targetIndex);
-                    }
-                }
-
-                function onEnd() {
-                    if (!isDragging) return;
-                    isDragging = false;
-                    
-                    targetIndex = Math.round(-currentY / itemHeight);
-                    targetIndex = Math.max(0, Math.min(targetIndex, maxIndex));
-                    
-                    currentY = -targetIndex * itemHeight;
-                    track.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)';
-                    track.style.transform = `translateY(${currentY}px)`;
-                    updateActive(targetIndex);
-                }
-
-                colDiv.addEventListener('wheel', (e) => {
-                    e.preventDefault();
-                    wheelAccumulator += e.deltaY;
-                    if (Math.abs(wheelAccumulator) >= 30) { 
-                        let direction = Math.sign(wheelAccumulator);
-                        let newIndex = targetIndex + direction;
-                        newIndex = Math.max(0, Math.min(newIndex, maxIndex));
-                        
-                        if (newIndex !== targetIndex) {
-                            targetIndex = newIndex;
-                            currentY = -targetIndex * itemHeight;
-                            track.style.transition = 'transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1)';
-                            track.style.transform = `translateY(${currentY}px)`;
-                            if (navigator.vibrate) navigator.vibrate(30);
-                            updateActive(targetIndex);
-                        }
-                        wheelAccumulator = 0;
-                    }
-                }, {passive: false});
-
-                colDiv.addEventListener('touchstart', onStart, {passive: false});
-                colDiv.addEventListener('touchmove', onMove, {passive: false});
-                colDiv.addEventListener('touchend', onEnd);
-                colDiv.addEventListener('touchcancel', onEnd);
-                
-                colDiv.addEventListener('mousedown', onStart);
-                window.addEventListener('mousemove', onMove, {passive: false});
-                window.addEventListener('mouseup', onEnd);
-
-                function updateActive(index) {
-                    Array.from(track.children).forEach((child, i) => {
-                        if (i === index) {
-                            child.classList.add('active');
-                            results[col.id] = child.dataset.value;
-                        } else {
-                            child.classList.remove('active');
-                        }
-                    });
-                }
-            });
-
-            document.getElementById('rolo-save-btn').addEventListener('click', () => {
-                onSaveCallback(results);
-                closeRolodex();
-            });
-        }
-
-        function closeRolodex() {
-            const modal = document.getElementById('rolodex-modal');
-            if (modal) {
-                modal.classList.remove('show');
-                modal.querySelector('.rolodex-sheet').classList.remove('show');
-                setTimeout(() => modal.remove(), 300);
-            }
-        }
-        // ==========================================
-        // ROLODEX LOGIC END
-        // ==========================================
     </script>
 
     <!-- LOADING -->
@@ -424,7 +162,7 @@
                                             <div class="mt-2 mb-4 bg-gray-50 dark:bg-gray-900 p-3 sm:p-4 rounded-lg border dark:border-gray-700 flex flex-row items-center justify-between gap-1 sm:gap-4">
                                                 <span class="w-1/3 text-right text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight pr-1" x-text="getLikertLabel(field.label, 'left')"></span>
                                                 <div class="flex gap-2 sm:gap-4 shrink-0 justify-center">
-                                                    <template x-for="val in[1, 2, 3, 4, 5]" :key="val">
+                                                    <template x-for="val in [1, 2, 3, 4, 5]" :key="val">
                                                         <label class="flex flex-col items-center cursor-pointer">
                                                             <span class="text-[10px] sm:text-xs font-bold mb-1" x-text="val"></span>
                                                             <input type="radio" :name="'likert-'+field.index" :value="val" x-model="formData[field.index]" class="custom-radio w-5 h-5 sm:w-6 sm:h-6 border-2 rounded-full focus:ring-0 cursor-pointer appearance-none bg-white dark:bg-gray-700 checked:bg-primary border-gray-300">
@@ -444,12 +182,8 @@
 
                                         <template x-if="isDate(field.label)">
                                             <div class="relative">
-                                                <!-- Rolodex Trigger Input -->
-                                                <input type="text" readonly 
-                                                       :value="formatDateDisplay(formData[field.index])" 
-                                                       @click="openDatePicker(field.index)"
-                                                       placeholder="Select Date" 
-                                                       class="w-full p-3 border rounded-lg cursor-pointer dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700 dark:text-gray-100">
+                                                <input type="text" readonly :value="formatDateDisplay(formData[field.index])" placeholder="DD MMM YYYY" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700">
+                                                <input type="date" x-model="formData[field.index]" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                                             </div>
                                         </template>
 
@@ -468,7 +202,7 @@
                 </template>
                 <div class="h-24"></div>
                 
-                <!-- FOOTER -->
+                <!-- FOOTER (NO SAVE LATER) -->
                 <div class="fixed bottom-0 left-0 w-full p-4 bg-white dark:bg-gray-900 border-t dark:border-gray-700 flex z-20 shadow-lg">
                     <button type="submit" class="w-full bg-primary text-white p-3 rounded-lg font-bold shadow-md hover:bg-indigo-700 transition">Submit</button>
                 </div>
@@ -485,6 +219,7 @@
                 <div x-show="!settingsUnlocked">
                     <div x-show="settingsError" class="text-red-500 text-sm mb-2" x-text="settingsError"></div>
                     
+                    <!-- SETTINGS PASSWORD WITH SHOW/HIDE -->
                     <div class="relative w-full mb-3">
                         <input :type="showSettingsPass ? 'text' : 'password'" x-model="settingsPass" @keyup.enter="unlockSettings" placeholder="Settings Password" 
                                class="w-full p-3 border rounded dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none">
@@ -516,10 +251,11 @@
                 view: 'dashboard', darkMode: localStorage.getItem('theme') === 'dark',
                 isLoggedIn: false, loginPass: '', showLoginPass: false, loginError: '',
                 toast: { visible: false, message: '', type: 'success' },
-                headers: [], trainees: [], projects:[], mapping: {}, sectionOrder:[], searchQuery: '', loadingTrainees: false,
+                headers: [], trainees: [], projects: [], mapping: {}, sectionOrder: [], searchQuery: '', loadingTrainees: false,
                 formData: {}, isSubmitting: false, isLoading: false, loadingText: 'Please wait...',
                 showSettings: false, settingsPass: '', showSettingsPass: false, settingsUnlocked: false, settingsError: '', 
                 newColumnName: '', newAppPass: '', newSettingsPass: '',
+                
                 expandedSections: {},
 
                 async initApp() {
@@ -531,36 +267,6 @@
 
                 toggleSection(title) {
                     this.expandedSections[title] = !this.expandedSections[title];
-                },
-
-                // Rolodex Date Picker Method
-                openDatePicker(fieldIndex) {
-                    let currentDate = this.formData[fieldIndex] ? new Date(this.formData[fieldIndex]) : new Date();
-                    if (isNaN(currentDate.getTime())) currentDate = new Date();
-
-                    const currYear = new Date().getFullYear();
-                    
-                    openRolodex("Select Date",[
-                        { id: 'day', items: RoloGen.days31(), selectedValue: currentDate.getDate() },
-                        { id: 'month', items: RoloGen.monthsSpec(), selectedValue: currentDate.getMonth() + 1, flex: 1.2 },
-                        { id: 'year', items: RoloGen.years(currYear - 100, 110), selectedValue: currentDate.getFullYear(), flex: 1.2 }
-                    ], (res) => {
-                        const year = parseInt(res.year);
-                        const month = parseInt(res.month) - 1; 
-                        const day = parseInt(res.day);
-                        
-                        // Standard JS Date handles overflow (e.g. Feb 31 becomes Mar 3)
-                        const selectedDate = new Date(year, month, day);
-                        
-                        // Format back into YYYY-MM-DD for form data
-                        const isoString =[
-                            selectedDate.getFullYear(),
-                            String(selectedDate.getMonth() + 1).padStart(2, '0'),
-                            String(selectedDate.getDate()).padStart(2, '0')
-                        ].join('-');
-                        
-                        this.formData[fieldIndex] = isoString;
-                    });
                 },
 
                 formatDateDisplay(isoDate) {
@@ -596,6 +302,243 @@
                 async fetchConfig() {
                     try {
                         const data = await this.performAction('getConfig');
-                        this.headers = Array.isArray(data.headers) ? data.headers.map(String) :[];
+                        this.headers = Array.isArray(data.headers) ? data.headers.map(String) : [];
                         this.trainees = data.trainees || [];
-                        this.projects = data.projects ||
+                        this.projects = data.projects || [];
+                        this.mapping = data.mapping || {};
+                        this.sectionOrder = data.sectionOrder || [];
+                        localStorage.setItem('appConfig', JSON.stringify({ 
+                            headers: this.headers, 
+                            trainees: this.trainees, 
+                            projects: this.projects,
+                            mapping: this.mapping,
+                            sectionOrder: this.sectionOrder
+                        }));
+                    } catch(e) {}
+                },
+
+                async refreshTrainees() { if(navigator.onLine) await this.fetchConfig(); },
+                get filteredTrainees() { if(!this.searchQuery) return []; const q=this.searchQuery.toLowerCase(); return this.trainees.filter(t=>t&&String(t).toLowerCase().includes(q)); },
+                getNameIndex() { return this.headers ? this.headers.findIndex(h => String(h).toLowerCase().includes('trainee') && String(h).toLowerCase().includes('name')) : -1; },
+                loadNewForm() { this.loadTraineeForm(''); },
+
+                async loadTraineeForm(name) {
+                    this.setLoading(true);
+                    if (!this.headers || this.headers.length === 0) {
+                        this.loadConfigFromStorage();
+                        if (!this.headers || this.headers.length === 0) await this.fetchConfig();
+                    }
+                    try {
+                        // Backend now returns { "Header Name": "Value", "Other Header": "Value" }
+                        const history = await this.performAction('getHistory', { trainee: name });
+                        this.formData = {};
+                        if(this.headers) {
+                            this.headers.forEach((h, i) => {
+                                const rawHeader = String(h);
+                                const lower = rawHeader.toLowerCase();
+                                
+                                if(!lower.includes('date of visit')) {
+                                     // ROBUST MAPPING: Lookup by exact Header String first
+                                     if (history[rawHeader] !== undefined) {
+                                         this.formData[i] = history[rawHeader];
+                                     } else {
+                                         this.formData[i] = '';
+                                     }
+                                } else {
+                                     // Date of visit is always "Today" for a new form
+                                     this.formData[i] = new Date().toISOString().split('T')[0];
+                                }
+                            });
+                        }
+                        const nameIdx = this.getNameIndex();
+                        if(nameIdx !== -1) this.formData[nameIdx] = name;
+                        
+                        this.expandedSections = {};
+                        if(this.sectionOrder && this.sectionOrder.length > 0) {
+                            this.sectionOrder.forEach(sec => {
+                                if(sec.toLowerCase().includes("general details")) this.expandedSections[sec] = true;
+                                else this.expandedSections[sec] = false;
+                            });
+                        }
+
+                        this.view = 'form';
+                    } catch(e) {
+                        this.loadNewForm(); // Fallback
+                    } finally { this.setLoading(false); }
+                },
+
+                async submitForm() {
+                    if (this.isSubmitting) return;
+                    this.isSubmitting = true;
+                    this.setLoading(true, 'Submitting...');
+                    
+                    try {
+                        const rowData = this.headers.map((header, index) => {
+                            let val = this.formData[index];
+                            if (val === undefined || val === null) return '';
+                            return val;
+                        });
+
+                        if (this.headers.length > 0 && String(this.headers[0]).toLowerCase().includes('timestamp')) {
+                            rowData[0] = new Date();
+                        }
+
+                        if (navigator.onLine) {
+                            const result = await this.performAction('submit', { row: rowData });
+                            if (result.success) {
+                                this.showToast('Submitted successfully!', 'success');
+                                this.view = 'dashboard';
+                                this.formData = {};
+                                this.searchQuery = '';
+                            } else {
+                                throw new Error(result.error || 'Submission failed');
+                            }
+                        } else {
+                             // REMOVED OFFLINE SAVE LOGIC
+                             this.showToast('You are offline. Please connect to internet to submit.', 'error');
+                        }
+                    } catch (e) {
+                        this.showToast('Error: ' + e.message, 'error');
+                    } finally {
+                        this.isSubmitting = false;
+                        this.setLoading(false);
+                    }
+                },
+
+                get groupedHeaders() {
+                    if (!this.headers || !Array.isArray(this.headers) || this.headers.length === 0) return [];
+                    
+                    let groups = [];
+                    const orderToUse = (this.sectionOrder && this.sectionOrder.length > 0) ? this.sectionOrder : ['General Details'];
+
+                    const getColors = (t) => {
+                        const l=t.toLowerCase();
+                        if(l.includes('general')||l.includes('visit')||l.includes('volunteer')) return {bgClass:'bg-blue-50 dark:bg-blue-900', textClass:'text-blue-700 dark:text-blue-200'};
+                        if(l.includes('trainee')) return {bgClass:'bg-green-50 dark:bg-green-900', textClass:'text-green-700 dark:text-green-200'};
+                        if(l.includes('caregiver')||l.includes('family')||l.includes('emergency')||l.includes('background')) return {bgClass:'bg-yellow-50 dark:bg-yellow-900', textClass:'text-yellow-700 dark:text-yellow-200'};
+                        if(l.includes('medical')||l.includes('health')) return {bgClass:'bg-red-50 dark:bg-red-900', textClass:'text-red-700 dark:text-red-200'};
+                        if(l.includes('abilit')||l.includes('behavio')) return {bgClass:'bg-purple-50 dark:bg-purple-900', textClass:'text-purple-700 dark:text-purple-200'};
+                        if(l.includes('school')||l.includes('work')) return {bgClass:'bg-indigo-50 dark:bg-indigo-900', textClass:'text-indigo-800 dark:text-indigo-200'};
+                        if(l.includes('observation')) return {bgClass:'bg-pink-50 dark:bg-pink-900', textClass:'text-pink-700 dark:text-pink-200'};
+                        return {bgClass:'bg-slate-100 dark:bg-gray-800', textClass:'text-slate-600 dark:text-slate-400'};
+                    };
+
+                    groups = orderToUse.map(title => ({ title: title, fields: [], ...getColors(title) }));
+                    
+                    const seen = new Set();
+                    
+                    this.headers.forEach((h, i) => {
+                        const rawH = String(h);
+                        const lower = rawH.toLowerCase();
+                        if (lower.includes('timestamp') || rawH.trim() === '') return;
+
+                        let label = rawH, guide = '';
+                        
+                        // EXCEPTION: Keep "Area" fields intact
+                        if (rawH.toLowerCase().startsWith('area')) {
+                             label = rawH;
+                             guide = '';
+                        } else {
+                            const hyphenMatch = rawH.match(/^(.+?\(\d+\))\s*[-–]\s*(.+)/);
+                            if (hyphenMatch) {
+                                label = hyphenMatch[1].trim();
+                                guide = hyphenMatch[2].trim();
+                            } else {
+                                const match = rawH.match(/^(.+?)(\s*[\(\（].+)/);
+                                if (match) {
+                                    if (!/^[\(\（][s\d]+[\)\）]$/i.test(match[2].trim())) {
+                                        label = match[1].trim(); 
+                                        guide = match[2].trim();
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (this.headers.filter((v, idx) => v === h && idx < i).length > 0) label = `${label} (${this.headers.filter((v, idx) => v === h && idx < i).length + 1})`;
+                        
+                        for(const k in this.staticGuides) if(label.toLowerCase().includes(k)) { guide = this.staticGuides[k]; break; }
+                        if(guide) guide = guide.replace(/[\(\（]dd\/mm\/yy.*?[\)\）]/gi, '').replace(/\(\d+\)/g, '').replace(/\(s\)/g, '').replace(/[\(\（\)\）]/g, '').trim();
+
+                        const field = { label, guide, index: i, raw: rawH };
+
+                        const seenKey = label + '_' + i;
+                        if(seen.has(seenKey)) return; 
+                        seen.add(seenKey);
+
+                        let mappedSection = this.mapping[rawH] || this.mapping[label];
+                        if(!mappedSection) {
+                            const cleanKey = rawH.replace(/\(\d+\)/g, '').trim();
+                            mappedSection = this.mapping[cleanKey];
+                        }
+                        
+                        if(mappedSection) {
+                            const group = groups.find(g => g.title === mappedSection);
+                            if(group) { group.fields.push(field); }
+                        }
+                    });
+
+                    const sortByGroup = (arr, fn) => arr.sort((a,b) => fn(a) - fn(b));
+                    
+                    const cg = groups.find(s=>s.title.toLowerCase().includes('caregiver'));
+                    if(cg) sortByGroup(cg.fields, (f) => {
+                        const n = f.raw.toLowerCase();
+                        const num = (n.match(/\((\d+)\)/) || [0,99])[1];
+                        const rank = n.includes('name')?1:n.includes('relation')?2:n.includes('contact')?3:4;
+                        return (num*10) + rank;
+                    });
+                    
+                    const obs = groups.find(s=>s.title.toLowerCase().includes('observation'));
+                    if(obs) sortByGroup(obs.fields, (f)=>{
+                       const n=f.label.toLowerCase();
+                       const grps=['sing-along','cdt','prt','teabreak'];
+                       const gA=grps.findIndex(g=>n.includes(g));
+                       if(gA!==-1) return gA*100;
+                       return 999;
+                    });
+                    
+                    const volGroup = groups.find(s=>s.title.toLowerCase().includes('volunteer'));
+                    if(volGroup) sortByGroup(volGroup.fields, (f) => {
+                        const n = f.raw.toLowerCase();
+                        if (n.includes('(1)')) return 10;
+                        if (n.includes('(2)')) return 20;
+                        if (n.includes('senior')) return 30;
+                        return 99;
+                    });
+                    
+                    return groups.filter(s => s.fields.length > 0);
+                },
+
+                isLikertScale(n) { const s=String(n).toLowerCase(); return s.includes('mobility')||s.includes('comprehension')||s.includes('verbal'); },
+                getLikertLabel(n, side) { const k = Object.keys(this.likertConfig).find(k=>String(n).toLowerCase().includes(k)); return k ? this.likertConfig[k][side] : ''; },
+                isDate(n) { return String(n).toLowerCase().includes('date'); },
+                isProjectField(n) { return String(n).toLowerCase().trim() === 'project'; },
+                isShortInput(n) { return ['name','nric','gender','sex','race','religion','blood','height','weight','shirt','relation','contact','mobile','phone','email'].some(k=>String(n).toLowerCase().includes(k)); },
+                isLongText(n) { return !this.isDate(n) && !this.isShortInput(n) && !this.isProjectField(n) && !this.isLikertScale(n); },
+                
+                loadNewForm() { this.loadTraineeForm(''); },
+                refreshTrainees() { if(navigator.onLine) this.fetchConfig(); },
+                loadConfigFromStorage() { 
+                    const c = localStorage.getItem('appConfig'); 
+                    if(c) { 
+                        try { 
+                            const d=JSON.parse(c); 
+                            this.headers=d.headers||[]; 
+                            this.trainees=d.trainees||[]; 
+                            this.projects=d.projects||[]; 
+                            this.mapping=d.mapping||{}; 
+                            this.sectionOrder=d.sectionOrder||[];
+                        } catch(e){} 
+                    } 
+                },
+                resetAppData() { localStorage.clear(); window.location.reload(true); },
+                openSettings() { this.showSettings=true; },
+                unlockSettings() { if(this.settingsPass==='werone') this.settingsUnlocked=true; else this.settingsError='Wrong Password'; },
+                addColumn() { this.performAction('addColumn', {headerName:this.newColumnName}); },
+                renameColumn(idx, name) { this.performAction('renameColumn', {colIndex:idx, newName:name}); },
+                changePassword() { /* ... */ },
+                showToast(m,t) { this.toast.message=m;this.toast.type=t;this.toast.visible=true;setTimeout(()=>this.toast.visible=false,3000); }
+            }
+        }
+    </script>
+</body>
+</html>
