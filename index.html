@@ -3,10 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- ANTI-CACHING META TAGS -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <title>House Visit Form</title>
+    
+    <!-- Tailwind & Alpine -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Tailwind Config -->
     <script>
         tailwind.config = { 
             darkMode: 'class', 
@@ -15,7 +25,7 @@
                     colors: { primary: '#4F46E5', secondary: '#10B981' } 
                 } 
             },
-            safelist: [
+            safelist:[
                 'bg-blue-50', 'dark:bg-blue-900', 'text-blue-700', 'dark:text-blue-200',
                 'bg-green-50', 'dark:bg-green-900', 'text-green-700', 'dark:text-green-200',
                 'bg-yellow-50', 'dark:bg-yellow-900', 'text-yellow-700', 'dark:text-yellow-200',
@@ -27,20 +37,15 @@
             ]
         }
     </script>
-    <style>
-        [x-cloak] { display: none !important; }
-        input, textarea, select { font-size: 16px; } 
-        textarea { resize: vertical; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 2 L2 8' stroke='%239CA3AF' stroke-width='1.5'/%3E%3Cpath d='M8 6 L6 8' stroke='%239CA3AF' stroke-width='1.5'/%3E%3C/svg%3E"); background-position: bottom 2px right 2px; background-repeat: no-repeat; background-size: 12px 12px; }
-        .dark textarea { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 2 L2 8' stroke='%236B7280' stroke-width='1.5'/%3E%3Cpath d='M8 6 L6 8' stroke='%236B7280' stroke-width='1.5'/%3E%3C/svg%3E"); }
-        .custom-radio:checked { background-color: #4F46E5; border-color: #4F46E5; }
-    </style>
+
+    <!-- DYNAMIC CACHE-BUSTING FOR CSS (Flat Hierarchy) -->
+    <script>
+        var cacheBuster = new Date().getTime();
+        document.write('<link rel="stylesheet" href="styles.css?v=' + cacheBuster + '">');
+    </script>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-200 min-h-screen"
       x-data="appData()" x-init="initApp()">
-
-    <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbw21ZGdd-SfmRJrB-zMcfzVKTzIG-hU-BwKaA33J1bukq-4_ZJGQfH6_KBr4LdgjZvXmw/exec'; 
-    </script>
 
     <!-- LOADING -->
     <div x-show="isLoading" x-transition.opacity class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm" x-cloak>
@@ -55,19 +60,27 @@
         <span x-text="toast.message"></span>
     </div>
 
-    <!-- HEADER -->
-    <header class="bg-white dark:bg-gray-800 shadow p-4 sticky top-0 z-30 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-green-600 dark:text-green-400">House Visit Form</h1>
-        <div class="flex items-center gap-3">
-            <button @click="openSettings" class="text-gray-500 hover:text-primary transition" title="Settings">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-            </button>
-            <button @click="window.location.reload(true)" class="text-gray-500 hover:text-primary transition" title="Update App">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-            </button>
-            <button @click="toggleTheme" class="text-2xl focus:outline-none" title="Toggle Dark Mode">🌗</button>
+    <!-- STICKY TOP CONTAINER (Banner + Header) -->
+    <div class="sticky top-0 z-40 shadow">
+        <!-- DEV MODE BANNER -->
+        <div x-show="isDevMode" class="bg-red-600 text-white text-center text-xs font-bold py-1 tracking-widest uppercase" x-cloak>
+            Dev Mode
         </div>
-    </header>
+        
+        <!-- HEADER -->
+        <header class="bg-white dark:bg-gray-800 p-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-green-600 dark:text-green-400">House Visit Form</h1>
+            <div class="flex items-center gap-3">
+                <button @click="openSettings" class="text-gray-500 hover:text-primary transition" title="Settings">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                </button>
+                <button @click="window.location.reload(true)" class="text-gray-500 hover:text-primary transition" title="Update App">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </button>
+                <button @click="toggleTheme" class="text-2xl focus:outline-none" title="Toggle Dark Mode">🌗</button>
+            </div>
+        </header>
+    </div>
 
     <!-- LOGIN -->
     <div x-show="!isLoggedIn" class="flex flex-col items-center justify-center min-h-[80vh] p-6">
@@ -162,7 +175,7 @@
                                             <div class="mt-2 mb-4 bg-gray-50 dark:bg-gray-900 p-3 sm:p-4 rounded-lg border dark:border-gray-700 flex flex-row items-center justify-between gap-1 sm:gap-4">
                                                 <span class="w-1/3 text-right text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 leading-tight pr-1" x-text="getLikertLabel(field.label, 'left')"></span>
                                                 <div class="flex gap-2 sm:gap-4 shrink-0 justify-center">
-                                                    <template x-for="val in [1, 2, 3, 4, 5]" :key="val">
+                                                    <template x-for="val in[1, 2, 3, 4, 5]" :key="val">
                                                         <label class="flex flex-col items-center cursor-pointer">
                                                             <span class="text-[10px] sm:text-xs font-bold mb-1" x-text="val"></span>
                                                             <input type="radio" :name="'likert-'+field.index" :value="val" x-model="formData[field.index]" class="custom-radio w-5 h-5 sm:w-6 sm:h-6 border-2 rounded-full focus:ring-0 cursor-pointer appearance-none bg-white dark:bg-gray-700 checked:bg-primary border-gray-300">
@@ -180,10 +193,12 @@
                                             </select>
                                         </template>
 
+                                        <!-- CUSTOM ROLODEX DATE TRIGGER -->
                                         <template x-if="isDate(field.label)">
                                             <div class="relative">
-                                                <input type="text" readonly :value="formatDateDisplay(formData[field.index])" placeholder="DD MMM YYYY" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700">
-                                                <input type="date" x-model="formData[field.index]" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                                <input type="text" readonly :value="formatDateDisplay(formData[field.index])" placeholder="Select Date" 
+                                                       @click="openDatePicker(field.index)"
+                                                       class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none bg-white dark:bg-gray-700 cursor-pointer text-gray-800 dark:text-gray-100">
                                             </div>
                                         </template>
 
@@ -207,6 +222,59 @@
                     <button type="submit" class="w-full bg-primary text-white p-3 rounded-lg font-bold shadow-md hover:bg-indigo-700 transition">Submit</button>
                 </div>
             </form>
+        </div>
+
+        <!-- ROLODEX DATE PICKER MODAL -->
+        <div x-show="showDatePicker" class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm" x-cloak>
+            <div class="bg-white dark:bg-gray-800 w-full sm:w-96 rounded-t-2xl sm:rounded-2xl p-6 shadow-2xl transform transition-all" @click.away="closeDatePicker()">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-bold text-lg text-gray-800 dark:text-gray-100">Select Date</h3>
+                    <button @click="closeDatePicker()" class="text-gray-500 hover:text-gray-800 dark:hover:text-white text-xl">✕</button>
+                </div>
+                
+                <div class="flex justify-between gap-2 h-48 relative bg-gray-50 dark:bg-gray-900 rounded-xl border dark:border-gray-700 overflow-hidden">
+                    <!-- Selection Highlight Overlay -->
+                    <div class="absolute top-1/2 left-0 w-full h-10 -mt-5 bg-primary/10 border-y border-primary/30 pointer-events-none"></div>
+                    
+                    <!-- Days Wheel -->
+                    <div class="flex-1 overflow-y-auto snap-y snap-mandatory hide-scrollbar text-center relative z-10" id="wheel-day" @scroll.debounce.50ms="updatePickerFromScroll('day')">
+                        <div class="h-[76px]"></div>
+                        <template x-for="d in daysInMonth(pickerMonth, pickerYear)" :key="d">
+                            <div class="h-10 flex items-center justify-center snap-center text-lg cursor-pointer transition-colors" 
+                                 :class="pickerDay === d ? 'text-primary font-bold text-xl' : 'text-gray-400 dark:text-gray-500'" 
+                                 @click="scrollToItem('day', d)" x-text="d"></div>
+                        </template>
+                        <div class="h-[76px]"></div>
+                    </div>
+                    
+                    <!-- Months Wheel -->
+                    <div class="flex-1 overflow-y-auto snap-y snap-mandatory hide-scrollbar text-center relative z-10" id="wheel-month" @scroll.debounce.50ms="updatePickerFromScroll('month')">
+                        <div class="h-[76px]"></div>
+                        <template x-for="(m, i) in months" :key="i">
+                            <div class="h-10 flex items-center justify-center snap-center text-lg cursor-pointer transition-colors" 
+                                 :class="pickerMonth === i ? 'text-primary font-bold text-xl' : 'text-gray-400 dark:text-gray-500'" 
+                                 @click="scrollToItem('month', i)" x-text="m"></div>
+                        </template>
+                        <div class="h-[76px]"></div>
+                    </div>
+                    
+                    <!-- Years Wheel -->
+                    <div class="flex-1 overflow-y-auto snap-y snap-mandatory hide-scrollbar text-center relative z-10" id="wheel-year" @scroll.debounce.50ms="updatePickerFromScroll('year')">
+                        <div class="h-[76px]"></div>
+                        <template x-for="y in years" :key="y">
+                            <div class="h-10 flex items-center justify-center snap-center text-lg cursor-pointer transition-colors" 
+                                 :class="pickerYear === y ? 'text-primary font-bold text-xl' : 'text-gray-400 dark:text-gray-500'" 
+                                 @click="scrollToItem('year', y)" x-text="y"></div>
+                        </template>
+                        <div class="h-[76px]"></div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex gap-3">
+                    <button @click="closeDatePicker()" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white p-3 rounded-lg font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition">Cancel</button>
+                    <button @click="confirmDatePicker()" class="flex-1 bg-primary text-white p-3 rounded-lg font-bold hover:bg-indigo-700 transition">Confirm</button>
+                </div>
+            </div>
         </div>
 
         <!-- SETTINGS -->
@@ -245,300 +313,10 @@
         </div>
     </div>
 
+    <!-- DYNAMIC CACHE-BUSTING FOR JS (Flat Hierarchy) -->
     <script>
-        function appData() {
-            return {
-                view: 'dashboard', darkMode: localStorage.getItem('theme') === 'dark',
-                isLoggedIn: false, loginPass: '', showLoginPass: false, loginError: '',
-                toast: { visible: false, message: '', type: 'success' },
-                headers: [], trainees: [], projects: [], mapping: {}, sectionOrder: [], searchQuery: '', loadingTrainees: false,
-                formData: {}, isSubmitting: false, isLoading: false, loadingText: 'Please wait...',
-                showSettings: false, settingsPass: '', showSettingsPass: false, settingsUnlocked: false, settingsError: '', 
-                newColumnName: '', newAppPass: '', newSettingsPass: '',
-                
-                expandedSections: {},
-
-                async initApp() {
-                    this.toggleTheme(false);
-                    this.loadConfigFromStorage();
-                    if (navigator.onLine) this.fetchConfig();
-                    if (localStorage.getItem('isLoggedIn') === 'true') this.isLoggedIn = true;
-                },
-
-                toggleSection(title) {
-                    this.expandedSections[title] = !this.expandedSections[title];
-                },
-
-                formatDateDisplay(isoDate) {
-                    if (!isoDate) return '';
-                    const parts = String(isoDate).split('-'); 
-                    if(parts.length !== 3) return isoDate; 
-                    const d = new Date(parts[0], parts[1]-1, parts[2]);
-                    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-                },
-
-                staticGuides: { 'life skills': 'Can trainee carry out daily activities like bathing, dressing, eating independently? Household chores? Use telephone? Public transport?', 'academic level': 'Number/money concept? Write name/address/phone number?', 'social skills': 'Eye-contact? Interpersonal skill? Friends at work/school? Mannerisms?', 'motor skills': 'Fine (fork/chopsticks) and Gross (balancing, running, jumping) motor skills?', "trainee's t-shirt size": 'XS: 32-34 / S: 36-38 / M: 38-40 / L: 40-42 / XL: 46-48 / XXL: 50-52 / XXXL: 54-56', 'temperament': 'Please elaborate.', 'personal feedback': 'Impression of family? Habits during session? Interactions so far?', 'attention span': 'Is your trainee attentive/distracted? Please elaborate.', 'responsiveness': 'Is your trainee quick to respond/slow to respond/has no response? Please elaborate.', 'receptiveness': 'Able to understand instructions with/without help OR unable even with help? What kind of help?' },
-                likertConfig: { 'mobility': { left: 'Need support to walk and can be clumsy', right: 'Agile and stable' }, 'comprehension': { left: 'Very Low (unable to follow instructions)', right: 'High (able to follow instructions effectively)' }, 'verbal': { left: 'Very Low (non-verbal)', right: 'High (able to engage in conversations)' } },
-
-                setLoading(s, t='Loading...') { this.isLoading = s; this.loadingText = t; },
-                toggleTheme(t=true) { if(t) this.darkMode = !this.darkMode; localStorage.setItem('theme', this.darkMode ? 'dark' : 'light'); if(this.darkMode) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); },
-                
-                async performAction(action, payload = {}) {
-                    payload.action = action;
-                    const res = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
-                    return await res.json();
-                },
-
-                async performLogin() {
-                    this.setLoading(true);
-                    try {
-                        const data = await this.performAction('login', { password: this.loginPass });
-                        if (data.success) { this.isLoggedIn = true; localStorage.setItem('isLoggedIn', 'true'); await this.fetchConfig(); } 
-                        else this.loginError = 'Incorrect Password';
-                    } catch(e) { this.loginError = 'Connection Error.'; }
-                    finally { this.setLoading(false); }
-                },
-
-                async fetchConfig() {
-                    try {
-                        const data = await this.performAction('getConfig');
-                        this.headers = Array.isArray(data.headers) ? data.headers.map(String) : [];
-                        this.trainees = data.trainees || [];
-                        this.projects = data.projects || [];
-                        this.mapping = data.mapping || {};
-                        this.sectionOrder = data.sectionOrder || [];
-                        localStorage.setItem('appConfig', JSON.stringify({ 
-                            headers: this.headers, 
-                            trainees: this.trainees, 
-                            projects: this.projects,
-                            mapping: this.mapping,
-                            sectionOrder: this.sectionOrder
-                        }));
-                    } catch(e) {}
-                },
-
-                async refreshTrainees() { if(navigator.onLine) await this.fetchConfig(); },
-                get filteredTrainees() { if(!this.searchQuery) return []; const q=this.searchQuery.toLowerCase(); return this.trainees.filter(t=>t&&String(t).toLowerCase().includes(q)); },
-                getNameIndex() { return this.headers ? this.headers.findIndex(h => String(h).toLowerCase().includes('trainee') && String(h).toLowerCase().includes('name')) : -1; },
-                loadNewForm() { this.loadTraineeForm(''); },
-
-                async loadTraineeForm(name) {
-                    this.setLoading(true);
-                    if (!this.headers || this.headers.length === 0) {
-                        this.loadConfigFromStorage();
-                        if (!this.headers || this.headers.length === 0) await this.fetchConfig();
-                    }
-                    try {
-                        // Backend now returns { "Header Name": "Value", "Other Header": "Value" }
-                        const history = await this.performAction('getHistory', { trainee: name });
-                        this.formData = {};
-                        if(this.headers) {
-                            this.headers.forEach((h, i) => {
-                                const rawHeader = String(h);
-                                const lower = rawHeader.toLowerCase();
-                                
-                                if(!lower.includes('date of visit')) {
-                                     // ROBUST MAPPING: Lookup by exact Header String first
-                                     if (history[rawHeader] !== undefined) {
-                                         this.formData[i] = history[rawHeader];
-                                     } else {
-                                         this.formData[i] = '';
-                                     }
-                                } else {
-                                     // Date of visit is always "Today" for a new form
-                                     this.formData[i] = new Date().toISOString().split('T')[0];
-                                }
-                            });
-                        }
-                        const nameIdx = this.getNameIndex();
-                        if(nameIdx !== -1) this.formData[nameIdx] = name;
-                        
-                        this.expandedSections = {};
-                        if(this.sectionOrder && this.sectionOrder.length > 0) {
-                            this.sectionOrder.forEach(sec => {
-                                if(sec.toLowerCase().includes("general details")) this.expandedSections[sec] = true;
-                                else this.expandedSections[sec] = false;
-                            });
-                        }
-
-                        this.view = 'form';
-                    } catch(e) {
-                        this.loadNewForm(); // Fallback
-                    } finally { this.setLoading(false); }
-                },
-
-                async submitForm() {
-                    if (this.isSubmitting) return;
-                    this.isSubmitting = true;
-                    this.setLoading(true, 'Submitting...');
-                    
-                    try {
-                        const rowData = this.headers.map((header, index) => {
-                            let val = this.formData[index];
-                            if (val === undefined || val === null) return '';
-                            return val;
-                        });
-
-                        if (this.headers.length > 0 && String(this.headers[0]).toLowerCase().includes('timestamp')) {
-                            rowData[0] = new Date();
-                        }
-
-                        if (navigator.onLine) {
-                            const result = await this.performAction('submit', { row: rowData });
-                            if (result.success) {
-                                this.showToast('Submitted successfully!', 'success');
-                                this.view = 'dashboard';
-                                this.formData = {};
-                                this.searchQuery = '';
-                            } else {
-                                throw new Error(result.error || 'Submission failed');
-                            }
-                        } else {
-                             // REMOVED OFFLINE SAVE LOGIC
-                             this.showToast('You are offline. Please connect to internet to submit.', 'error');
-                        }
-                    } catch (e) {
-                        this.showToast('Error: ' + e.message, 'error');
-                    } finally {
-                        this.isSubmitting = false;
-                        this.setLoading(false);
-                    }
-                },
-
-                get groupedHeaders() {
-                    if (!this.headers || !Array.isArray(this.headers) || this.headers.length === 0) return [];
-                    
-                    let groups = [];
-                    const orderToUse = (this.sectionOrder && this.sectionOrder.length > 0) ? this.sectionOrder : ['General Details'];
-
-                    const getColors = (t) => {
-                        const l=t.toLowerCase();
-                        if(l.includes('general')||l.includes('visit')||l.includes('volunteer')) return {bgClass:'bg-blue-50 dark:bg-blue-900', textClass:'text-blue-700 dark:text-blue-200'};
-                        if(l.includes('trainee')) return {bgClass:'bg-green-50 dark:bg-green-900', textClass:'text-green-700 dark:text-green-200'};
-                        if(l.includes('caregiver')||l.includes('family')||l.includes('emergency')||l.includes('background')) return {bgClass:'bg-yellow-50 dark:bg-yellow-900', textClass:'text-yellow-700 dark:text-yellow-200'};
-                        if(l.includes('medical')||l.includes('health')) return {bgClass:'bg-red-50 dark:bg-red-900', textClass:'text-red-700 dark:text-red-200'};
-                        if(l.includes('abilit')||l.includes('behavio')) return {bgClass:'bg-purple-50 dark:bg-purple-900', textClass:'text-purple-700 dark:text-purple-200'};
-                        if(l.includes('school')||l.includes('work')) return {bgClass:'bg-indigo-50 dark:bg-indigo-900', textClass:'text-indigo-800 dark:text-indigo-200'};
-                        if(l.includes('observation')) return {bgClass:'bg-pink-50 dark:bg-pink-900', textClass:'text-pink-700 dark:text-pink-200'};
-                        return {bgClass:'bg-slate-100 dark:bg-gray-800', textClass:'text-slate-600 dark:text-slate-400'};
-                    };
-
-                    groups = orderToUse.map(title => ({ title: title, fields: [], ...getColors(title) }));
-                    
-                    const seen = new Set();
-                    
-                    this.headers.forEach((h, i) => {
-                        const rawH = String(h);
-                        const lower = rawH.toLowerCase();
-                        if (lower.includes('timestamp') || rawH.trim() === '') return;
-
-                        let label = rawH, guide = '';
-                        
-                        // EXCEPTION: Keep "Area" fields intact
-                        if (rawH.toLowerCase().startsWith('area')) {
-                             label = rawH;
-                             guide = '';
-                        } else {
-                            const hyphenMatch = rawH.match(/^(.+?\(\d+\))\s*[-–]\s*(.+)/);
-                            if (hyphenMatch) {
-                                label = hyphenMatch[1].trim();
-                                guide = hyphenMatch[2].trim();
-                            } else {
-                                const match = rawH.match(/^(.+?)(\s*[\(\（].+)/);
-                                if (match) {
-                                    if (!/^[\(\（][s\d]+[\)\）]$/i.test(match[2].trim())) {
-                                        label = match[1].trim(); 
-                                        guide = match[2].trim();
-                                    }
-                                }
-                            }
-                        }
-                        
-                        if (this.headers.filter((v, idx) => v === h && idx < i).length > 0) label = `${label} (${this.headers.filter((v, idx) => v === h && idx < i).length + 1})`;
-                        
-                        for(const k in this.staticGuides) if(label.toLowerCase().includes(k)) { guide = this.staticGuides[k]; break; }
-                        if(guide) guide = guide.replace(/[\(\（]dd\/mm\/yy.*?[\)\）]/gi, '').replace(/\(\d+\)/g, '').replace(/\(s\)/g, '').replace(/[\(\（\)\）]/g, '').trim();
-
-                        const field = { label, guide, index: i, raw: rawH };
-
-                        const seenKey = label + '_' + i;
-                        if(seen.has(seenKey)) return; 
-                        seen.add(seenKey);
-
-                        let mappedSection = this.mapping[rawH] || this.mapping[label];
-                        if(!mappedSection) {
-                            const cleanKey = rawH.replace(/\(\d+\)/g, '').trim();
-                            mappedSection = this.mapping[cleanKey];
-                        }
-                        
-                        if(mappedSection) {
-                            const group = groups.find(g => g.title === mappedSection);
-                            if(group) { group.fields.push(field); }
-                        }
-                    });
-
-                    const sortByGroup = (arr, fn) => arr.sort((a,b) => fn(a) - fn(b));
-                    
-                    const cg = groups.find(s=>s.title.toLowerCase().includes('caregiver'));
-                    if(cg) sortByGroup(cg.fields, (f) => {
-                        const n = f.raw.toLowerCase();
-                        const num = (n.match(/\((\d+)\)/) || [0,99])[1];
-                        const rank = n.includes('name')?1:n.includes('relation')?2:n.includes('contact')?3:4;
-                        return (num*10) + rank;
-                    });
-                    
-                    const obs = groups.find(s=>s.title.toLowerCase().includes('observation'));
-                    if(obs) sortByGroup(obs.fields, (f)=>{
-                       const n=f.label.toLowerCase();
-                       const grps=['sing-along','cdt','prt','teabreak'];
-                       const gA=grps.findIndex(g=>n.includes(g));
-                       if(gA!==-1) return gA*100;
-                       return 999;
-                    });
-                    
-                    const volGroup = groups.find(s=>s.title.toLowerCase().includes('volunteer'));
-                    if(volGroup) sortByGroup(volGroup.fields, (f) => {
-                        const n = f.raw.toLowerCase();
-                        if (n.includes('(1)')) return 10;
-                        if (n.includes('(2)')) return 20;
-                        if (n.includes('senior')) return 30;
-                        return 99;
-                    });
-                    
-                    return groups.filter(s => s.fields.length > 0);
-                },
-
-                isLikertScale(n) { const s=String(n).toLowerCase(); return s.includes('mobility')||s.includes('comprehension')||s.includes('verbal'); },
-                getLikertLabel(n, side) { const k = Object.keys(this.likertConfig).find(k=>String(n).toLowerCase().includes(k)); return k ? this.likertConfig[k][side] : ''; },
-                isDate(n) { return String(n).toLowerCase().includes('date'); },
-                isProjectField(n) { return String(n).toLowerCase().trim() === 'project'; },
-                isShortInput(n) { return ['name','nric','gender','sex','race','religion','blood','height','weight','shirt','relation','contact','mobile','phone','email'].some(k=>String(n).toLowerCase().includes(k)); },
-                isLongText(n) { return !this.isDate(n) && !this.isShortInput(n) && !this.isProjectField(n) && !this.isLikertScale(n); },
-                
-                loadNewForm() { this.loadTraineeForm(''); },
-                refreshTrainees() { if(navigator.onLine) this.fetchConfig(); },
-                loadConfigFromStorage() { 
-                    const c = localStorage.getItem('appConfig'); 
-                    if(c) { 
-                        try { 
-                            const d=JSON.parse(c); 
-                            this.headers=d.headers||[]; 
-                            this.trainees=d.trainees||[]; 
-                            this.projects=d.projects||[]; 
-                            this.mapping=d.mapping||{}; 
-                            this.sectionOrder=d.sectionOrder||[];
-                        } catch(e){} 
-                    } 
-                },
-                resetAppData() { localStorage.clear(); window.location.reload(true); },
-                openSettings() { this.showSettings=true; },
-                unlockSettings() { if(this.settingsPass==='werone') this.settingsUnlocked=true; else this.settingsError='Wrong Password'; },
-                addColumn() { this.performAction('addColumn', {headerName:this.newColumnName}); },
-                renameColumn(idx, name) { this.performAction('renameColumn', {colIndex:idx, newName:name}); },
-                changePassword() { /* ... */ },
-                showToast(m,t) { this.toast.message=m;this.toast.type=t;this.toast.visible=true;setTimeout(()=>this.toast.visible=false,3000); }
-            }
-        }
+        var cacheBuster = new Date().getTime();
+        document.write('<script src="app.js?v=' + cacheBuster + '"><\/script>');
     </script>
 </body>
 </html>
