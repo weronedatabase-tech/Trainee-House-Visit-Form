@@ -69,19 +69,30 @@ function appData() {
            this.toggleTheme(false);
            this.loadConfigFromStorage();
            if (navigator.onLine) this.fetchConfig();
-           // Removed localStorage check for isLoggedIn so it always prompts for password
        },
 
        toggleSection(title) {
            this.expandedSections[title] = !this.expandedSections[title];
        },
 
-       formatDateDisplay(isoDate) {
-           if (!isoDate) return '';
-           const parts = String(isoDate).split('-'); 
-           if(parts.length !== 3) return isoDate; 
-           const d = new Date(parts[0], parts[1]-1, parts[2]);
-           return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+       formatDateDisplay(rawDate) {
+           if (!rawDate) return '';
+           const strDate = String(rawDate);
+           const cleanDate = strDate.split('T')[0];
+           const parts = cleanDate.split('-'); 
+           
+           // If it securely matches YYYY-MM-DD
+           if (parts.length === 3 && parts[0].length === 4) {
+               const d = new Date(parts[0], parts[1]-1, parts[2]);
+               if (!isNaN(d.getTime())) return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+           }
+           
+           // Fallback attempt
+           const d = new Date(strDate);
+           if (!isNaN(d.getTime())) return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+           
+           // If totally unparsable, just return the string instead of "Invalid Date"
+           return strDate;
        },
 
        // --- Rolodex Date Picker Methods ---
@@ -92,15 +103,31 @@ function appData() {
            this.pickerTargetIndex = index;
            let currentDate = this.formData[index];
            let d = new Date();
+           
            if (currentDate) {
-               const parts = String(currentDate).split('-');
-               if (parts.length === 3) {
-                   d = new Date(parts[0], parts[1] - 1, parts[2]);
+               const strDate = String(currentDate);
+               const cleanDate = strDate.split('T')[0];
+               const parts = cleanDate.split('-');
+               
+               if (parts.length === 3 && parts[0].length === 4) {
+                   const temp = new Date(parts[0], parts[1] - 1, parts[2]);
+                   if (!isNaN(temp.getTime())) d = temp;
+               } else {
+                   const temp = new Date(strDate);
+                   if (!isNaN(temp.getTime())) d = temp;
                }
            }
+           
+           if (isNaN(d.getTime())) d = new Date(); // Safety fallback to today
+
            this.pickerDay = d.getDate();
            this.pickerMonth = d.getMonth();
            this.pickerYear = d.getFullYear();
+           
+           // Ensure year is within the Rolodex bounds
+           if (this.pickerYear < this.years[0]) this.pickerYear = this.years[0];
+           if (this.pickerYear > this.years[this.years.length - 1]) this.pickerYear = this.years[this.years.length - 1];
+
            this.showDatePicker = true;
            
            setTimeout(() => {
@@ -195,7 +222,7 @@ function appData() {
                method: "POST", 
                headers: { "Content-Type": "text/plain;charset=utf-8" }, 
                body: JSON.stringify(payload),
-               cache: "no-store" // Prevents API caching
+               cache: "no-store"
            });
            return await res.json();
        },
@@ -218,7 +245,6 @@ function appData() {
                const data = await this.performAction('getConfig');
                this.headers = Array.isArray(data.headers) ? data.headers.map(String) :[];
                
-               // Safe assignment to avoid syntax bug
                if (data.trainees) this.trainees = data.trainees;
                if (data.projects) this.projects = data.projects;
                if (data.mapping) this.mapping = data.mapping;
@@ -248,6 +274,7 @@ function appData() {
            try {
                const history = await this.performAction('getHistory', { trainee: name });
                this.formData = {};
+               
                if(this.headers) {
                    this.headers.forEach((h, i) => {
                        const rawHeader = String(h);
@@ -255,7 +282,20 @@ function appData() {
                        
                        if(!lower.includes('date of visit')) {
                             if (history[rawHeader] !== undefined) {
-                                this.formData[i] = history[rawHeader];
+                                let val = history[rawHeader];
+                                
+                                // Normalize retrieved Dates (fixes Google Sheets UTC/ISO offset bug & "Invalid Date" output)
+                                if (val && this.isDate(rawHeader)) {
+                                    const parsed = new Date(val);
+                                    if (!isNaN(parsed.getTime())) {
+                                        const y = parsed.getFullYear();
+                                        const m = String(parsed.getMonth() + 1).padStart(2, '0');
+                                        const d = String(parsed.getDate()).padStart(2, '0');
+                                        val = `${y}-${m}-${d}`;
+                                    }
+                                }
+                                
+                                this.formData[i] = val;
                             } else {
                                 this.formData[i] = '';
                             }
@@ -264,6 +304,7 @@ function appData() {
                        }
                    });
                }
+               
                const nameIdx = this.getNameIndex();
                if(nameIdx !== -1) this.formData[nameIdx] = name;
                
@@ -297,14 +338,13 @@ function appData() {
                    rowData[0] = new Date();
                }
 
-               // Extract the trainee name to send to the backend
                const nameIdx = this.getNameIndex();
                const submittedName = nameIdx !== -1 ? this.formData[nameIdx] : '';
 
                if (navigator.onLine) {
                    const result = await this.performAction('submit', { 
                        row: rowData,
-                       traineeName: submittedName // Send name for lookup check
+                       traineeName: submittedName 
                    });
                    
                    if (result.success) {
@@ -312,8 +352,6 @@ function appData() {
                        this.view = 'dashboard';
                        this.formData = {};
                        this.searchQuery = '';
-                       
-                       // Refresh config in the background so the new name appears in the search list immediately
                        this.fetchConfig(); 
                    } else {
                        throw new Error(result.error || 'Submission failed');
@@ -431,9 +469,12 @@ function appData() {
            return groups.filter(s => s.fields.length > 0);
        },
 
+       isDate(n) { 
+           const s = String(n).toLowerCase(); 
+           return s.includes('date') || s.includes('dob') || s.includes('birthday'); 
+       },
        isLikertScale(n) { const s=String(n).toLowerCase(); return s.includes('mobility')||s.includes('comprehension')||s.includes('verbal'); },
        getLikertLabel(n, side) { const k = Object.keys(CONFIG.LIKERT_CONFIG).find(k=>String(n).toLowerCase().includes(k)); return k ? CONFIG.LIKERT_CONFIG[k][side] : ''; },
-       isDate(n) { return String(n).toLowerCase().includes('date'); },
        isProjectField(n) { return String(n).toLowerCase().trim() === 'project'; },
        isShortInput(n) { return['name','nric','gender','sex','race','religion','blood','height','weight','shirt','relation','contact','mobile','phone','email'].some(k=>String(n).toLowerCase().includes(k)); },
        isLongText(n) { return !this.isDate(n) && !this.isShortInput(n) && !this.isProjectField(n) && !this.isLikertScale(n); },
@@ -482,7 +523,6 @@ function appData() {
        },
        
        changePassword() { 
-           // Implementation for changing password 
        },
        
        showToast(m, t) { 
